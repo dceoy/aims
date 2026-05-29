@@ -11,22 +11,11 @@ on:
       - opened
       - synchronize
       - reopened
-  workflow_dispatch:
-    inputs:
-      workflow:
-        required: true
-        type: choice
-        options:
-          - lint
-          - release
-        description: Choose the workflow to run
-        default: lint
 jobs:
   github-actions-lint-and-scan:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
-      || (github.event_name == 'workflow_dispatch' && inputs.workflow == 'lint')
     permissions:
       contents: read
     uses: dceoy/gh-actions-for-devops/.github/workflows/github-actions-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
@@ -34,33 +23,11 @@ jobs:
       search-path: .github/workflows
       go-version: stable
       python-version: 3.x
-  toml-lint:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || (github.event_name == 'workflow_dispatch' && inputs.workflow == 'lint')
-    permissions:
-      contents: read
-    uses: dceoy/gh-actions-for-devops/.github/workflows/toml-lint.yml@main  # zizmor: ignore[unpinned-uses]
-    with:
-      search-path: .github/workflows
-      go-version: stable
-  github-release:
-    if: >
-      github.event_name == 'workflow_dispatch' && inputs.workflow == 'release'
-    permissions:
-      contents: write
-    uses: dceoy/gh-actions-for-devops/.github/workflows/github-release.yml@main   # zizmor: ignore[unpinned-uses]
-    with:
-      create-new-tag: false
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   dependabot-auto-merge:
     if: >
       github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
     needs:
       - github-actions-lint-and-scan
-      - toml-lint
     permissions:
       contents: write
       pull-requests: write

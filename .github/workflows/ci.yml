@@ -11,13 +11,16 @@ on:
       - opened
       - synchronize
       - reopened
+permissions: {}
 jobs:
   github-actions-lint-and-scan:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
     permissions:
+      actions: read
       contents: read
+      security-events: write
     uses: dceoy/gh-actions-for-devops/.github/workflows/github-actions-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
     with:
       search-path: .github/workflows

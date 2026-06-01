@@ -106,7 +106,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-".agent/skills/update-cfd-instruments/scripts/*.py" = [
+".agents/skills/update-cfd-instruments/scripts/*.py" = [
   "C901",     # Agent scraper scripts can have parser/state-machine complexity
   "D100",     # Missing module docstring
   "D101",     # Missing class docstring
@@ -129,7 +129,7 @@ max-args = 10
 max-public-methods = 40
 
 [tool.pyright]
-include = [".agent/skills/update-cfd-instruments/scripts"]
+include = [".agents/skills/update-cfd-instruments/scripts"]
 exclude = ["build", ".venv"]
 venvPath = "."
 venv = ".venv"

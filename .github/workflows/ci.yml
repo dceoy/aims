@@ -11,7 +11,8 @@ on:
       - opened
       - synchronize
       - reopened
-permissions: {}
+permissions:
+  contents: read
 jobs:
   github-actions-lint-and-scan:
     if: >
@@ -26,11 +27,21 @@ jobs:
       search-path: .github/workflows
       go-version: stable
       python-version: 3.x
+  python-lint-and-scan:
+    if: >
+      github.event_name == 'push'
+      || github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    uses: dceoy/gh-actions-for-devops/.github/workflows/python-package-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
+    with:
+      package-path: .
   dependabot-auto-merge:
     if: >
       github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
     needs:
       - github-actions-lint-and-scan
+      - python-lint-and-scan
     permissions:
       contents: write
       pull-requests: write

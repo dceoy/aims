@@ -1,0 +1,9 @@
+locale = "en-us"
+label = "English"
+direction = "ltr"
+weight = 1
+title = "Financial Market Analyst"
+
+[params]
+  dateFormat = "January 2, 2006"
+  description = "Static archive of financial market analysis results."

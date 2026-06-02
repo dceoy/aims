@@ -1,0 +1,14 @@
+baseURL = "https://dceoy.github.io/financial-market-analyst/"
+locale = "en-us"
+defaultContentLanguage = "en"
+title = "Financial Market Analyst"
+publishDir = "site"
+disableKinds = ["taxonomy", "term"]
+enableRobotsTXT = true
+summaryLength = 0
+
+[pagination]
+  pagerSize = 15
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]

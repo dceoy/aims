@@ -26,10 +26,10 @@ The CSV contains one row per broker CFD listing and includes:
 1. Run the updater from the repository root:
 
    ```bash
-   python3 .agent/skills/update-cfd-instruments/scripts/update_cfd_instruments.py --output data/cfd_instruments.csv
+   python3 .agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py --output data/cfd_instruments.csv
    ```
 
-2. If the script reports missing ticker mappings, update the symbol maps in `scripts/update_cfd_instruments.py` and rerun it. Do not leave blank ticker symbols.
+2. If the script reports missing ticker mappings, update the symbol maps in `.agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py` and rerun it. Do not leave blank ticker symbols.
 
 3. Confirm the generated CSV has rows and no blank required fields:
 

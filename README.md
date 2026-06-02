@@ -1,8 +1,8 @@
-# financial-market-analyst
+# aims
 
-Financial Market Analysis using LLMs
+Al Market Strategist
 
-[![CI](https://github.com/dceoy/financial-market-analyst/actions/workflows/ci.yml/badge.svg)](https://github.com/dceoy/financial-market-analyst/actions/workflows/ci.yml)
+[![CI](https://github.com/dceoy/aims/actions/workflows/ci.yml/badge.svg)](https://github.com/dceoy/aims/actions/workflows/ci.yml)
 
 ## Static analysis site
 

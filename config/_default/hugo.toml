@@ -1,7 +1,7 @@
 baseURL = "https://dceoy.github.io/financial-market-analyst/"
 locale = "en-us"
 defaultContentLanguage = "en"
-title = "Financial Market Analyst"
+title = "AIMS"
 publishDir = "site"
 disableKinds = ["taxonomy", "term"]
 enableRobotsTXT = true

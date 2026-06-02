@@ -2,7 +2,7 @@ locale = "en-us"
 label = "English"
 direction = "ltr"
 weight = 1
-title = "Financial Market Analyst"
+title = "AIMS"
 
 [params]
   dateFormat = "January 2, 2006"

@@ -1,5 +1,5 @@
 +++
-title = "Financial Market Analyst"
+title = "AIMS"
 +++
 
 Financial market analysis results are collected here as static pages.

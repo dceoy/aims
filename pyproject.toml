@@ -27,6 +27,7 @@ package = false
 [tool.pytest.ini_options]
 addopts = [
   "--cov=.agents/skills/update-cfd-instruments/scripts",
+  "--cov=.agents/skills/market-analysis/scripts",
   "--cov-branch",
   "--cov-report=term-missing",
   "--cov-fail-under=100",
@@ -129,6 +130,26 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+".agents/skills/market-analysis/scripts/*.py" = [
+  "C901",     # Scoring/feature functions have inherent complexity
+  "D100",     # Module docstrings are in the module-level string
+  "D101",     # Class docstrings suppressed for brevity
+  "D102",     # Method docstrings suppressed for brevity
+  "D103",     # Function docstrings suppressed for brevity
+  "D107",     # __init__ docstrings suppressed for brevity
+  "DOC201",   # Return docs omitted in favour of type annotations
+  "DOC501",   # Raised exceptions documented inline
+  "INP001",   # Not a package; scripts are standalone entrypoints
+  "PLR0912",  # Feature/scoring functions can have many branches
+  "PLR0914",  # Local variable count is dominated by feature columns
+  "PLR0915",  # Main analysis scripts can have many statements
+  "PLR2004",  # Magic values are intrinsic to financial formulae
+  "S310",     # urllib fetch is intentional for Stooq data download
+  "S404",     # subprocess import is intentional for git commit lookup
+  "S603",     # subprocess.run with list arg is safe
+  "S607",     # git partial path is intentional
+  "T201",     # CLI status output via print is intentional
+]
 ".agents/skills/update-cfd-instruments/scripts/*.py" = [
   "C901",     # Agent scraper scripts can have parser/state-machine complexity
   "D100",     # Missing module docstring
@@ -144,11 +165,14 @@ ignore = [
   "T201",     # CLI status output is intentional
 ]
 "tests/*.py" = [
-  "D100",   # Test modules are named by behavior rather than docstrings
-  "D103",   # Test function names describe the assertion
+  "D100",    # Test modules are named by behavior rather than docstrings
+  "D103",    # Test function names describe the assertion
   "PLC1901", # Explicit empty string comparisons are clearer in assertions
-  "RUF001", # Japanese fixture text must match source pages
-  "S101",   # Pytest uses assert introspection
+  "PLR2004", # Magic values are natural and readable in test assertions
+  "RUF001",  # Japanese fixture text must match source pages
+  "RUF069",  # Exact float literals in test assertions are intentional
+  "S101",    # Pytest uses assert introspection
+  "SLF001",  # Tests intentionally access private implementation members
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -159,8 +183,11 @@ max-args = 10
 max-public-methods = 40
 
 [tool.pyright]
-include = [".agents/skills/update-cfd-instruments/scripts"]
-exclude = ["build", ".venv"]
+include = [
+  ".agents/skills/update-cfd-instruments/scripts",
+  ".agents/skills/market-analysis/scripts",
+]
+exclude = ["build", ".venv", ".claude", "tests"]
 venvPath = "."
 venv = ".venv"
 typeCheckingMode = "strict"

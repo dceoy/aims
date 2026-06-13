@@ -31,14 +31,14 @@ data/mappings/cfd_ticker_mappings.csv
 
 The file uses the following columns:
 
-| Column | Description |
-|---|---|
-| `mapping_type` | `broker_instrument`, `instrument`, or `gmo_stock_base` |
-| `broker` | Broker name (for `broker_instrument` and `gmo_stock_base`) |
-| `category` | CFD category (informational; used to label `gmo_stock_base` rows) |
-| `instrument_name` | Instrument name key (for `broker_instrument` and `instrument`) |
-| `base_name` | Base name after stripping exchange suffix (for `gmo_stock_base`) |
-| `ticker_symbol` | Resulting ticker symbol |
+| Column            | Description                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| `mapping_type`    | `broker_instrument`, `instrument`, or `gmo_stock_base`            |
+| `broker`          | Broker name (for `broker_instrument` and `gmo_stock_base`)        |
+| `category`        | CFD category (informational; used to label `gmo_stock_base` rows) |
+| `instrument_name` | Instrument name key (for `broker_instrument` and `instrument`)    |
+| `base_name`       | Base name after stripping exchange suffix (for `gmo_stock_base`)  |
+| `ticker_symbol`   | Resulting ticker symbol                                           |
 
 Lookup precedence in the updater:
 

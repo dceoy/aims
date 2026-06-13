@@ -21,9 +21,12 @@ _REQUIRED_META: Final[tuple[str, ...]] = (
     "generated_at",
     "git_commit",
     "data_source",
+    "data_freshness",
     "scoring_version",
     "config",
 )
+_FRESHNESS_SENTINEL: Final[str] = "n/a"
+_DATE_LEN: Final[int] = 10
 _REQUIRED_INST: Final[tuple[str, ...]] = (
     "symbol",
     "rank",
@@ -56,6 +59,23 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
             for key in _REQUIRED_META
             if key not in metadata
         )
+        freshness = metadata.get("data_freshness")
+        if freshness is not None:
+            if not isinstance(freshness, dict):
+                errors.append("metadata.data_freshness must be a JSON object")
+            else:
+                for sym, val in freshness.items():
+                    if not isinstance(val, str):
+                        errors.append(
+                            f"metadata.data_freshness[{sym!r}] must be a string"
+                        )
+                    elif val != _FRESHNESS_SENTINEL and (
+                        len(val) != _DATE_LEN or val[4] != "-" or val[7] != "-"
+                    ):
+                        errors.append(
+                            f"metadata.data_freshness[{sym!r}]: {val!r} is not"
+                            f" a YYYY-MM-DD date or {_FRESHNESS_SENTINEL!r}"
+                        )
 
     instruments = data["instruments"]
     if not isinstance(instruments, list):

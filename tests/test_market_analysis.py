@@ -672,6 +672,42 @@ def test_score_risk_gate_malformed(ma: ModuleType) -> None:
     assert ma.RISK_GATE_MALFORMED in results[0].risk_gates
 
 
+def test_reliable_instruments_rank_above_unreliable(ma: ModuleType) -> None:
+    # Reliable instrument with a low score
+    low_bars = _make_bars(ma, "LOW", [float(100 - i * 0.1) for i in range(80)])
+    ref = low_bars[-1].timestamp + timedelta(days=1)
+    # Use old timestamps so STALE is stale relative to ref, LOW is fresh
+    stale_bars_old = _make_bars(
+        ma,
+        "STALE",
+        [float(100 + i) for i in range(80)],
+        start=datetime(2022, 1, 1, tzinfo=UTC),
+    )
+    results = ma.score_instruments(
+        {"STALE": stale_bars_old, "LOW": low_bars},
+        reference_time=ref,
+        stale_days=5,
+    )
+    reliable = [r for r in results if r.is_reliable]
+    unreliable = [r for r in results if not r.is_reliable]
+    assert reliable
+    assert unreliable
+    assert max(r.rank for r in reliable) < min(r.rank for r in unreliable)
+
+
+def test_score_ordering_reliable_before_unreliable(ma: ModuleType) -> None:
+    good = _make_bars(ma, "GOOD", [float(100 + i) for i in range(80)])
+    bad = _make_bars(ma, "BAD", [100.0] * 3)
+    ref = good[-1].timestamp + timedelta(days=1)
+    results = ma.score_instruments(
+        {"GOOD": good, "BAD": bad},
+        reference_time=ref,
+        min_history=60,
+    )
+    ranks = {r.symbol: r.rank for r in results}
+    assert ranks["GOOD"] < ranks["BAD"]
+
+
 # ── _get_git_commit ─────────────────────────────────────────────────────────────
 
 
@@ -713,6 +749,9 @@ def test_generate_artifact_structure(ma: ModuleType, mocker: MockerFixture) -> N
     assert meta["git_commit"] == "abc1234"
     assert "generated_at" in meta
     assert meta["data_source"] == "test"
+    assert "data_freshness" in meta
+    assert isinstance(meta["data_freshness"], dict)
+    assert "A" in meta["data_freshness"]
 
 
 def test_generate_artifact_empty_data_source(
@@ -721,6 +760,20 @@ def test_generate_artifact_empty_data_source(
     mocker.patch.object(ma, "_get_git_commit", return_value="unknown")
     artifact = ma.generate_artifact([], {}, {})
     assert artifact["metadata"]["data_source"] == "unknown"
+
+
+def test_generate_artifact_multi_source_deterministic(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bar_a = _make_bars(ma, "A", [100.0], start=datetime(2024, 1, 2, tzinfo=UTC))
+    bar_b = [
+        ma.OhlcvBar(
+            "B", datetime(2024, 1, 2, tzinfo=UTC), 1.0, 1.0, 1.0, 1.0, 0.0, "csv", "d"
+        )
+    ]
+    artifact = ma.generate_artifact([], {"A": bar_a, "B": bar_b}, {})
+    assert artifact["metadata"]["data_source"] == "csv,test"
 
 
 def test_save_artifact_path_contains_date(

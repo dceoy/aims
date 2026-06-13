@@ -8,9 +8,15 @@
     "generated_at",
     "git_commit",
     "data_source",
+    "data_freshness",
     "scoring_version",
     "config"
   ],
+  "notes": {
+    "data_source": "Sorted comma-separated provider names, e.g. 'stooq' or 'csv,stooq'.",
+    "data_freshness": "Object mapping symbol to latest bar date (YYYY-MM-DD) or 'n/a' if no bars.",
+    "rank": "Display rank after reliability-aware ordering: reliable instruments (is_reliable=true) rank first by score descending; unreliable instruments follow."
+  },
   "required_instrument_keys": [
     "symbol",
     "rank",

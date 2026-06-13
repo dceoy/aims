@@ -50,6 +50,7 @@ VALID_ARTIFACT: dict[str, Any] = {
         "generated_at": "2024-01-01T00:00:00+00:00",
         "git_commit": "abc1234",
         "data_source": "stooq",
+        "data_freshness": {"AAPL.US": "2024-01-01"},
         "scoring_version": "1.0.0",
         "config": {"stale_days": 5},
     },
@@ -195,6 +196,69 @@ def test_validate_empty_instruments_list(va: ModuleType) -> None:
     data = {**VALID_ARTIFACT, "instruments": []}
     errors = va.validate_artifact(data)
     assert errors == []
+
+
+# ── data_freshness validation ──────────────────────────────────────────────────
+
+
+def test_validate_data_freshness_valid(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {
+            **VALID_ARTIFACT["metadata"],
+            "data_freshness": {"X": "2024-01-01"},
+        },
+    }
+    errors = va.validate_artifact(data)
+    assert not any("freshness" in e for e in errors)
+
+
+def test_validate_data_freshness_sentinel_valid(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "data_freshness": {"X": "n/a"}},
+    }
+    errors = va.validate_artifact(data)
+    assert not any("freshness" in e for e in errors)
+
+
+def test_validate_data_freshness_missing(va: ModuleType) -> None:
+    bad_meta = {
+        k: v for k, v in VALID_ARTIFACT["metadata"].items() if k != "data_freshness"
+    }
+    data = {**VALID_ARTIFACT, "metadata": bad_meta}
+    errors = va.validate_artifact(data)
+    assert any("data_freshness" in e for e in errors)
+
+
+def test_validate_data_freshness_not_dict(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "data_freshness": "2024-01-01"},
+    }
+    errors = va.validate_artifact(data)
+    assert any("data_freshness" in e and "object" in e for e in errors)
+
+
+def test_validate_data_freshness_invalid_value(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {
+            **VALID_ARTIFACT["metadata"],
+            "data_freshness": {"X": "not-a-date"},
+        },
+    }
+    errors = va.validate_artifact(data)
+    assert any("data_freshness" in e for e in errors)
+
+
+def test_validate_data_freshness_non_string_value(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "data_freshness": {"X": 20240101}},
+    }
+    errors = va.validate_artifact(data)
+    assert any("data_freshness" in e for e in errors)
 
 
 # ── parse_args ─────────────────────────────────────────────────────────────────

@@ -531,7 +531,7 @@ def score_instruments(
             )
         )
 
-    scores.sort(key=lambda s: s.score, reverse=True)
+    scores.sort(key=lambda s: (not s.is_reliable, -s.score))
     for rank, s in enumerate(scores, start=1):
         s.rank = rank
 
@@ -609,8 +609,8 @@ def generate_artifact(
     config: dict[str, Any],
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
-    sources = {b.source for bars in data.values() for b in bars}
-    data_source = next(iter(sources)) if sources else "unknown"
+    sources = sorted({b.source for bars in data.values() for b in bars})
+    data_source = ",".join(sources) if sources else "unknown"
     freshness = {
         symbol: bars[-1].timestamp.date().isoformat() if bars else "n/a"
         for symbol, bars in data.items()

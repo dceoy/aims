@@ -12,12 +12,12 @@ All scripts are in `.agents/skills/market-analysis/scripts/`.
 
 Four sub-commands:
 
-| Command | Purpose |
-|---------|---------|
-| `fetch` | Download OHLCV data from Stooq and save to `data/prices/` |
-| `check` | Run data-quality checks on saved data |
-| `score` | Score and rank instruments cross-sectionally |
-| `generate` | Generate a versioned JSON analysis artifact |
+| Command    | Purpose                                                   |
+| ---------- | --------------------------------------------------------- |
+| `fetch`    | Download OHLCV data from Stooq and save to `data/prices/` |
+| `check`    | Run data-quality checks on saved data                     |
+| `score`    | Score and rank instruments cross-sectionally              |
+| `generate` | Generate a versioned JSON analysis artifact               |
 
 ### `validate_analysis.py`
 
@@ -109,10 +109,10 @@ schema reference. Key structure:
 Instruments failing quality checks are included in output but marked
 `is_reliable: false` and excluded from top rankings:
 
-| Gate | Trigger |
-|------|---------|
-| `stale_data` | Latest bar older than `stale_days` calendar days |
-| `insufficient_history` | Fewer than `min_history` bars |
-| `missing_bars` | Gap > 7 calendar days between consecutive bars |
-| `malformed_input` | Non-positive prices, high < low, or price outside [low, high] |
-| `high_volatility` | 20-day annualized volatility > 100% |
+| Gate                   | Trigger                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| `stale_data`           | Latest bar older than `stale_days` calendar days              |
+| `insufficient_history` | Fewer than `min_history` bars                                 |
+| `missing_bars`         | Gap > 7 calendar days between consecutive bars                |
+| `malformed_input`      | Non-positive prices, high < low, or price outside [low, high] |
+| `high_volatility`      | 20-day annualized volatility > 100%                           |

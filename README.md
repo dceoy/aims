@@ -1,6 +1,6 @@
 # aims
 
-Al Market Strategist
+AI Market Strategist
 
 [![CI](https://github.com/dceoy/aims/actions/workflows/ci.yml/badge.svg)](https://github.com/dceoy/aims/actions/workflows/ci.yml)
 

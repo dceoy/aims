@@ -1,5 +1,5 @@
 [project]
-name = "financial-market-analyst"
+name = "aims"
 version = "0.1.0"
 description = "Financial market analysis data maintenance scripts"
 authors = [{name = "dceoy", email = "dceoy@users.noreply.github.com"}]
@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://github.com/dceoy/financial-market-analyst.git"
+Repository = "https://github.com/dceoy/aims.git"
 
 [tool.uv]
 package = false

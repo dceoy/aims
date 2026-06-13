@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CFD Instruments",
+  "description": "Schema for data/cfd_instruments.csv. Enforced by validate_cfd_instruments.py.",
+  "columns": [
+    "source_accessed_at",
+    "broker",
+    "source_url",
+    "category",
+    "section",
+    "sector",
+    "instrument_name",
+    "ticker_symbol",
+    "underlying_asset_exchange",
+    "currency",
+    "tick_size",
+    "price_display_example",
+    "minimum_trade_unit",
+    "contract_value_per_lot",
+    "trade_unit",
+    "trading_hours",
+    "margin_rate_leverage",
+    "max_order_quantity",
+    "instrument_position_limit",
+    "account_position_limit",
+    "price_adjustment",
+    "interest_adjustment",
+    "rights_adjustment",
+    "instrument_position_limit_note",
+    "minimum_trade_quantity",
+    "withholding_tax_note"
+  ],
+  "required_non_empty": [
+    "source_accessed_at",
+    "broker",
+    "source_url",
+    "category",
+    "instrument_name",
+    "ticker_symbol"
+  ],
+  "uniqueness_key": ["broker", "instrument_name", "source_url"],
+  "properties": {
+    "broker": {
+      "type": "string",
+      "enum": ["GMOクリック証券", "楽天証券"]
+    },
+    "category": {
+      "type": "string",
+      "allowed_categories_by_broker": {
+        "GMOクリック証券": ["株価指数CFD", "株式CFD", "商品CFD", "バラエティCFD"],
+        "楽天証券": ["指数CFD", "株式CFD", "商品CFD", "バラエティCFD"]
+      }
+    },
+    "ticker_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9 .;]{0,49}$"
+    }
+  }
+}

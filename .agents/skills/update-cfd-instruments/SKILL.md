@@ -21,31 +21,70 @@ The CSV contains one row per broker CFD listing and includes:
 - instrument name and `ticker_symbol`
 - underlying asset / exchange, currency, tick size, price display example, trade unit, trading hours, leverage/margin, quantity limits, and adjustment notes
 
+## Ticker mappings
+
+Ticker symbol mappings are stored in:
+
+```text
+data/mappings/cfd_ticker_mappings.csv
+```
+
+The file uses the following columns:
+
+| Column | Description |
+|---|---|
+| `mapping_type` | `broker_instrument`, `instrument`, or `gmo_stock_base` |
+| `broker` | Broker name (for `broker_instrument` and `gmo_stock_base`) |
+| `category` | CFD category (informational; used to label `gmo_stock_base` rows) |
+| `instrument_name` | Instrument name key (for `broker_instrument` and `instrument`) |
+| `base_name` | Base name after stripping exchange suffix (for `gmo_stock_base`) |
+| `ticker_symbol` | Resulting ticker symbol |
+
+Lookup precedence in the updater:
+
+1. Parse the `underlying_asset_exchange` field for a leading uppercase exchange code.
+2. Look up `(broker, instrument_name)` in `broker_instrument` rows.
+3. Look up `instrument_name` in `instrument` rows.
+4. For GMO 株式CFD, strip the `（NASDAQ）`/`（NYSE）` suffix and look up the base name in `gmo_stock_base` rows.
+
+To add or update a mapping, edit `data/mappings/cfd_ticker_mappings.csv` directly and re-run the updater.
+
+## Schema and validation
+
+The CSV schema is defined in:
+
+```text
+data/schema/cfd_instruments.schema.json
+```
+
+The schema specifies required columns, required non-empty fields, allowed broker values, the ticker symbol pattern, and the uniqueness key `(broker, instrument_name, source_url)`.
+
+Validate the CSV at any time:
+
+```bash
+python3 .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
+  --input data/cfd_instruments.csv \
+  --schema data/schema/cfd_instruments.schema.json
+```
+
+The validator prints actionable errors with row numbers and exits non-zero on failure.
+
 ## Procedure
 
 1. Run the updater from the repository root:
 
    ```bash
-   python3 .agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py --output data/cfd_instruments.csv
+   python3 .agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py \
+     --output data/cfd_instruments.csv
    ```
 
-2. If the script reports missing ticker mappings, update the symbol maps in `.agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py` and rerun it. Do not leave blank ticker symbols.
+2. If the script reports missing ticker mappings, add the missing entries to
+   `data/mappings/cfd_ticker_mappings.csv` and rerun. Do not leave blank ticker symbols.
 
-3. Confirm the generated CSV has rows and no blank required fields:
+3. Run the validator to confirm the output is well-formed:
 
    ```bash
-   python3 - <<'PY'
-   import csv
-   from collections import Counter
-
-   with open('data/cfd_instruments.csv', encoding='utf-8', newline='') as fh:
-       rows = list(csv.DictReader(fh))
-
-   assert rows
-   assert all(r['broker'] and r['category'] and r['instrument_name'] and r['ticker_symbol'] for r in rows)
-   print('rows', len(rows))
-   print(Counter((r['broker'], r['category']) for r in rows))
-   PY
+   python3 .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py
    ```
 
 ## Notes
@@ -53,5 +92,6 @@ The CSV contains one row per broker CFD listing and includes:
 - The updater fetches the official public lineup pages:
   - `https://www.click-sec.com/corp/guide/cfd/lineup/`
   - `https://www.rakuten-sec.co.jp/web/rcfd/lineup/`
-- The updater uses only Python's standard library.
+- Both the updater and the validator use only Python's standard library.
 - Ticker symbols are exchange/product root symbols. If a CFD source references multiple venues for one instrument, symbols are semicolon-separated.
+- The scheduled refresh workflow (`.github/workflows/update-cfd-instruments.yml`) runs every Monday, opens a PR only when instrument data changes, and applies the labels `agent:chatgpt`, `model:gpt-5.5`, and `priority:p1` when they exist in the repository.

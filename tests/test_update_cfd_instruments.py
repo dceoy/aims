@@ -34,6 +34,18 @@ def updater() -> ModuleType:
     return module
 
 
+@pytest.fixture
+def mappings(updater: ModuleType) -> object:
+    return updater.Mappings(
+        broker_symbols={
+            ("楽天証券", "米国500"): "ES",
+            ("GMOクリック証券", "日本225"): "NK; NKD; NIY",
+        },
+        instrument_symbols={"金スポット": "XAU"},
+        click_stock_base_symbols={"Apple": "AAPL"},
+    )
+
+
 def table(updater: ModuleType, rows: list[list[str]]) -> tuple[str, list[list[object]]]:
     return "table", [[updater.Cell(text=value) for value in row] for row in rows]
 
@@ -313,13 +325,18 @@ def test_get_cell_returns_empty_for_missing_values(updater: ModuleType) -> None:
     ],
 )
 def test_infer_ticker_symbol(
-    updater: ModuleType, row: dict[str, str], expected: str
+    updater: ModuleType,
+    mappings: object,
+    row: dict[str, str],
+    expected: str,
 ) -> None:
-    assert updater.infer_ticker_symbol(row) == expected
+    assert updater.infer_ticker_symbol(row, mappings) == expected
 
 
 def test_add_ticker_symbols_updates_rows_and_reports_missing(
-    updater: ModuleType, capsys: pytest.CaptureFixture[str]
+    updater: ModuleType,
+    mappings: object,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     rows = [
         {
@@ -339,7 +356,7 @@ def test_add_ticker_symbols_updates_rows_and_reports_missing(
     ]
 
     with pytest.raises(SystemExit) as exc_info:
-        updater.add_ticker_symbols(rows)
+        updater.add_ticker_symbols(rows, mappings)
 
     assert exc_info.value.code == 1
     assert rows[0]["ticker_symbol"] == "ES"
@@ -347,7 +364,9 @@ def test_add_ticker_symbols_updates_rows_and_reports_missing(
     assert "Missing ticker_symbol mappings:" in capsys.readouterr().out
 
 
-def test_add_ticker_symbols_succeeds_without_missing(updater: ModuleType) -> None:
+def test_add_ticker_symbols_succeeds_without_missing(
+    updater: ModuleType, mappings: object
+) -> None:
     rows = [
         {
             **updater.empty_row(),
@@ -358,14 +377,170 @@ def test_add_ticker_symbols_succeeds_without_missing(updater: ModuleType) -> Non
         }
     ]
 
-    updater.add_ticker_symbols(rows)
+    updater.add_ticker_symbols(rows, mappings)
 
     assert rows[0]["ticker_symbol"] == "ES"
+
+
+def test_load_mappings_loads_all_types(updater: ModuleType, tmp_path: Path) -> None:
+    csv_path = tmp_path / "mappings.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "broker_instrument,楽天証券,,米国500,,ES\n"
+        "instrument,,,金スポット,,XAU\n"
+        "gmo_stock_base,GMOクリック証券,株式CFD,,Apple,AAPL\n",
+        encoding="utf-8",
+    )
+
+    result = updater.load_mappings(csv_path)
+
+    assert result.broker_symbols == {("楽天証券", "米国500"): "ES"}
+    assert result.instrument_symbols == {"金スポット": "XAU"}
+    assert result.click_stock_base_symbols == {"Apple": "AAPL"}
+
+
+def test_load_mappings_fails_on_missing_file(
+    updater: ModuleType, tmp_path: Path
+) -> None:
+    with pytest.raises(SystemExit):
+        updater.load_mappings(tmp_path / "nonexistent.csv")
+
+
+def test_load_mappings_fails_on_missing_columns(
+    updater: ModuleType, tmp_path: Path
+) -> None:
+    csv_path = tmp_path / "bad.csv"
+    csv_path.write_text(
+        "mapping_type,broker\nbroker_instrument,楽天証券\n", encoding="utf-8"
+    )
+
+    with pytest.raises(SystemExit):
+        updater.load_mappings(csv_path)
+
+
+def test_load_mappings_fails_on_duplicate_broker_instrument(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "dup.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "broker_instrument,楽天証券,,米国500,,ES\n"
+        "broker_instrument,楽天証券,,米国500,,EMD\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "duplicate broker_instrument" in capsys.readouterr().out
+
+
+def test_load_mappings_fails_on_duplicate_instrument(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "dup.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "instrument,,,金スポット,,XAU\n"
+        "instrument,,,金スポット,,GC\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "duplicate instrument" in capsys.readouterr().out
+
+
+def test_load_mappings_fails_on_duplicate_gmo_stock_base(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "dup.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "gmo_stock_base,GMOクリック証券,株式CFD,,Apple,AAPL\n"
+        "gmo_stock_base,GMOクリック証券,株式CFD,,Apple,APPL\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "duplicate gmo_stock_base" in capsys.readouterr().out
+
+
+def test_load_mappings_fails_on_unknown_type(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "bad.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "unknown_type,楽天証券,,米国500,,ES\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "unknown mapping_type" in capsys.readouterr().out
+
+
+def test_load_mappings_fails_on_blank_required_field(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "blank.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "broker_instrument,,,米国500,,ES\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "blank required field" in capsys.readouterr().out
+
+
+def test_load_mappings_fails_on_invalid_ticker_symbol(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "bad_ticker.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "instrument,,,金スポット,,lowercase\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "invalid ticker_symbol" in capsys.readouterr().out
 
 
 def test_build_rows_fetches_parses_and_requires_rows(
     updater: ModuleType, mocker: MockerFixture
 ) -> None:
+    mock_mappings = updater.Mappings(
+        broker_symbols={}, instrument_symbols={}, click_stock_base_symbols={}
+    )
     mocker.patch.object(
         updater,
         "fetch_events",
@@ -389,16 +564,16 @@ def test_build_rows_fetches_parses_and_requires_rows(
     )
     add_symbols = mocker.patch.object(updater, "add_ticker_symbols")
 
-    rows = updater.build_rows("now")
+    rows = updater.build_rows("now", mock_mappings)
 
     assert rows == [
         {"broker": "GMOクリック証券", "instrument_name": "日本225"},
         {"broker": "楽天証券", "instrument_name": "米国500"},
     ]
-    add_symbols.assert_called_once_with(rows)
+    add_symbols.assert_called_once_with(rows, mock_mappings)
 
     with pytest.raises(SystemExit, match="No CFD rows extracted"):
-        updater.build_rows("now")
+        updater.build_rows("now", mock_mappings)
 
 
 def test_fetch_events_uses_request_and_parses_response(
@@ -451,6 +626,7 @@ def test_parse_args_uses_defaults_and_custom_output(
     default_args = updater.parse_args()
 
     assert default_args.output == updater.DEFAULT_OUTPUT
+    assert default_args.mappings == updater.DEFAULT_MAPPINGS_PATH
     assert default_args.accessed_at
 
     mocker.patch.object(
@@ -460,6 +636,8 @@ def test_parse_args_uses_defaults_and_custom_output(
             "update_cfd_instruments.py",
             "--output",
             "custom.csv",
+            "--mappings",
+            "custom_mappings.csv",
             "--accessed-at",
             "now",
         ],
@@ -467,15 +645,20 @@ def test_parse_args_uses_defaults_and_custom_output(
     custom_args = updater.parse_args()
 
     assert custom_args.output == Path("custom.csv")
+    assert custom_args.mappings == Path("custom_mappings.csv")
     assert custom_args.accessed_at == "now"
 
 
 def test_main_builds_writes_and_prints(
     updater: ModuleType, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    args = mocker.Mock(accessed_at="now", output=Path("out.csv"))
+    mock_mappings = mocker.Mock()
+    args = mocker.Mock(
+        accessed_at="now", output=Path("out.csv"), mappings=Path("mappings.csv")
+    )
     rows = [{"instrument_name": "米国500"}, {"instrument_name": "日本225"}]
     mocker.patch.object(updater, "parse_args", return_value=args)
+    mocker.patch.object(updater, "load_mappings", return_value=mock_mappings)
     mocker.patch.object(updater, "build_rows", return_value=rows)
     write_csv = mocker.patch.object(updater, "write_csv")
 

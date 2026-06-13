@@ -16,6 +16,7 @@ from typing import Any
 CLICK_URL = "https://www.click-sec.com/corp/guide/cfd/lineup/"
 RAKUTEN_URL = "https://www.rakuten-sec.co.jp/web/rcfd/lineup/"
 DEFAULT_OUTPUT = Path("data/cfd_instruments.csv")
+DEFAULT_MAPPINGS_PATH = Path("data/mappings/cfd_ticker_mappings.csv")
 
 FIELDS = [
     "source_accessed_at",
@@ -46,196 +47,15 @@ FIELDS = [
     "withholding_tax_note",
 ]
 
-BROKER_SYMBOLS = {
-    ("GMOクリック証券", "日本225"): "NK; NKD; NIY",
-    ("GMOクリック証券", "日本TPX"): "TPX",
-    ("GMOクリック証券", "米国30"): "YM",
-    ("GMOクリック証券", "米国S500"): "ES",
-    ("GMOクリック証券", "米国NQ100"): "NQ",
-    ("GMOクリック証券", "米国NQ100ミニ"): "MNQ",
-    ("GMOクリック証券", "米国RS2000"): "RTY",
-    ("GMOクリック証券", "上海A50"): "CN",
-    ("GMOクリック証券", "香港H"): "HSI",
-    ("GMOクリック証券", "イギリス100"): "Z",
-    ("GMOクリック証券", "ユーロ50"): "FESX",
-    ("GMOクリック証券", "ドイツ40"): "FDAX",
-    ("GMOクリック証券", "フランス40"): "FCE",
-    ("楽天証券", "日本225"): "NKD; NIY",
-    ("楽天証券", "日本TPX"): "TPX",
-    ("楽天証券", "米国30"): "YM",
-    ("楽天証券", "米国500"): "ES",
-    ("楽天証券", "米国400"): "EMD",
-    ("楽天証券", "米国NQ100"): "NQ",
-    ("楽天証券", "米国2000"): "RTY",
-    ("楽天証券", "米国TEC"): "FANG",
-    ("楽天証券", "英国100"): "Z",
-    ("楽天証券", "ドイツ40"): "FDAX",
-    ("楽天証券", "ユーロ50"): "FESX",
-    ("楽天証券", "中国A50"): "CN",
-    ("楽天証券", "中国H株"): "HHI",
-    ("楽天証券", "香港HS50"): "HSI",
-    ("楽天証券", "インド50"): "NIFTY",
-    ("楽天証券", "オーストラリア200"): "AP",
-    ("楽天証券", "フランス40"): "FCE",
-    ("楽天証券", "イタリア40"): "FIB",
-    ("楽天証券", "スペイン35"): "IBEX",
-    ("楽天証券", "スイス20"): "FSMI",
-    ("楽天証券", "オランダ25"): "EOE",
-    ("楽天証券", "シンガポール"): "SMSI",
-    ("楽天証券", "台湾50"): "TW",
-}
-
-INSTRUMENT_SYMBOLS = {
-    "米国半導体ETF": "SOXX",
-    "インドネシア株価指数ETF": "EIDO",
-    "タイ株価指数ETF": "THD",
-    "ベトナム株価指数ETF": "VNM",
-    "マレーシア株価指数ETF": "EWM",
-    "フィリピン株価指数ETF": "EPHE",
-    "シンガポール株価指数ETF": "EWS",
-    "韓国株価指数ETF": "EWY",
-    "台湾株価指数ETF": "EWT",
-    "トルコ株価指数ETF": "TUR",
-    "ロシア株価指数ETF ※": "RSX",
-    "イタリア株価指数ETF": "EWI",
-    "スイス株価指数ETF": "EWL",
-    "オランダ株価指数ETF": "EWN",
-    "ベルギー株価指数ETF": "EWK",
-    "スウェーデン株価指数ETF": "EWD",
-    "南アフリカ株価指数ETF": "EZA",
-    "ブラジル株価指数ETF": "EWZ",
-    "チリ株価指数ETF": "ECH",
-    "メキシコ株価指数ETF": "EWW",
-    "カナダ株価指数ETF": "EWC",
-    "オーストラリア株価指数ETF": "EWA",
-    "金スポット": "XAU",
-    "銀スポット": "XAG",
-    "プラチナスポット": "XPT",
-    "銅先物": "HG",
-    "鉄鉱石": "FEF",
-    "WTI原油": "CL",
-    "北海原油": "BRN",
-    "天然ガス": "NG",
-    "ガソリン": "RB",
-    "ヒーティングオイル": "HO",
-    "コーン": "ZC",
-    "大豆": "ZS",
-    "小麦": "ZW",
-    "砂糖": "SB",
-    "粗糖": "SB",
-    "ココア": "CC",
-    "コーヒー": "KC",
-    "コットン": "CT",
-    "牛肉": "LE",
-    "生牛": "LE",
-    "豚肉": "HE",
-    "金": "GC",
-    "銀": "SI",
-    "銅": "HG",
-    "プラチナ": "PL",
-    "パラジウム": "PA",
-    "米国VI": "VX",
-    "米国30ブル3倍ETF": "UDOW",
-    "米国30ベア3倍ETF": "SDOW",
-    "NQ100ブル3倍ETF": "TQQQ",
-    "NQ100ベア3倍ETF": "SQQQ",
-    "米国小型株ベア3倍ETF": "TZA",
-    "米国半導体ブル3倍ETF": "SOXL",
-    "米国半導体ベア3倍ETF": "SOXS",
-    "米国エネルギーブル2倍ETF": "ERX",
-    "米国エネルギーベア2倍ETF": "ERY",
-    "新興国ブル3倍ETF": "EDC",
-    "新興国ベア3倍ETF": "EDZ",
-    "中国ブル3倍ETF": "YINN",
-    "中国ベア3倍ETF": "YANG",
-    "金ブル2倍ETF": "NUGT",
-    "金ベア2倍ETF": "DUST",
-    "米国債20年ブル3倍ETF": "TMF",
-    "米国債20年ベア3倍ETF": "TMV",
-    "グローバル不動産ETF": "RWO",
-    "グローバル（米国除く）不動産ETF": "RWX",
-    "米国リートETF": "VNQ",
-    "米国リート・不動産株ETF": "IYR",
-    "モーゲージ不動産ETF": "REM",
-}
-
-CLICK_STOCK_BASE_SYMBOLS = {
-    "Amazon": "AMZN",
-    "NIKE": "NKE",
-    "GAP": "GPS",
-    "ウォルマート": "WMT",
-    "P&G": "PG",
-    "ペプシ": "PEP",
-    "コストコ・ホールセール": "COST",
-    "イーベイ": "EBAY",
-    "ホーム・デポ": "HD",
-    "GE エアロスペース（旧ゼネラル・エレクトリック）": "GE",
-    "3M": "MMM",
-    "キャタピラー": "CAT",
-    "Apple": "AAPL",
-    "IBM": "IBM",
-    "インテル": "INTC",
-    "HP": "HPQ",
-    "シスコシステムズ": "CSCO",
-    "NVIDIA": "NVDA",
-    "AMD": "AMD",
-    "クアルコム": "QCOM",
-    "アプライド・マテリアルズ": "AMAT",
-    "テキサス・インスツルメンツ": "TXN",
-    "ラムリサーチ": "LRCX",
-    "テラダイン": "TER",
-    "スカイワークスソリューションズ": "SWKS",
-    "バンク・オブ・アメリカ": "BAC",
-    "シティグループ": "C",
-    "バークシャー・ハサウェイ": "BRK B",
-    "アメリカン・エキスプレス": "AXP",
-    "ゴールドマン・サックス・グループ": "GS",
-    "モルガン・スタンレー": "MS",
-    "Visa": "V",
-    "アフラック": "AFL",
-    "JPモルガン・チェース": "JPM",
-    "ユナイテッドヘルス・グループ": "UNH",
-    "コインベース": "COIN",
-    "Travelers": "TRV",
-    "マクドナルド": "MCD",
-    "スターバックス": "SBUX",
-    "コカ・コーラ": "KO",
-    "アリババ": "BABA",
-    "ウォルト・ディズニー": "DIS",
-    "ジョンソン・エンド・ジョンソン": "JNJ",
-    "Alphabet（旧Google）": "GOOGL",
-    "マイクロソフト": "MSFT",
-    "オラクル": "ORCL",
-    "Meta Platforms(旧Facebook)": "META",
-    "アドビ・システムズ": "ADBE",
-    "ネットフリックス": "NFLX",
-    "アカマイ・テクノロジーズ": "AKAM",
-    "Tモバイル": "TMUS",
-    "AT&T": "T",
-    "ベライゾン・コミュニケーションズ": "VZ",
-    "Groupon": "GRPN",
-    "ブロック(旧スクエア)": "SQ",
-    "ペイパル": "PYPL",
-    "ストラテジー（旧マイクロストラテジー）": "MSTR",
-    "ストラテジー（旧ﾏｲｸﾛｽﾄﾗﾃｼﾞｰ）": "MSTR",
-    "セールスフォース": "CRM",
-    "エクソン・モービル": "XOM",
-    "ハリバートン": "HAL",
-    "シェブロン": "CVX",
-    "ファイザー": "PFE",
-    "メルク": "MRK",
-    "デュポン": "DD",
-    "アムジェン": "AMGN",
-    "ダウケミカル": "DOW",
-    "デルタ航空": "DAL",
-    "フォード・モーター": "F",
-    "GM": "GM",
-    "テスラ": "TSLA",
-    "ボーイング": "BA",
-    "RTX(旧レイセオン・テクノロジーズ)": "RTX",
-    "ハウメット・エアロスペース": "HWM",
-    "ハネウェル・インターナショナル": "HON",
-}
+MAPPING_COLUMNS = (
+    "mapping_type",
+    "broker",
+    "category",
+    "instrument_name",
+    "base_name",
+    "ticker_symbol",
+)
+VALID_MAPPING_TYPES = frozenset({"broker_instrument", "instrument", "gmo_stock_base"})
 
 UPPERCASE_UNDERLYING = re.compile(r"^\s*([A-Z][A-Z0-9. ]{0,12})\s*/")
 CLICK_STOCK_EXCHANGE_SUFFIX = re.compile(r"\s*（(?:NASDAQ|NYSE)）\s*$")
@@ -253,6 +73,13 @@ class Cell:
     text: str
     rowspan: int = 1
     colspan: int = 1
+
+
+@dataclass
+class Mappings:
+    broker_symbols: dict[tuple[str, str], str]
+    instrument_symbols: dict[str, str]
+    click_stock_base_symbols: dict[str, str]
 
 
 @dataclass
@@ -346,6 +173,62 @@ def clean(value: str | None) -> str:
 
 def empty_row() -> dict[str, str]:
     return dict.fromkeys(FIELDS, "")
+
+
+def load_mappings(path: Path) -> Mappings:
+    if not path.exists():
+        message = f"Mappings file not found: {path}"
+        raise SystemExit(message)
+
+    broker_symbols: dict[tuple[str, str], str] = {}
+    instrument_symbols: dict[str, str] = {}
+    click_stock_base_symbols: dict[str, str] = {}
+    errors: list[str] = []
+
+    with path.open(encoding="utf-8", newline="") as fh:
+        reader = csv.DictReader(fh)
+        actual_cols = list(reader.fieldnames or [])
+        missing = [c for c in MAPPING_COLUMNS if c not in actual_cols]
+        if missing:
+            message = f"Mappings file {path} is missing columns: {missing}"
+            raise SystemExit(message)
+
+        for row_num, row in enumerate(reader, start=2):
+            mtype = row["mapping_type"]
+            ticker = row["ticker_symbol"]
+
+            if mtype == "broker_instrument":
+                key: tuple[str, str] = (row["broker"], row["instrument_name"])
+                if key in broker_symbols:
+                    errors.append(f"row {row_num}: duplicate broker_instrument {key}")
+                else:
+                    broker_symbols[key] = ticker
+            elif mtype == "instrument":
+                iname = row["instrument_name"]
+                if iname in instrument_symbols:
+                    errors.append(f"row {row_num}: duplicate instrument {iname!r}")
+                else:
+                    instrument_symbols[iname] = ticker
+            elif mtype == "gmo_stock_base":
+                base = row["base_name"]
+                if base in click_stock_base_symbols:
+                    errors.append(f"row {row_num}: duplicate gmo_stock_base {base!r}")
+                else:
+                    click_stock_base_symbols[base] = ticker
+            else:
+                errors.append(f"row {row_num}: unknown mapping_type {mtype!r}")
+
+    if errors:
+        print("Mapping errors:")
+        for msg in errors:
+            print(f"  {msg}")
+        raise SystemExit(1)
+
+    return Mappings(
+        broker_symbols=broker_symbols,
+        instrument_symbols=instrument_symbols,
+        click_stock_base_symbols=click_stock_base_symbols,
+    )
 
 
 def fetch_events(url: str) -> list[tuple[str, Any]]:
@@ -543,10 +426,26 @@ def get_cell(row: list[str], index: int) -> str:
     return row[index] if index < len(row) else ""
 
 
-def add_ticker_symbols(rows: list[dict[str, str]]) -> None:
+def infer_ticker_symbol(row: dict[str, str], mappings: Mappings) -> str:
+    match = UPPERCASE_UNDERLYING.match(row.get("underlying_asset_exchange", ""))
+    if match:
+        return match.group(1).strip()
+    broker_symbol = mappings.broker_symbols.get((row["broker"], row["instrument_name"]))
+    if broker_symbol:
+        return broker_symbol
+    instrument_symbol = mappings.instrument_symbols.get(row["instrument_name"])
+    if instrument_symbol:
+        return instrument_symbol
+    if row["broker"] == "GMOクリック証券" and row["category"] == "株式CFD":
+        base_name = CLICK_STOCK_EXCHANGE_SUFFIX.sub("", row["instrument_name"])
+        return mappings.click_stock_base_symbols.get(base_name, "")
+    return ""
+
+
+def add_ticker_symbols(rows: list[dict[str, str]], mappings: Mappings) -> None:
     missing: list[tuple[int, str, str, str, str]] = []
     for row_number, row in enumerate(rows, start=2):
-        symbol = infer_ticker_symbol(row)
+        symbol = infer_ticker_symbol(row, mappings)
         if not symbol:
             missing.append((
                 row_number,
@@ -563,29 +462,13 @@ def add_ticker_symbols(rows: list[dict[str, str]]) -> None:
         raise SystemExit(1)
 
 
-def infer_ticker_symbol(row: dict[str, str]) -> str:
-    match = UPPERCASE_UNDERLYING.match(row.get("underlying_asset_exchange", ""))
-    if match:
-        return match.group(1).strip()
-    broker_symbol = BROKER_SYMBOLS.get((row["broker"], row["instrument_name"]))
-    if broker_symbol:
-        return broker_symbol
-    instrument_symbol = INSTRUMENT_SYMBOLS.get(row["instrument_name"])
-    if instrument_symbol:
-        return instrument_symbol
-    if row["broker"] == "GMOクリック証券" and row["category"] == "株式CFD":
-        base_name = CLICK_STOCK_EXCHANGE_SUFFIX.sub("", row["instrument_name"])
-        return CLICK_STOCK_BASE_SYMBOLS.get(base_name, "")
-    return ""
-
-
-def build_rows(accessed_at: str) -> list[dict[str, str]]:
+def build_rows(accessed_at: str, mappings: Mappings) -> list[dict[str, str]]:
     rows = parse_click(fetch_events(CLICK_URL), accessed_at)
     rows.extend(parse_rakuten(fetch_events(RAKUTEN_URL), accessed_at))
     if not rows:
         message = "No CFD rows extracted"
         raise SystemExit(message)
-    add_ticker_symbols(rows)
+    add_ticker_symbols(rows, mappings)
     return rows
 
 
@@ -603,6 +486,12 @@ def parse_args() -> argparse.Namespace:
         "--output", type=Path, default=DEFAULT_OUTPUT, help="CSV output path"
     )
     parser.add_argument(
+        "--mappings",
+        type=Path,
+        default=DEFAULT_MAPPINGS_PATH,
+        help="Ticker mappings CSV path",
+    )
+    parser.add_argument(
         "--accessed-at",
         default=datetime.now().astimezone().isoformat(timespec="seconds"),
         help="Timestamp to write to source_accessed_at",
@@ -612,7 +501,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    rows = build_rows(args.accessed_at)
+    mappings = load_mappings(args.mappings)
+    rows = build_rows(args.accessed_at, mappings)
     write_csv(rows, args.output)
     print(f"wrote {args.output} ({len(rows)} rows)")
 

@@ -124,8 +124,10 @@ jobs:
             fi
           done
 
-          if gh pr list --head "$BRANCH" --json number --jq '.[].number' | grep -q .; then
-            echo "PR already exists for $BRANCH, branch updated."
+          PR_NUMBER="$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr edit "$PR_NUMBER" --body "$PR_SUMMARY"
+            echo "PR #$PR_NUMBER already exists for $BRANCH; branch and body updated."
           else
             gh pr create \
               --title "chore(data): refresh CFD instruments $(date -u +%Y-%m-%d)" \

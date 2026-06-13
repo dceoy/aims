@@ -58,7 +58,9 @@ def validate_csv(csv_path: Path, schema_path: Path) -> list[str]:
             return errors
 
         seen_keys: set[tuple[str, ...]] = set()
+        row_count = 0
         for row_num, row in enumerate(reader, start=2):
+            row_count += 1
             errors.extend(
                 f"Row {row_num}: blank required field {fn!r}"
                 for fn in cfg.required_non_empty
@@ -88,6 +90,8 @@ def validate_csv(csv_path: Path, schema_path: Path) -> list[str]:
             else:
                 seen_keys.add(key)
 
+    if not row_count:
+        errors.append("No data rows found")
     return errors
 
 

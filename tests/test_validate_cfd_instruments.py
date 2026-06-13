@@ -135,6 +135,12 @@ def test_validate_csv_invalid_ticker_symbol(
     assert any("ticker_symbol" in e for e in errors)
 
 
+def test_validate_csv_no_data_rows(validator: ModuleType, tmp_path: Path) -> None:
+    csv_path = write_csv(tmp_path, [])
+    errors = validator.validate_csv(csv_path, SCHEMA_PATH)
+    assert any("No data rows" in e for e in errors)
+
+
 def test_validate_csv_duplicate_row(validator: ModuleType, tmp_path: Path) -> None:
     csv_path = write_csv(tmp_path, [VALID_ROW, VALID_ROW])
     errors = validator.validate_csv(csv_path, SCHEMA_PATH)

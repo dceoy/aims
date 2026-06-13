@@ -14,6 +14,13 @@ else
   echo "No Python tests found; skipping pytest."
 fi
 
+# Validate CFD instruments CSV
+if [ -f data/cfd_instruments.csv ]; then
+  uv run python .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
+    --input data/cfd_instruments.csv \
+    --schema data/schema/cfd_instruments.schema.json
+fi
+
 # Markdown
 npx -y prettier --write './**/*.md'
 

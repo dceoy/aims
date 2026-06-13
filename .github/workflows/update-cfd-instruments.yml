@@ -1,0 +1,131 @@
+---
+name: Update CFD instruments
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
+      - uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
+        with:
+          python-version: "3.x"
+      - name: Sync dependencies
+        run: uv sync
+      - name: Run CFD instrument updater
+        run: |
+          uv run python \
+            .agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py \
+            --output data/cfd_instruments.csv \
+            --mappings data/mappings/cfd_ticker_mappings.csv
+      - name: Validate CSV
+        run: |
+          uv run python \
+            .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
+            --input data/cfd_instruments.csv \
+            --schema data/schema/cfd_instruments.schema.json
+      - name: Compute instrument diff
+        id: diff
+        run: |
+          python3 << 'PYEOF'
+          import csv, io, os, subprocess
+
+          def load_rows(text):
+              result = {}
+              for r in csv.DictReader(io.StringIO(text)):
+                  key = (r.get("broker", ""), r.get("instrument_name", ""), r.get("source_url", ""))
+                  result[key] = {k: v for k, v in r.items() if k != "source_accessed_at"}
+              return result
+
+          try:
+              old_text = subprocess.check_output(
+                  ["git", "show", "HEAD:data/cfd_instruments.csv"],
+                  text=True, stderr=subprocess.DEVNULL,
+              )
+              old = load_rows(old_text)
+          except subprocess.CalledProcessError:
+              old = {}
+
+          with open("data/cfd_instruments.csv", encoding="utf-8") as f:
+              new = load_rows(f.read())
+
+          old_keys = set(old)
+          new_keys = set(new)
+          added = sorted(new_keys - old_keys)
+          removed = sorted(old_keys - new_keys)
+          changed = sorted(k for k in old_keys & new_keys if old[k] != new[k])
+
+          gho = os.environ["GITHUB_OUTPUT"]
+          if not added and not removed and not changed:
+              with open(gho, "a") as f:
+                  f.write("changed=false\n")
+              print("No instrument changes detected.")
+          else:
+              lines = ["### CFD Instrument Changes\n"]
+              if added:
+                  lines.append(f"**Added ({len(added)}):**")
+                  for broker, name, _ in added[:20]:
+                      lines.append(f"- {broker}: {name}")
+                  if len(added) > 20:
+                      lines.append(f"- ...and {len(added) - 20} more")
+                  lines.append("")
+              if removed:
+                  lines.append(f"**Removed ({len(removed)}):**")
+                  for broker, name, _ in removed[:20]:
+                      lines.append(f"- {broker}: {name}")
+                  if len(removed) > 20:
+                      lines.append(f"- ...and {len(removed) - 20} more")
+                  lines.append("")
+              if changed:
+                  lines.append(f"**Changed ({len(changed)}):**")
+                  for broker, name, _ in changed[:20]:
+                      lines.append(f"- {broker}: {name}")
+                  if len(changed) > 20:
+                      lines.append(f"- ...and {len(changed) - 20} more")
+                  lines.append("")
+              body = "\n".join(lines)
+              with open(gho, "a") as f:
+                  f.write("changed=true\n")
+                  f.write("summary<<GHEOF\n")
+                  f.write(body)
+                  f.write("\nGHEOF\n")
+              print(f"Instrument changes: +{len(added)} -{len(removed)} ~{len(changed)}")
+          PYEOF
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_SUMMARY: ${{ steps.diff.outputs.summary }}
+        run: |
+          BRANCH="chore/refresh-cfd-instruments-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/cfd_instruments.csv
+          git commit -m "chore(data): refresh CFD instruments $(date -u +%Y-%m-%d)"
+          git push -u origin "$BRANCH"
+
+          LABEL_ARGS=()
+          for label in "agent:chatgpt" "model:gpt-5.5" "priority:p1"; do
+            if gh label list --json name --jq '.[].name' | grep -qxF "$label"; then
+              LABEL_ARGS+=(--label "$label")
+            fi
+          done
+
+          if gh pr list --head "$BRANCH" --json number --jq '.[].number' | grep -q .; then
+            echo "PR already exists for $BRANCH, branch updated."
+          else
+            gh pr create \
+              --title "chore(data): refresh CFD instruments $(date -u +%Y-%m-%d)" \
+              --body "$PR_SUMMARY" \
+              --base main \
+              --head "$BRANCH" \
+              "${LABEL_ARGS[@]}"
+          fi

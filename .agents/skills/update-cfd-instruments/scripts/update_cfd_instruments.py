@@ -55,7 +55,12 @@ MAPPING_COLUMNS = (
     "base_name",
     "ticker_symbol",
 )
-VALID_MAPPING_TYPES = frozenset({"broker_instrument", "instrument", "gmo_stock_base"})
+REQUIRED_MAPPING_FIELDS: dict[str, tuple[str, ...]] = {
+    "broker_instrument": ("broker", "instrument_name", "ticker_symbol"),
+    "instrument": ("instrument_name", "ticker_symbol"),
+    "gmo_stock_base": ("base_name", "ticker_symbol"),
+}
+TICKER_SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9 .;]{0,49}$")
 
 UPPERCASE_UNDERLYING = re.compile(r"^\s*([A-Z][A-Z0-9. ]{0,12})\s*/")
 CLICK_STOCK_EXCHANGE_SUFFIX = re.compile(r"\s*（(?:NASDAQ|NYSE)）\s*$")
@@ -197,6 +202,21 @@ def load_mappings(path: Path) -> Mappings:
             mtype = row["mapping_type"]
             ticker = row["ticker_symbol"]
 
+            if mtype not in REQUIRED_MAPPING_FIELDS:
+                errors.append(f"row {row_num}: unknown mapping_type {mtype!r}")
+                continue
+
+            row_errors: list[str] = [
+                f"row {row_num}: blank required field {f!r} for {mtype}"
+                for f in REQUIRED_MAPPING_FIELDS[mtype]
+                if not row.get(f, "").strip()
+            ]
+            if ticker and not TICKER_SYMBOL_PATTERN.fullmatch(ticker):
+                row_errors.append(f"row {row_num}: invalid ticker_symbol {ticker!r}")
+            if row_errors:
+                errors.extend(row_errors)
+                continue
+
             if mtype == "broker_instrument":
                 key: tuple[str, str] = (row["broker"], row["instrument_name"])
                 if key in broker_symbols:
@@ -209,14 +229,12 @@ def load_mappings(path: Path) -> Mappings:
                     errors.append(f"row {row_num}: duplicate instrument {iname!r}")
                 else:
                     instrument_symbols[iname] = ticker
-            elif mtype == "gmo_stock_base":
+            else:
                 base = row["base_name"]
                 if base in click_stock_base_symbols:
                     errors.append(f"row {row_num}: duplicate gmo_stock_base {base!r}")
                 else:
                     click_stock_base_symbols[base] = ticker
-            else:
-                errors.append(f"row {row_num}: unknown mapping_type {mtype!r}")
 
     if errors:
         print("Mapping errors:")

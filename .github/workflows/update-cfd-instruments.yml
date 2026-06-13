@@ -107,10 +107,15 @@ jobs:
           BRANCH="chore/refresh-cfd-instruments-$(date -u +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
+
+          # Fetch remote branch state so --force-with-lease works on reruns
+          git fetch origin "$BRANCH" 2>/dev/null || true
+
+          # Create or reset branch to current HEAD (idempotent on same-day reruns)
+          git checkout -B "$BRANCH"
           git add data/cfd_instruments.csv
           git commit -m "chore(data): refresh CFD instruments $(date -u +%Y-%m-%d)"
-          git push -u origin "$BRANCH"
+          git push --force-with-lease -u origin "$BRANCH"
 
           LABEL_ARGS=()
           for label in "agent:chatgpt" "model:gpt-5.5" "priority:p1"; do

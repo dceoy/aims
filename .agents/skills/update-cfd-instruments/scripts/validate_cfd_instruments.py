@@ -7,6 +7,7 @@ import argparse
 import csv
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -19,21 +20,37 @@ def load_schema(path: Path) -> dict[str, Any]:
         return json.load(fh)  # type: ignore[no-any-return]
 
 
-def validate_csv(csv_path: Path, schema_path: Path) -> list[str]:
-    schema = load_schema(schema_path)
-    errors: list[str] = []
+@dataclass
+class _SchemaConfig:
+    required_columns: list[str]
+    required_non_empty: set[str]
+    uniqueness_key: list[str]
+    allowed_brokers: list[str]
+    allowed_categories_by_broker: dict[str, list[str]]
+    ticker_pattern: re.Pattern[str]
 
-    required_columns: list[str] = schema["columns"]
-    required_non_empty: set[str] = set(schema["required_non_empty"])
-    uniqueness_key: list[str] = schema["uniqueness_key"]
-    allowed_brokers: list[str] = schema["properties"]["broker"]["enum"]
-    ticker_pattern = re.compile(schema["properties"]["ticker_symbol"]["pattern"])
+
+def _parse_schema(schema: dict[str, Any]) -> _SchemaConfig:
+    props = schema["properties"]
+    return _SchemaConfig(
+        required_columns=schema["columns"],
+        required_non_empty=set(schema["required_non_empty"]),
+        uniqueness_key=schema["uniqueness_key"],
+        allowed_brokers=props["broker"]["enum"],
+        allowed_categories_by_broker=props["category"]["allowed_categories_by_broker"],
+        ticker_pattern=re.compile(props["ticker_symbol"]["pattern"]),
+    )
+
+
+def validate_csv(csv_path: Path, schema_path: Path) -> list[str]:
+    cfg = _parse_schema(load_schema(schema_path))
+    errors: list[str] = []
 
     with csv_path.open(encoding="utf-8", newline="") as fh:
         reader = csv.DictReader(fh)
         actual_columns: list[str] = list(reader.fieldnames or [])
 
-        missing_columns = [c for c in required_columns if c not in actual_columns]
+        missing_columns = [c for c in cfg.required_columns if c not in actual_columns]
         if missing_columns:
             errors.extend(
                 f"Missing required column: {col!r}" for col in missing_columns
@@ -44,21 +61,29 @@ def validate_csv(csv_path: Path, schema_path: Path) -> list[str]:
         for row_num, row in enumerate(reader, start=2):
             errors.extend(
                 f"Row {row_num}: blank required field {fn!r}"
-                for fn in required_non_empty
+                for fn in cfg.required_non_empty
                 if not row.get(fn, "").strip()
             )
 
             broker = row.get("broker", "")
-            if broker not in allowed_brokers:
+            if broker not in cfg.allowed_brokers:
                 errors.append(f"Row {row_num}: unsupported broker {broker!r}")
+            else:
+                category = row.get("category", "")
+                allowed_cats = cfg.allowed_categories_by_broker.get(broker, [])
+                if category and category not in allowed_cats:
+                    errors.append(
+                        f"Row {row_num}: unsupported category {category!r}"
+                        f" for broker {broker!r}"
+                    )
 
             ticker = row.get("ticker_symbol", "")
-            if ticker and not ticker_pattern.fullmatch(ticker):
+            if ticker and not cfg.ticker_pattern.fullmatch(ticker):
                 errors.append(f"Row {row_num}: invalid ticker_symbol {ticker!r}")
 
-            key = tuple(row.get(k, "") for k in uniqueness_key)
+            key = tuple(row.get(k, "") for k in cfg.uniqueness_key)
             if key in seen_keys:
-                dup = dict(zip(uniqueness_key, key, strict=True))
+                dup = dict(zip(cfg.uniqueness_key, key, strict=True))
                 errors.append(f"Row {row_num}: duplicate {dup}")
             else:
                 seen_keys.add(key)

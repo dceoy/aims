@@ -497,6 +497,44 @@ def test_load_mappings_fails_on_unknown_type(
     assert "unknown mapping_type" in capsys.readouterr().out
 
 
+def test_load_mappings_fails_on_blank_required_field(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "blank.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "broker_instrument,,,米国500,,ES\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "blank required field" in capsys.readouterr().out
+
+
+def test_load_mappings_fails_on_invalid_ticker_symbol(
+    updater: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    csv_path = tmp_path / "bad_ticker.csv"
+    csv_path.write_text(
+        "mapping_type,broker,category,instrument_name,base_name,ticker_symbol\n"
+        "instrument,,,金スポット,,lowercase\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        updater.load_mappings(csv_path)
+
+    assert exc_info.value.code == 1
+    assert "invalid ticker_symbol" in capsys.readouterr().out
+
+
 def test_build_rows_fetches_parses_and_requires_rows(
     updater: ModuleType, mocker: MockerFixture
 ) -> None:

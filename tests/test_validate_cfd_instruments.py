@@ -32,7 +32,7 @@ VALID_ROW = {
     "source_accessed_at": "2026-01-01T00:00:00+09:00",
     "broker": "楽天証券",
     "source_url": "https://example.com/",
-    "category": "株価指数",
+    "category": "指数CFD",
     "section": "株価指数",
     "sector": "",
     "instrument_name": "米国500",
@@ -104,10 +104,19 @@ def test_validate_csv_missing_required_column(
 def test_validate_csv_blank_required_field(
     validator: ModuleType, tmp_path: Path
 ) -> None:
-    row = {**VALID_ROW, "instrument_name": ""}
+    row = {**VALID_ROW, "category": ""}
     csv_path = write_csv(tmp_path, [row])
     errors = validator.validate_csv(csv_path, SCHEMA_PATH)
-    assert any("instrument_name" in e for e in errors)
+    assert any("category" in e for e in errors)
+
+
+def test_validate_csv_unsupported_category(
+    validator: ModuleType, tmp_path: Path
+) -> None:
+    row = {**VALID_ROW, "category": "未知カテゴリ"}
+    csv_path = write_csv(tmp_path, [row])
+    errors = validator.validate_csv(csv_path, SCHEMA_PATH)
+    assert any("category" in e for e in errors)
 
 
 def test_validate_csv_unsupported_broker(validator: ModuleType, tmp_path: Path) -> None:

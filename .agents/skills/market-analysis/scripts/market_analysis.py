@@ -766,8 +766,13 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         "min_history": _MIN_HISTORY,
         "interval": args.interval,
     }
-    results = score_instruments(data)
     analysis_date: str | None = getattr(args, "analysis_date", None) or None
+    reference_time: datetime | None = None
+    if analysis_date:
+        reference_time = datetime.strptime(analysis_date, "%Y-%m-%d").replace(
+            tzinfo=UTC
+        )
+    results = score_instruments(data, reference_time=reference_time)
     artifact = generate_artifact(
         results,
         data,

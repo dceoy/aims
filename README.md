@@ -29,6 +29,6 @@ hugo server --buildDrafts
 
 ## Automated analysis pipeline
 
-Daily market analysis runs automatically via `.github/workflows/daily-market-analysis.yml`. It fetches market data, scores instruments, generates JSON artifacts and Hugo Markdown reports, builds the site, and commits the results.
+Daily market analysis runs automatically via `.github/workflows/daily-market-analysis.yml`. It fetches market data, scores instruments, generates JSON artifacts and Hugo Markdown reports, builds the site, and creates a pull request with the results for review and merging.
 
 See [OPERATIONS.md](OPERATIONS.md) for data sources, scoring methodology, required secrets, and operational runbooks.

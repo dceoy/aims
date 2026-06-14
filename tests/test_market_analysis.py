@@ -1303,3 +1303,60 @@ def test_main_routes_generate(ma: ModuleType, mocker: MockerFixture) -> None:
     )
     ma.main()
     assert called == ["generate"]
+
+
+def test_cmd_generate_analysis_date_as_reference_time(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    """Bars fresh relative to analysis_date must be reliable.
+
+    analysis_date controls reference_time: bars that would be stale
+    relative to today but fresh relative to analysis_date must be reliable.
+    """
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    # 70 bars ending exactly on analysis_date
+    analysis_dt = datetime(2024, 1, 5, tzinfo=UTC)
+    base_dt = analysis_dt - timedelta(days=68)
+    bars = _make_bars(ma, "REF", [float(100 + i) for i in range(70)], start=base_dt)
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "REF"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-01-05"
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-01-05.json").read_text())
+    inst = next(i for i in artifact["instruments"] if i["symbol"] == "REF")
+    # With reference_time = analysis_date, bars are fresh → reliable
+    assert inst["is_reliable"] is True
+    assert ma.RISK_GATE_STALE not in inst["risk_gates"]
+
+
+def test_cmd_generate_no_analysis_date_may_mark_stale(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    """Without analysis_date, old bars are marked stale by today's date."""
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    # very old bars from 2020
+    old_base = datetime(2020, 1, 1, tzinfo=UTC)
+    bars = _make_bars(ma, "STALE", [float(100 + i) for i in range(70)], start=old_base)
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "STALE"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    files = list((tmp_path / "analysis").glob("*.json"))
+    artifact = json.loads(files[0].read_text())
+    inst = next(i for i in artifact["instruments"] if i["symbol"] == "STALE")
+    # Without reference_time fix, old bars stale relative to today
+    assert ma.RISK_GATE_STALE in inst["risk_gates"]

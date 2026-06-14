@@ -319,6 +319,19 @@ def test_market_regime_boundary_neutral_high(gr: ModuleType) -> None:
     assert gr._market_regime([65.0]) == "Bullish"
 
 
+# Even-length median
+def test_market_regime_even_neutral(gr: ModuleType) -> None:
+    assert gr._market_regime([30.0, 70.0]) == "Neutral"  # (30+70)/2=50
+
+
+def test_market_regime_even_bullish(gr: ModuleType) -> None:
+    assert gr._market_regime([64.0, 68.0]) == "Bullish"  # (64+68)/2=66
+
+
+def test_market_regime_even_bearish(gr: ModuleType) -> None:
+    assert gr._market_regime([32.0, 48.0]) == "Bearish"  # (32+48)/2=40
+
+
 # ── _format_pct tests ───────────────────────────────────────────────────────────
 
 

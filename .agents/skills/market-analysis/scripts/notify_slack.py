@@ -32,7 +32,9 @@ _TIMEOUT: Final[int] = 15
 def _market_regime(scores: list[float]) -> str:
     if not scores:
         return "Unavailable"
-    median = sorted(scores)[len(scores) // 2]
+    s = sorted(scores)
+    n = len(s)
+    median = s[n // 2] if n % 2 == 1 else (s[n // 2 - 1] + s[n // 2]) / 2
     if median >= 65.0:
         return "Bullish"
     if median <= 40.0:
@@ -40,7 +42,12 @@ def _market_regime(scores: list[float]) -> str:
     return "Neutral"
 
 
-def build_success_payload(artifact: dict[str, Any], report_url: str) -> dict[str, Any]:
+def build_success_payload(
+    artifact: dict[str, Any],
+    report_url: str = "",
+    *,
+    pr_url: str | None = None,
+) -> dict[str, Any]:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
     date_str = generated_at[:10] if isinstance(generated_at, str) else "n/a"
@@ -79,7 +86,18 @@ def build_success_payload(artifact: dict[str, Any], report_url: str) -> dict[str
             "text": f"*⚠️ No data:* {', '.join(stale)}",
         })
 
-    text = f"AIMS Market Analysis {date_str}: {regime} market."
+    if pr_url is not None:
+        text = f"AIMS Market Analysis {date_str}: {regime} market. Analysis PR created."
+        button_text = "View PR"
+        button_url = pr_url
+    elif report_url:
+        text = f"AIMS Market Analysis {date_str}: {regime} market."
+        button_text = "View Report"
+        button_url = report_url
+    else:
+        text = f"AIMS Market Analysis {date_str}: {regime} market."
+        button_text = None
+        button_url = None
 
     blocks: list[dict[str, Any]] = [
         {
@@ -87,18 +105,19 @@ def build_success_payload(artifact: dict[str, Any], report_url: str) -> dict[str
             "text": {"type": "plain_text", "text": "📊 AIMS Market Analysis"},
         },
         {"type": "section", "fields": fields},
-        {
+    ]
+    if button_url is not None:
+        blocks.append({
             "type": "actions",
             "elements": [
                 {
                     "type": "button",
-                    "text": {"type": "plain_text", "text": "View Report"},
-                    "url": report_url,
+                    "text": {"type": "plain_text", "text": button_text},
+                    "url": button_url,
                     "style": "primary",
                 }
             ],
-        },
-    ]
+        })
 
     return {"text": text, "blocks": blocks}
 
@@ -175,6 +194,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="Daily market analysis failed",
         help="Failure message (used in failure mode)",
     )
+    parser.add_argument(
+        "--pr-url",
+        type=str,
+        default=None,
+        help="URL to the analysis pull request (used in success mode)",
+    )
     return parser.parse_args(argv)
 
 
@@ -202,7 +227,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR: invalid JSON in {args.artifact}: {exc}")
             return 1
         report_url = args.report_url or ""
-        payload = build_success_payload(artifact, report_url)
+        payload = build_success_payload(
+            artifact, report_url, pr_url=args.pr_url or None
+        )
 
     try:
         send_notification(webhook_url, payload)

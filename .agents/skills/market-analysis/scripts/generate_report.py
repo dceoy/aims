@@ -55,7 +55,9 @@ def _format_pct(value: float | None) -> str:
 def _market_regime(scores: list[float]) -> str:
     if not scores:
         return "Unavailable"
-    median = sorted(scores)[len(scores) // 2]
+    s = sorted(scores)
+    n = len(s)
+    median = s[n // 2] if n % 2 == 1 else (s[n // 2 - 1] + s[n // 2]) / 2
     if median >= 65.0:
         return "Bullish"
     if median <= 40.0:

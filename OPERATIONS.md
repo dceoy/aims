@@ -171,8 +171,8 @@ Pipeline order:
 6. Validate artifact
 7. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`)
 8. Build Hugo site (validation only — catches template or content errors before commit)
-9. Commit artifact and report to `main`
-10. The existing `ci.yml` picks up the push and deploys to GitHub Pages
+9. Create a pull-request branch `generated/analysis-YYYY-MM-DD` with the artifact and report
+10. A Slack notification is sent with a link to the analysis PR.
 
 ### Manual dispatch
 
@@ -182,7 +182,7 @@ The workflow supports `workflow_dispatch` with three optional inputs:
 | ----- | ------- | ----------- |
 | `analysis_date` | Today UTC | Override the analysis date (YYYY-MM-DD) |
 | `interval` | `d` | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly) |
-| `dry_run` | `false` | When `true`, skips the commit and Slack notification |
+| `dry_run` | `false` | When `true`, skips PR creation and Slack success notification |
 
 ### Deployment gate
 
@@ -209,7 +209,8 @@ The `daily-market-analysis.yml` workflow uses:
 
 | Permission | Scope | Reason |
 | ---------- | ----- | ------ |
-| `contents: write` | `analyze` job | Commit and push generated artifacts to `main` |
+| `contents: write` | `analyze` job | Create and push to analysis branch; open PR |
+| `pull-requests: write` | `analyze` job | Create analysis pull requests |
 | `contents: read` | Workflow-level default | Checkout |
 
 The `ci.yml` workflow adds:
@@ -225,10 +226,10 @@ The `ci.yml` workflow adds:
 ### Fetch failed for symbol
 
 ```
-WARNING: fetch failed for ^SPX, continuing
+ERROR: fetch failed for ^SPX
 ```
 
-Stooq may be temporarily unavailable or the symbol may be invalid. The workflow continues and scores remaining symbols. If all fetches fail, `generate` will have no data and will exit with an error.
+Stooq may be temporarily unavailable or the symbol may be invalid. Fetch failures are fatal — the workflow step will fail, the Slack failure notification fires, and the analysis is not published.
 
 **Fix:** Check `data/stooq_symbols.txt` for typos. Verify the symbol at https://stooq.com. Remove unavailable symbols.
 
@@ -279,7 +280,8 @@ uv run .agents/skills/market-analysis/scripts/market_analysis.py \
 
 ```sh
 uv run .agents/skills/market-analysis/scripts/market_analysis.py \
-    generate --symbols "^SPX,^DJI,^NDX" --output data/analysis/
+    generate --symbols "^SPX,^DJI,^NDX" --output data/analysis/ \
+    --analysis-date YYYY-MM-DD
 ```
 
 ### Regenerate a report from an existing artifact

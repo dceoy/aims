@@ -62,6 +62,11 @@ def test_notify_market_regime_empty(ns: ModuleType) -> None:
     assert ns._market_regime([]) == "Unavailable"
 
 
+# Even-length median
+def test_notify_market_regime_even_neutral(ns: ModuleType) -> None:
+    assert ns._market_regime([30.0, 70.0]) == "Neutral"
+
+
 # ── build_success_payload tests ─────────────────────────────────────────────────
 
 
@@ -407,6 +412,62 @@ def test_main_failure_mode_no_run_url(ns: ModuleType) -> None:
         patch("urllib.request.urlopen", return_value=mock_response),
     ):
         result = ns.main(["--failure"])
+    assert result == 0
+
+
+def test_build_success_payload_with_pr_url(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    payload = ns.build_success_payload(
+        fixture_artifact, pr_url="https://github.com/dceoy/aims/pull/99"
+    )
+    fields_text = json.dumps(payload, ensure_ascii=False)
+    assert "View PR" in fields_text
+    assert "Analysis PR created" in payload["text"]
+    assert "https://github.com/dceoy/aims/pull/99" in fields_text
+
+
+def test_build_success_payload_pr_url_overrides_report_url(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    payload = ns.build_success_payload(
+        fixture_artifact,
+        "https://example.com/report/",
+        pr_url="https://github.com/dceoy/aims/pull/99",
+    )
+    fields_text = json.dumps(payload, ensure_ascii=False)
+    assert "View PR" in fields_text
+    assert "https://github.com/dceoy/aims/pull/99" in fields_text
+    assert "https://example.com/report/" not in fields_text
+
+
+def test_build_success_payload_no_urls_omits_actions_block(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    payload = ns.build_success_payload(fixture_artifact)
+    # no actions block since no url provided
+    block_types = [b["type"] for b in payload["blocks"]]
+    assert "actions" not in block_types
+
+
+def test_main_success_with_pr_url(ns: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    with FIXTURE_PATH.open() as fh:
+        data = json.load(fh)
+    artifact_path.write_text(json.dumps(data))
+    mock_response = MagicMock()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+    with (
+        patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
+        patch("urllib.request.urlopen", return_value=mock_response),
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--pr-url",
+            "https://github.com/dceoy/aims/pull/99",
+        ])
     assert result == 0
 
 

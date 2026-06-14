@@ -229,9 +229,9 @@ The `ci.yml` workflow adds:
 ERROR: fetch failed for ^SPX
 ```
 
-Stooq may be temporarily unavailable or the symbol may be invalid. Fetch failures are fatal — the workflow step will fail, the Slack failure notification fires, and the analysis is not published.
+Stooq may be temporarily unavailable or the symbol may be invalid. Per-symbol fetch failures are non-fatal — a `WARNING` is logged and the fetch loop continues. The symbol is passed to the `generate` step which marks it as `missing_data` in the artifact and report. The workflow only fails if no symbols at all can be fetched and the artifact cannot be generated.
 
-**Fix:** Check `data/stooq_symbols.txt` for typos. Verify the symbol at https://stooq.com. Remove unavailable symbols.
+**Fix:** Check `data/stooq_symbols.txt` for typos. Verify the symbol at https://stooq.com. Remove permanently unavailable symbols to keep the analysis clean.
 
 ### Artifact validation failure
 

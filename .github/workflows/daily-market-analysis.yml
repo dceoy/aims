@@ -83,7 +83,8 @@ jobs:
           for SYM in "${SYMS[@]}"; do
             uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
               fetch --symbol "$SYM" --start "$START" --end "$DATE" \
-              --interval "$INTERVAL"
+              --interval "$INTERVAL" \
+              || echo "WARNING: fetch failed for $SYM; symbol will be marked missing in artifact"
           done
       - name: Generate analysis artifact
         if: steps.symbols.outputs.symbols != ''

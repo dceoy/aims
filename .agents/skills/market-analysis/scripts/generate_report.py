@@ -37,6 +37,7 @@ _GATE_DESCRIPTIONS: Final[dict[str, str]] = {
     "high_volatility": (
         "High volatility: one or more instruments show extreme volatility."
     ),
+    "missing_data": "Missing data: no price history available for this instrument.",
 }
 
 
@@ -255,6 +256,26 @@ def _section_disclaimer() -> str:
     return f"## Disclaimer\n\n> {_DISCLAIMER}"
 
 
+def _validate_for_report(artifact: dict[str, Any]) -> None:
+    meta = artifact.get("metadata")
+    if not isinstance(meta, dict):
+        msg = "artifact is missing a valid 'metadata' section"
+        raise ValueError(msg)  # noqa: TRY004
+    generated_at = meta.get("generated_at")
+    if not isinstance(generated_at, str) or not generated_at:
+        msg = "artifact 'generated_at' is missing or not a string"
+        raise ValueError(msg)
+    if generated_at.startswith("1970-01-01"):
+        msg = (
+            f"'generated_at' is the epoch sentinel;"
+            f" artifact is not publishable: {generated_at!r}"
+        )
+        raise ValueError(msg)
+    if "instruments" not in artifact:
+        msg = "artifact is missing the 'instruments' key"
+        raise ValueError(msg)
+
+
 def generate_report(artifact: dict[str, Any]) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -312,6 +333,7 @@ def generate_and_save(
 ) -> Path:
     with artifact_path.open(encoding="utf-8") as fh:
         artifact: dict[str, Any] = json.load(fh)
+    _validate_for_report(artifact)
     content = generate_report(artifact)
     filename = report_filename(artifact)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -347,6 +369,9 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     except json.JSONDecodeError as exc:
         print(f"ERROR: invalid JSON in {args.input}: {exc}")
+        return 1
+    except ValueError as exc:
+        print(f"ERROR: artifact validation failed: {exc}")
         return 1
     return 0
 

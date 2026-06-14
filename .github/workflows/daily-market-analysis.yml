@@ -4,25 +4,6 @@ on:
   schedule:
     - cron: "0 1 * * *"
   workflow_dispatch:
-    inputs:
-      analysis_date:
-        description: "Analysis date (YYYY-MM-DD, default: today UTC)"
-        required: false
-        type: string
-      interval:
-        description: "Price bar interval"
-        required: false
-        default: d
-        type: choice
-        options:
-          - d
-          - w
-          - m
-      dry_run:
-        description: "Skip commit and Slack notification"
-        required: false
-        default: "false"
-        type: boolean
 permissions:
   contents: read
 jobs:
@@ -30,10 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      ANALYSIS_DATE: ${{ inputs.analysis_date || '' }}
-      INTERVAL: ${{ inputs.interval || 'd' }}
-      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
       - uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
@@ -49,12 +27,7 @@ jobs:
             --schema data/schema/cfd_instruments.schema.json
       - name: Set analysis date
         id: date
-        run: |
-          if [ -n "$ANALYSIS_DATE" ]; then
-            echo "date=$ANALYSIS_DATE" >> "$GITHUB_OUTPUT"
-          else
-            echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
       - name: Load symbols
         id: symbols
         run: |
@@ -81,8 +54,7 @@ jobs:
           for SYM in "${SYMS[@]}"; do
             uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
               fetch --symbol "$SYM" --start "$START" --end "$DATE" \
-              --interval "$INTERVAL" \
-              || echo "WARNING: fetch failed for $SYM, continuing"
+              --interval d
           done
       - name: Generate analysis artifact
         if: steps.symbols.outputs.symbols != ''
@@ -90,7 +62,8 @@ jobs:
           uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
             generate \
             --symbols "${{ steps.symbols.outputs.symbols }}" \
-            --interval "$INTERVAL" \
+            --interval d \
+            --analysis-date "${{ steps.date.outputs.date }}" \
             --output data/analysis/
       - name: Validate artifact
         if: steps.symbols.outputs.symbols != ''
@@ -113,20 +86,35 @@ jobs:
           extended: true
       - name: Build Hugo site (validation)
         run: hugo --gc --minify
-      - name: Commit generated artifacts
-        if: env.DRY_RUN != 'true' && steps.symbols.outputs.symbols != ''
+      - name: Create pull request
+        if: steps.symbols.outputs.symbols != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          BRANCH="generated/analysis-${{ steps.date.outputs.date }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$BRANCH" 2>/dev/null || true
+          git checkout -B "$BRANCH"
           git add data/analysis/ content/results/
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "feat(analysis): daily market analysis ${{ steps.date.outputs.date }}"
-            git push
+            git push --force-with-lease -u origin "$BRANCH"
+            PR_NUMBER="$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')"
+            if [ -n "$PR_NUMBER" ]; then
+              echo "PR #$PR_NUMBER already exists for $BRANCH; branch updated."
+            else
+              gh pr create \
+                --title "feat(analysis): daily market analysis ${{ steps.date.outputs.date }}" \
+                --body "Automated daily market analysis for ${{ steps.date.outputs.date }}." \
+                --base main \
+                --head "$BRANCH"
+            fi
           fi
       - name: Notify Slack (success)
-        if: env.DRY_RUN != 'true' && steps.symbols.outputs.symbols != ''
+        if: steps.symbols.outputs.symbols != ''
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |

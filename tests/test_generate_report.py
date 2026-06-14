@@ -254,8 +254,8 @@ def test_generate_and_save_missing_generated_at(gr: ModuleType, tmp_path: Path) 
     artifact_path = tmp_path / "artifact.json"
     artifact_path.write_text(json.dumps(artifact))
     output_dir = tmp_path / "results"
-    result_path = gr.generate_and_save(artifact_path, output_dir)
-    assert result_path.name == "1970-01-01-market-analysis.md"
+    with pytest.raises(ValueError, match="generated_at"):
+        gr.generate_and_save(artifact_path, output_dir)
 
 
 # ── main() tests ────────────────────────────────────────────────────────────────
@@ -422,3 +422,101 @@ def test_generate_report_returns_string(
     result = gr.generate_report(fixture_artifact)
     assert isinstance(result, str)
     assert "Market Analysis 2024-01-01" in result
+
+
+# ── _validate_for_report tests ──────────────────────────────────────────────────
+
+
+def test_validate_for_report_valid(
+    gr: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    gr._validate_for_report(fixture_artifact)  # must not raise
+
+
+def test_validate_for_report_no_metadata(gr: ModuleType) -> None:
+    with pytest.raises(ValueError, match="metadata"):
+        gr._validate_for_report({"instruments": []})
+
+
+def test_validate_for_report_metadata_not_dict(gr: ModuleType) -> None:
+    with pytest.raises(ValueError, match="metadata"):
+        gr._validate_for_report({"metadata": "bad", "instruments": []})
+
+
+def test_validate_for_report_missing_generated_at(gr: ModuleType) -> None:
+    with pytest.raises(ValueError, match="generated_at"):
+        gr._validate_for_report({"metadata": {}, "instruments": []})
+
+
+def test_validate_for_report_non_string_generated_at(gr: ModuleType) -> None:
+    with pytest.raises(ValueError, match="generated_at"):
+        gr._validate_for_report({
+            "metadata": {"generated_at": 12345},
+            "instruments": [],
+        })
+
+
+def test_validate_for_report_epoch_generated_at(gr: ModuleType) -> None:
+    with pytest.raises(ValueError, match="epoch sentinel"):
+        gr._validate_for_report({
+            "metadata": {"generated_at": "1970-01-01T00:00:00+00:00"},
+            "instruments": [],
+        })
+
+
+def test_validate_for_report_missing_instruments(gr: ModuleType) -> None:
+    with pytest.raises(ValueError, match="instruments"):
+        gr._validate_for_report({
+            "metadata": {"generated_at": "2024-01-01T00:00:00+00:00"}
+        })
+
+
+def test_main_validation_error(gr: ModuleType, tmp_path: Path) -> None:
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {},
+        "instruments": [],
+    }
+    artifact_path = tmp_path / "artifact.json"
+    artifact_path.write_text(json.dumps(artifact))
+    result = gr.main(["--input", str(artifact_path), "--output", str(tmp_path)])
+    assert result == 1
+
+
+def test_generate_report_missing_data_gate(gr: ModuleType) -> None:
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {
+            "generated_at": "2024-06-01T00:00:00+00:00",
+            "git_commit": "abc",
+            "data_source": "stooq",
+            "data_freshness": {"MISS": "n/a"},
+            "scoring_version": "1.0.0",
+            "config": {},
+        },
+        "instruments": [
+            {
+                "symbol": "MISS",
+                "rank": 1,
+                "score": 0.0,
+                "is_reliable": False,
+                "risk_gates": ["missing_data"],
+                "explanation": "Suppressed: missing_data",
+                "features": {
+                    "ret_1d": None,
+                    "ret_5d": None,
+                    "ret_20d": None,
+                    "ret_60d": None,
+                    "ma20_dist": None,
+                    "ma50_dist": None,
+                    "vol_20d": None,
+                    "mdd_60d": None,
+                    "rsi_14": None,
+                    "zscore_20d": None,
+                },
+            }
+        ],
+    }
+    result = gr.generate_report(artifact)
+    assert "Missing data" in result
+    assert "MISS" in result

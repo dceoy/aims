@@ -48,6 +48,7 @@ RISK_GATE_HIGH_VOL: Final[str] = "high_volatility"
 RISK_GATE_INSUFFICIENT: Final[str] = "insufficient_history"
 RISK_GATE_MISSING_BARS: Final[str] = "missing_bars"
 RISK_GATE_MALFORMED: Final[str] = "malformed_input"
+RISK_GATE_MISSING_DATA: Final[str] = "missing_data"
 
 _OHLCV_FIELDS: Final[tuple[str, ...]] = (
     "symbol",
@@ -607,14 +608,22 @@ def generate_artifact(
     scores: list[InstrumentScore],
     data: dict[str, list[OhlcvBar]],
     config: dict[str, Any],
+    *,
+    analysis_date: str | None = None,
+    missing_symbols: list[str] | None = None,
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
+    generated_at = (
+        f"{analysis_date}T00:00:00+00:00" if analysis_date else now.isoformat()
+    )
     sources = sorted({b.source for bars in data.values() for b in bars})
     data_source = ",".join(sources) if sources else "unknown"
-    freshness = {
+    freshness: dict[str, str] = {
         symbol: bars[-1].timestamp.date().isoformat() if bars else "n/a"
         for symbol, bars in data.items()
     }
+    for sym in sorted(missing_symbols or []):
+        freshness[sym] = "n/a"
     instruments: list[dict[str, Any]] = [
         {
             "symbol": s.symbol,
@@ -627,10 +636,34 @@ def generate_artifact(
         }
         for s in scores
     ]
+    empty_feats = InstrumentFeatures(
+        ret_1d=None,
+        ret_5d=None,
+        ret_20d=None,
+        ret_60d=None,
+        ma20_dist=None,
+        ma50_dist=None,
+        vol_20d=None,
+        mdd_60d=None,
+        rsi_14=None,
+        zscore_20d=None,
+    )
+    next_rank = max((s.rank for s in scores), default=0) + 1
+    for sym in sorted(missing_symbols or []):
+        instruments.append({
+            "symbol": sym,
+            "rank": next_rank,
+            "score": 0.0,
+            "is_reliable": False,
+            "risk_gates": [RISK_GATE_MISSING_DATA],
+            "explanation": f"Suppressed: {RISK_GATE_MISSING_DATA}",
+            "features": _features_to_dict(empty_feats),
+        })
+        next_rank += 1
     return {
         "version": ARTIFACT_VERSION,
         "metadata": {
-            "generated_at": now.isoformat(),
+            "generated_at": generated_at,
             "git_commit": _get_git_commit(),
             "data_source": data_source,
             "data_freshness": freshness,
@@ -650,7 +683,7 @@ def save_artifact(
     date_str = gen_at[:10] if gen_at else datetime.now(tz=UTC).date().isoformat()
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"{date_str}.json"
-    with path.open("w") as fh:
+    with path.open("w", encoding="utf-8") as fh:
         json.dump(artifact, fh, indent=2)
     return path
 
@@ -718,11 +751,13 @@ def _cmd_score(args: argparse.Namespace) -> int:
 def _cmd_generate(args: argparse.Namespace) -> int:
     symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
     data: dict[str, list[OhlcvBar]] = {}
+    missing: list[str] = []
     for sym in symbols:
         try:
             data[sym] = load_ohlcv(sym, args.interval, Path(args.data_dir))
         except FileNotFoundError:
-            print(f"WARNING: no data for {sym}, skipping")
+            print(f"WARNING: no data for {sym}, marking as missing")
+            missing.append(sym)
     if not data:
         print("ERROR: no symbols could be loaded")
         return 1
@@ -732,9 +767,19 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         "interval": args.interval,
     }
     results = score_instruments(data)
-    artifact = generate_artifact(results, data, config)
+    analysis_date: str | None = getattr(args, "analysis_date", None) or None
+    artifact = generate_artifact(
+        results,
+        data,
+        config,
+        analysis_date=analysis_date,
+        missing_symbols=missing or None,
+    )
     path = save_artifact(artifact, Path(args.output))
     print(f"artifact saved to {path}")
+    if missing:
+        syms = ", ".join(sorted(missing))
+        print(f"WARNING: {len(missing)} symbol(s) had no data: {syms}")
     return 0
 
 
@@ -769,6 +814,12 @@ def main(argv: list[str] | None = None) -> int:
     p_gen.add_argument("--interval", default=_DEFAULT_INTERVAL)
     p_gen.add_argument("--data-dir", default=str(_DEFAULT_PRICES_DIR), dest="data_dir")
     p_gen.add_argument("--output", default=str(_DEFAULT_ANALYSIS_DIR))
+    p_gen.add_argument(
+        "--analysis-date",
+        default=None,
+        dest="analysis_date",
+        help="Override analysis date (YYYY-MM-DD; default: today UTC)",
+    )
 
     args = parser.parse_args(argv)
 

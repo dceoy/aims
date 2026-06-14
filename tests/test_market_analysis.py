@@ -754,6 +754,42 @@ def test_generate_artifact_structure(ma: ModuleType, mocker: MockerFixture) -> N
     assert "A" in meta["data_freshness"]
 
 
+def test_generate_artifact_with_analysis_date(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    artifact = ma.generate_artifact(scores, {"A": bars}, {}, analysis_date="2024-03-15")
+    assert artifact["metadata"]["generated_at"].startswith("2024-03-15")
+
+
+def test_generate_artifact_with_missing_symbols(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    artifact = ma.generate_artifact(
+        scores, {"A": bars}, {}, missing_symbols=["MISS1", "MISS2"]
+    )
+    symbols = {inst["symbol"] for inst in artifact["instruments"]}
+    assert "MISS1" in symbols
+    assert "MISS2" in symbols
+    for inst in artifact["instruments"]:
+        if inst["symbol"] in {"MISS1", "MISS2"}:
+            assert inst["is_reliable"] is False
+            assert ma.RISK_GATE_MISSING_DATA in inst["risk_gates"]
+    assert artifact["metadata"]["data_freshness"]["MISS1"] == "n/a"
+    assert artifact["metadata"]["data_freshness"]["MISS2"] == "n/a"
+
+
+def test_risk_gate_missing_data_constant(ma: ModuleType) -> None:
+    assert ma.RISK_GATE_MISSING_DATA == "missing_data"
+
+
 def test_generate_artifact_empty_data_source(
     ma: ModuleType, mocker: MockerFixture
 ) -> None:
@@ -1086,6 +1122,7 @@ def test_cmd_generate_no_data(ma: ModuleType, tmp_path: Path) -> None:
         interval = "d"
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
+        analysis_date = None
 
     result = ma._cmd_generate(Args())
     assert result == 1
@@ -1103,12 +1140,86 @@ def test_cmd_generate_success(
         interval = "d"
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
+        analysis_date = None
 
     result = ma._cmd_generate(Args())
     assert result == 0
     analysis_dir = tmp_path / "analysis"
     json_files = list(analysis_dir.glob("*.json"))
     assert len(json_files) == 1
+
+
+def test_cmd_generate_with_analysis_date(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "F", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "F"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-03-15"
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    analysis_dir = tmp_path / "analysis"
+    assert (analysis_dir / "2024-03-15.json").exists()
+
+
+def test_cmd_generate_partial_missing_in_artifact(
+    ma: ModuleType,
+    mocker: MockerFixture,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "G", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "G,MISSING"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    out = capsys.readouterr().out
+    assert "WARNING" in out
+    analysis_dir = tmp_path / "analysis"
+    artifact_files = list(analysis_dir.glob("*.json"))
+    assert len(artifact_files) == 1
+    artifact = json.loads(artifact_files[0].read_text())
+    symbols = {inst["symbol"] for inst in artifact["instruments"]}
+    assert "MISSING" in symbols
+    missing_inst = next(i for i in artifact["instruments"] if i["symbol"] == "MISSING")
+    assert missing_inst["is_reliable"] is False
+    assert ma.RISK_GATE_MISSING_DATA in missing_inst["risk_gates"]
+
+
+def test_main_generate_with_analysis_date(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "H", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    result = ma.main([
+        "generate",
+        "--symbols",
+        "H",
+        "--data-dir",
+        str(tmp_path),
+        "--output",
+        str(tmp_path / "analysis"),
+        "--analysis-date",
+        "2024-05-01",
+    ])
+    assert result == 0
+    assert (tmp_path / "analysis" / "2024-05-01.json").exists()
 
 
 # ── CLI: main routing ─────────────────────────────────────────────────────────

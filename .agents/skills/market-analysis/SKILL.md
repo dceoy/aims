@@ -23,6 +23,14 @@ Four sub-commands:
 
 Validate a generated JSON artifact against the expected schema.
 
+### `generate_report.py`
+
+Generate a Hugo Markdown report from a JSON analysis artifact and write it to `content/results/`.
+
+### `notify_slack.py`
+
+Send a Slack notification (success or failure) via an incoming webhook. Reads `SLACK_WEBHOOK_URL` from the environment; exits silently if the variable is not set.
+
 ## Usage
 
 ```sh
@@ -48,6 +56,24 @@ uv run .agents/skills/market-analysis/scripts/market_analysis.py \
 # Validate the generated artifact
 uv run .agents/skills/market-analysis/scripts/validate_analysis.py \
     --input data/analysis/$(date +%Y-%m-%d).json
+
+# Generate a Hugo Markdown report from the artifact
+uv run .agents/skills/market-analysis/scripts/generate_report.py \
+    --input data/analysis/$(date +%Y-%m-%d).json \
+    --output content/results/
+
+# Send a Slack success notification
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..." \
+uv run .agents/skills/market-analysis/scripts/notify_slack.py \
+    --artifact data/analysis/$(date +%Y-%m-%d).json \
+    --report-url https://dceoy.github.io/aims/results/$(date +%Y-%m-%d)-market-analysis/
+
+# Send a Slack failure notification
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..." \
+uv run .agents/skills/market-analysis/scripts/notify_slack.py \
+    --failure \
+    --run-url https://github.com/dceoy/aims/actions/runs/12345 \
+    --message "Analysis failed"
 ```
 
 ## Data layout

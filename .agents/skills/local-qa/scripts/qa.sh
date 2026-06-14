@@ -30,7 +30,7 @@ hugo --gc --minify
 # GitHub Actions
 case "${OSTYPE}" in
   darwin* | linux* )
-    zizmor --fix=safe .github/workflows
+    zizmor --min-severity low --fix=safe .github/workflows
     if [ -n "$(git ls-files '.github/workflows/*.yml' '.github/workflows/*.yaml')" ]; then
       git ls-files -z -- '.github/workflows/*.yml' '.github/workflows/*.yaml' | xargs -0 -t actionlint
       git ls-files -z -- '.github/workflows/*.yml' '.github/workflows/*.yaml' | xargs -0 -t yamllint -d '{"extends": "relaxed", "rules": {"line-length": "disable"}}'

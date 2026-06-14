@@ -1,0 +1,168 @@
+---
+name: Daily market analysis
+# checkov:skip=CKV_GHA_7: inputs are analysis params (date/interval/dry_run) for authorised manual backfills
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      analysis_date:
+        description: "Analysis date (YYYY-MM-DD; default: today UTC)"
+        required: false
+        type: string
+      interval:
+        description: "Price bar interval (d/w/m)"
+        required: false
+        default: d
+        type: choice
+        options:
+          - d
+          - w
+          - m
+      dry_run:
+        description: "Skip PR creation and Slack success notification"
+        required: false
+        default: "false"
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      ANALYSIS_DATE: ${{ inputs.analysis_date || '' }}
+      INTERVAL: ${{ inputs.interval || 'd' }}
+      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+    steps:
+      - uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
+      - uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
+        with:
+          python-version: "3.x"
+      - name: Sync dependencies
+        run: uv sync
+      - name: Validate CFD instruments
+        run: |
+          uv run python \
+            .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
+            --input data/cfd_instruments.csv \
+            --schema data/schema/cfd_instruments.schema.json
+      - name: Set analysis date
+        id: date
+        run: |
+          if [ -n "$ANALYSIS_DATE" ]; then
+            echo "date=$ANALYSIS_DATE" >> "$GITHUB_OUTPUT"
+          else
+            echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Load symbols
+        id: symbols
+        run: |
+          if [ -f data/stooq_symbols.txt ]; then
+            SYMBOLS=$(grep -v '^[[:space:]]*#' data/stooq_symbols.txt \
+              | grep -v '^[[:space:]]*$' | tr '\n' ',' | sed 's/,$//')
+          else
+            SYMBOLS=""
+          fi
+          echo "symbols=$SYMBOLS" >> "$GITHUB_OUTPUT"
+          if [ -z "$SYMBOLS" ]; then
+            echo "WARNING: data/stooq_symbols.txt is empty or missing; skipping fetch."
+          fi
+      - name: Fetch market data
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          DATE="${{ steps.date.outputs.date }}"
+          START=$(python3 -c "
+          from datetime import datetime, timedelta
+          d = datetime.strptime('${DATE}', '%Y-%m-%d')
+          print((d - timedelta(days=365)).strftime('%Y-%m-%d'))
+          ")
+          IFS=',' read -ra SYMS <<< "${{ steps.symbols.outputs.symbols }}"
+          for SYM in "${SYMS[@]}"; do
+            uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+              fetch --symbol "$SYM" --start "$START" --end "$DATE" \
+              --interval "$INTERVAL" \
+              || echo "WARNING: fetch failed for $SYM; symbol will be marked missing in artifact"
+          done
+      - name: Generate analysis artifact
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+            generate \
+            --symbols "${{ steps.symbols.outputs.symbols }}" \
+            --interval "$INTERVAL" \
+            --analysis-date "${{ steps.date.outputs.date }}" \
+            --output data/analysis/
+      - name: Validate artifact
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/validate_analysis.py \
+            --input "data/analysis/${{ steps.date.outputs.date }}.json"
+      - name: Generate Hugo report
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/generate_report.py \
+            --input "data/analysis/${{ steps.date.outputs.date }}.json" \
+            --output content/results/
+      - uses: actions/setup-go@v5  # zizmor: ignore[unpinned-uses]
+        with:
+          go-version: stable
+      - name: Install Hugo
+        uses: peaceiris/actions-hugo@v3  # zizmor: ignore[unpinned-uses]
+        with:
+          hugo-version: latest
+          extended: true
+      - name: Build Hugo site (validation)
+        run: hugo --gc --minify
+      - name: Create pull request
+        id: pr
+        if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="generated/analysis-${{ steps.date.outputs.date }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$BRANCH" 2>/dev/null || true
+          git checkout -B "$BRANCH"
+          git add data/analysis/ content/results/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            echo "pr_url=" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "feat(analysis): daily market analysis ${{ steps.date.outputs.date }}"
+            git push --force-with-lease -u origin "$BRANCH"
+            PR_NUMBER="$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')"
+            if [ -n "$PR_NUMBER" ]; then
+              echo "PR #$PR_NUMBER already exists for $BRANCH; branch updated."
+              PR_URL=$(gh pr view "$PR_NUMBER" --json url --jq '.url')
+              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+            else
+              PR_URL=$(gh pr create \
+                --title "feat(analysis): daily market analysis ${{ steps.date.outputs.date }}" \
+                --body "Automated daily market analysis for ${{ steps.date.outputs.date }}." \
+                --base main \
+                --head "$BRANCH")
+              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+      - name: Notify Slack (success)
+        if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
+            --artifact "data/analysis/${{ steps.date.outputs.date }}.json" \
+            --pr-url "${{ steps.pr.outputs.pr_url }}"
+      - name: Notify Slack (failure)
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
+            --failure \
+            --run-url \
+            "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --message "Daily market analysis workflow failed"

@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, Literal
+
+_Alignment = Literal["left", "right", "center"]
 
 _DEFAULT_OUTPUT_DIR: Final[Path] = Path("content/results")
 
@@ -165,6 +167,53 @@ def _section_instruments_to_avoid(unreliable: list[dict[str, Any]]) -> str:
     return f"{header}\n\n{preamble}\n\n" + "\n".join(lines)
 
 
+def _format_markdown_table(
+    headers: list[str],
+    rows: list[list[str]],
+    alignments: list[_Alignment],
+) -> str:
+    """Format a markdown table with column padding matching Prettier."""
+    widths = [max(len(row[i]) for row in [headers, *rows]) for i in range(len(headers))]
+
+    def _pad_cell(value: str, width: int, align: _Alignment) -> str:
+        if align == "right":
+            inner = value.rjust(width)
+        elif align == "center":
+            inner = value.center(width)
+        else:
+            inner = value.ljust(width)
+        return f" {inner} "
+
+    def _pad_sep(width: int, align: _Alignment) -> str:
+        if align == "right":
+            inner = "-" * (width - 1) + ":" if width > 1 else ":"
+        elif align == "center":
+            inner = ":" + "-" * max(width - 2, 1) + ":"
+        else:
+            inner = "-" * width
+        return f" {inner} "
+
+    lines = [
+        "|"
+        + "|".join(
+            _pad_cell(h, widths[i], alignments[i]) for i, h in enumerate(headers)
+        )
+        + "|",
+        "|"
+        + "|".join(_pad_sep(widths[i], alignments[i]) for i in range(len(headers)))
+        + "|",
+    ]
+    lines.extend(
+        "|"
+        + "|".join(
+            _pad_cell(row[i], widths[i], alignments[i]) for i in range(len(headers))
+        )
+        + "|"
+        for row in rows
+    )
+    return "\n".join(lines)
+
+
 def _section_key_risks(instruments: list[dict[str, Any]]) -> str:
     header = "## Key Risks"
     gate_counts: dict[str, int] = {}
@@ -184,9 +233,23 @@ def _section_key_risks(instruments: list[dict[str, Any]]) -> str:
 
 def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
     header = "## Instrument Scores"
-    col_header = "| Rank | Symbol | Score | Reliable | Risk Gates | Explanation |"
-    col_sep = "| ---: | ------ | ----: | :------: | ---------- | ----------- |"
-    rows = [col_header, col_sep]
+    table_headers = [
+        "Rank",
+        "Symbol",
+        "Score",
+        "Reliable",
+        "Risk Gates",
+        "Explanation",
+    ]
+    alignments: list[_Alignment] = [
+        "right",
+        "left",
+        "right",
+        "center",
+        "left",
+        "left",
+    ]
+    rows: list[list[str]] = []
     for inst in instruments:
         rank = inst.get("rank", "")
         symbol = str(inst.get("symbol", ""))
@@ -195,11 +258,16 @@ def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
         gates = inst.get("risk_gates") or []
         gates_str = ", ".join(str(g) for g in gates) if gates else "—"
         explanation = str(inst.get("explanation", ""))
-        rows.append(
-            f"| {rank} | {symbol} | {score:.1f} | {reliable} |"
-            f" {gates_str} | {explanation} |"
-        )
-    return f"{header}\n\n" + "\n".join(rows)
+        rows.append([
+            str(rank),
+            symbol,
+            f"{score:.1f}",
+            reliable,
+            gates_str,
+            explanation,
+        ])
+    table = _format_markdown_table(table_headers, rows, alignments)
+    return f"{header}\n\n{table}"
 
 
 def _section_data_freshness(
@@ -210,14 +278,14 @@ def _section_data_freshness(
     parts: list[str] = [f"Data source: **{data_source}**"]
 
     if freshness:
-        table_rows = ["| Symbol | Latest Bar |", "| ------ | ---------- |"]
+        table_headers = ["Symbol", "Latest Bar"]
+        alignments: list[_Alignment] = ["left", "left"]
+        table_rows = [[sym, freshness[sym]] for sym in sorted(freshness)]
         stale_symbols = []
-        for sym in sorted(freshness):
-            val = freshness[sym]
-            table_rows.append(f"| {sym} | {val} |")
+        for sym, val in table_rows:
             if val == "n/a":
                 stale_symbols.append(sym)
-        parts.append("\n".join(table_rows))
+        parts.append(_format_markdown_table(table_headers, table_rows, alignments))
         if stale_symbols:
             stale_joined = ", ".join(sorted(stale_symbols))
             n = len(stale_symbols)

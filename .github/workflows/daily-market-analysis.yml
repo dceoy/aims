@@ -38,6 +38,8 @@ jobs:
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
     steps:
       - uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
         with:
           python-version: "3.x"
@@ -72,14 +74,16 @@ jobs:
           fi
       - name: Fetch market data
         if: steps.symbols.outputs.symbols != ''
+        env:
+          DATE: ${{ steps.date.outputs.date }}
+          SYMBOLS: ${{ steps.symbols.outputs.symbols }}
         run: |
-          DATE="${{ steps.date.outputs.date }}"
           START=$(python3 -c "
           from datetime import datetime, timedelta
           d = datetime.strptime('${DATE}', '%Y-%m-%d')
           print((d - timedelta(days=365)).strftime('%Y-%m-%d'))
           ")
-          IFS=',' read -ra SYMS <<< "${{ steps.symbols.outputs.symbols }}"
+          IFS=',' read -ra SYMS <<< "${SYMBOLS}"
           for SYM in "${SYMS[@]}"; do
             uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
               fetch --symbol "$SYM" --start "$START" --end "$DATE" \
@@ -88,23 +92,30 @@ jobs:
           done
       - name: Generate analysis artifact
         if: steps.symbols.outputs.symbols != ''
+        env:
+          DATE: ${{ steps.date.outputs.date }}
+          SYMBOLS: ${{ steps.symbols.outputs.symbols }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
             generate \
-            --symbols "${{ steps.symbols.outputs.symbols }}" \
+            --symbols "${SYMBOLS}" \
             --interval "$INTERVAL" \
-            --analysis-date "${{ steps.date.outputs.date }}" \
+            --analysis-date "${DATE}" \
             --output data/analysis/
       - name: Validate artifact
         if: steps.symbols.outputs.symbols != ''
+        env:
+          DATE: ${{ steps.date.outputs.date }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_analysis.py \
-            --input "data/analysis/${{ steps.date.outputs.date }}.json"
+            --input "data/analysis/${DATE}.json"
       - name: Generate Hugo report
         if: steps.symbols.outputs.symbols != ''
+        env:
+          DATE: ${{ steps.date.outputs.date }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/generate_report.py \
-            --input "data/analysis/${{ steps.date.outputs.date }}.json" \
+            --input "data/analysis/${DATE}.json" \
             --output content/results/
       - uses: actions/setup-go@v5  # zizmor: ignore[unpinned-uses]
         with:
@@ -121,10 +132,12 @@ jobs:
         if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATE: ${{ steps.date.outputs.date }}
         run: |
-          BRANCH="generated/analysis-${{ steps.date.outputs.date }}"
+          BRANCH="generated/analysis-${DATE}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
           git add data/analysis/ content/results/
@@ -132,7 +145,7 @@ jobs:
             echo "No changes to commit."
             echo "pr_url=" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "feat(analysis): daily market analysis ${{ steps.date.outputs.date }}"
+            git commit -m "feat(analysis): daily market analysis ${DATE}"
             git push --force-with-lease -u origin "$BRANCH"
             PR_NUMBER="$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')"
             if [ -n "$PR_NUMBER" ]; then
@@ -141,8 +154,8 @@ jobs:
               echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
             else
               PR_URL=$(gh pr create \
-                --title "feat(analysis): daily market analysis ${{ steps.date.outputs.date }}" \
-                --body "Automated daily market analysis for ${{ steps.date.outputs.date }}." \
+                --title "feat(analysis): daily market analysis ${DATE}" \
+                --body "Automated daily market analysis for ${DATE}." \
                 --base main \
                 --head "$BRANCH")
               echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
@@ -152,10 +165,12 @@ jobs:
         if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DATE: ${{ steps.date.outputs.date }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
-            --artifact "data/analysis/${{ steps.date.outputs.date }}.json" \
-            --pr-url "${{ steps.pr.outputs.pr_url }}"
+            --artifact "data/analysis/${DATE}.json" \
+            --pr-url "${PR_URL}"
       - name: Notify Slack (failure)
         if: failure()
         env:

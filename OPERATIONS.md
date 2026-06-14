@@ -30,6 +30,7 @@ AIMS fetches daily OHLCV (open/high/low/close/volume) price history from [Stooq]
 Examples: `^SPX` (S&P 500), `^DJI` (Dow Jones), `^NDX` (NASDAQ 100), `^NKX` (Nikkei 225), `^DAX` (DAX).
 
 **Limitations:**
+
 - Daily, weekly, and monthly bars only — no intraday data.
 - Symbol availability and history depth vary; some symbols return no data.
 - No authentication required, but subject to undocumented rate limits.
@@ -66,18 +67,18 @@ AIMS scores and ranks instruments cross-sectionally using ten features computed 
 
 ### Features
 
-| Feature | Window | Direction |
-| ------- | ------ | --------- |
-| Return | 1 day | Higher is better |
-| Return | 5 days | Higher is better |
-| Return | 20 days | Higher is better |
-| Return | 60 days | Higher is better |
-| Distance from MA | 20-day | Higher is better |
-| Distance from MA | 50-day | Higher is better |
-| Realized volatility | 20-day annualised | Lower is better |
-| Maximum drawdown | 60 days | Lower is better |
-| RSI | 14-day | Higher is better |
-| Z-score | 20-day | Higher is better |
+| Feature             | Window            | Direction        |
+| ------------------- | ----------------- | ---------------- |
+| Return              | 1 day             | Higher is better |
+| Return              | 5 days            | Higher is better |
+| Return              | 20 days           | Higher is better |
+| Return              | 60 days           | Higher is better |
+| Distance from MA    | 20-day            | Higher is better |
+| Distance from MA    | 50-day            | Higher is better |
+| Realized volatility | 20-day annualised | Lower is better  |
+| Maximum drawdown    | 60 days           | Lower is better  |
+| RSI                 | 14-day            | Higher is better |
+| Z-score             | 20-day            | Higher is better |
 
 ### Cross-sectional ranking
 
@@ -87,23 +88,23 @@ Each feature value is converted to a cross-sectional percentile rank across all 
 
 Instruments that fail quality checks are included in output but marked `is_reliable: false` and ranked below reliable instruments. They appear in the "Instruments to Avoid" section of the report.
 
-| Gate | Trigger |
-| ---- | ------- |
-| `stale_data` | Latest bar older than `stale_days` calendar days (default: 5) |
-| `insufficient_history` | Fewer than `min_history` bars (default: 60) |
-| `missing_bars` | Gap > 7 calendar days between consecutive bars |
-| `malformed_input` | Non-positive prices, high < low, or price outside [low, high] |
-| `high_volatility` | 20-day annualised volatility > 100% |
+| Gate                   | Trigger                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| `stale_data`           | Latest bar older than `stale_days` calendar days (default: 5) |
+| `insufficient_history` | Fewer than `min_history` bars (default: 60)                   |
+| `missing_bars`         | Gap > 7 calendar days between consecutive bars                |
+| `malformed_input`      | Non-positive prices, high < low, or price outside [low, high] |
+| `high_volatility`      | 20-day annualised volatility > 100%                           |
 
 ### Market regime
 
 The market regime label is derived from the median composite score of reliable instruments:
 
-| Label | Median score |
-| ----- | ------------ |
-| Bullish | ≥ 65 |
-| Neutral | 40 – 64 |
-| Bearish | ≤ 40 |
+| Label       | Median score            |
+| ----------- | ----------------------- |
+| Bullish     | ≥ 65                    |
+| Neutral     | 40 – 64                 |
+| Bearish     | ≤ 40                    |
 | Unavailable | No reliable instruments |
 
 ### Scoring version
@@ -178,11 +179,11 @@ Pipeline order:
 
 The workflow supports `workflow_dispatch` with three optional inputs:
 
-| Input | Default | Description |
-| ----- | ------- | ----------- |
-| `analysis_date` | Today UTC | Override the analysis date (YYYY-MM-DD) |
-| `interval` | `d` | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly) |
-| `dry_run` | `false` | When `true`, skips PR creation and Slack success notification |
+| Input           | Default   | Description                                                   |
+| --------------- | --------- | ------------------------------------------------------------- |
+| `analysis_date` | Today UTC | Override the analysis date (YYYY-MM-DD)                       |
+| `interval`      | `d`       | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)  |
+| `dry_run`       | `false`   | When `true`, skips PR creation and Slack success notification |
 
 ### Deployment gate
 
@@ -192,10 +193,10 @@ GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), 
 
 ## 6. GitHub Actions secrets
 
-| Secret | Required | Description |
-| ------ | -------- | ----------- |
-| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the notification steps exit silently (exit code 0). |
-| `GITHUB_TOKEN` | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed. |
+| Secret              | Required | Description                                                                                                                                      |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the notification steps exit silently (exit code 0).                |
+| `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed. |
 
 **How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.
 
@@ -207,11 +208,11 @@ GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), 
 
 The `daily-market-analysis.yml` workflow uses:
 
-| Permission | Scope | Reason |
-| ---------- | ----- | ------ |
-| `contents: write` | `analyze` job | Create and push to analysis branch; open PR |
-| `pull-requests: write` | `analyze` job | Create analysis pull requests |
-| `contents: read` | Workflow-level default | Checkout |
+| Permission             | Scope                  | Reason                                      |
+| ---------------------- | ---------------------- | ------------------------------------------- |
+| `contents: write`      | `analyze` job          | Create and push to analysis branch; open PR |
+| `pull-requests: write` | `analyze` job          | Create analysis pull requests               |
+| `contents: read`       | Workflow-level default | Checkout                                    |
 
 The `ci.yml` workflow adds:
 | Permission | Scope | Reason |

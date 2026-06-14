@@ -14,6 +14,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
         with:
           python-version: "3.x"
@@ -107,6 +109,7 @@ jobs:
           BRANCH="chore/refresh-cfd-instruments-$(date -u +%Y%m%d)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
 
           # Fetch remote branch state so --force-with-lease works on reruns
           git fetch origin "$BRANCH" 2>/dev/null || true

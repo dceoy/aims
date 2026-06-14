@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS analysis artifact",
+  "description": "Schema reference for validate_analysis.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies.",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "metadata", "instruments"],
+  "required_metadata_keys": [
+    "generated_at",
+    "git_commit",
+    "data_source",
+    "data_freshness",
+    "scoring_version",
+    "config"
+  ],
+  "notes": {
+    "data_source": "Sorted comma-separated provider names, e.g. 'stooq' or 'csv,stooq'.",
+    "data_freshness": "Object mapping symbol to latest bar date (YYYY-MM-DD) or 'n/a' if no bars.",
+    "rank": "Display rank after reliability-aware ordering: reliable instruments (is_reliable=true) rank first by score descending; unreliable instruments follow."
+  },
+  "required_instrument_keys": [
+    "symbol",
+    "rank",
+    "score",
+    "is_reliable",
+    "risk_gates",
+    "explanation",
+    "features"
+  ],
+  "score_range": [0.0, 100.0],
+  "rank_minimum": 1
+}

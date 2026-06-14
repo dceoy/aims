@@ -17,7 +17,7 @@ This repository combines Python automation scripts with a Hugo static site. Core
 
 ## Coding Style & Naming Conventions
 
-Python targets 3.11 through 3.13. Ruff enforces 88-character lines, Google-style docstrings, import sorting, and strict lint rules. Prefer typed functions and `pathlib` over string path manipulation. Test files use `test_*.py`, and test names should describe behavior. Keep generated Hugo reports named like `YYYY-MM-DD-market-analysis.md` under `content/results/`.
+Python targets 3.11 through 3.13. Ruff enforces 88-character lines, Google-style docstrings, import sorting, and strict lint rules. Prefer typed functions and `pathlib` over string path manipulation. Apply KISS, DRY, and YAGNI: keep implementations simple, reuse existing helpers and patterns, and avoid abstractions or features before they are needed. Test files use `test_*.py`, and test names should describe behavior. Keep generated Hugo reports named like `YYYY-MM-DD-market-analysis.md` under `content/results/`.
 
 ## Testing Guidelines
 

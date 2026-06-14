@@ -137,6 +137,7 @@ jobs:
           BRANCH="generated/analysis-${DATE}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
           git add data/analysis/ content/results/

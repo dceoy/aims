@@ -117,7 +117,7 @@ jobs:
           uv run python .agents/skills/market-analysis/scripts/generate_report.py \
             --input "data/analysis/${DATE}.json" \
             --output content/results/
-      - uses: actions/setup-go@v5  # zizmor: ignore[unpinned-uses]
+      - uses: actions/setup-go@v6  # zizmor: ignore[unpinned-uses]
         with:
           go-version: stable
       - name: Install Hugo

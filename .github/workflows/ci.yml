@@ -48,6 +48,7 @@ jobs:
   github-codeql-analysis:
     if: >
       github.event_name == 'push'
+      || github.event_name == 'pull_request'
     permissions:
       contents: read
       security-events: write
@@ -79,6 +80,7 @@ jobs:
       - github-actions-lint-and-scan
       - python-lint-and-scan
       - python-test
+      - github-codeql-analysis
     permissions:
       contents: write
       pull-requests: write

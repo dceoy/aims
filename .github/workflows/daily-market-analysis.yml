@@ -117,6 +117,20 @@ jobs:
           uv run python .agents/skills/market-analysis/scripts/generate_report.py \
             --input "data/analysis/${DATE}.json" \
             --output content/results/
+      - name: Update market knowledge wiki
+        if: steps.symbols.outputs.symbols != ''
+        env:
+          DATE: ${{ steps.date.outputs.date }}
+        run: |
+          uv run python .agents/skills/market-wiki/scripts/render_wiki_source.py \
+            --input "data/analysis/${DATE}.json" \
+            --output "knowledge/sources/${DATE}-market-analysis.md"
+          uv run python .agents/skills/market-wiki/scripts/update_wiki.py \
+            --source "knowledge/sources/${DATE}-market-analysis.md" \
+            --analysis "data/analysis/${DATE}.json" \
+            --wiki-root knowledge
+          uv run python .agents/skills/market-wiki/scripts/lint_wiki.py \
+            --wiki-root knowledge
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
@@ -140,7 +154,7 @@ jobs:
           gh auth setup-git
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
-          git add data/analysis/ content/results/
+          git add data/analysis/ content/results/ knowledge/
           if git diff --cached --quiet; then
             echo "No changes to commit."
             echo "pr_url=" >> "$GITHUB_OUTPUT"

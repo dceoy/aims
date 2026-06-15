@@ -19,6 +19,22 @@ This repository combines Python automation scripts with a Hugo static site. Core
 
 Python targets 3.11 through 3.13. Ruff enforces 88-character lines, Google-style docstrings, import sorting, and strict lint rules. Prefer typed functions and `pathlib` over string path manipulation. Apply KISS, DRY, and YAGNI: keep implementations simple, reuse existing helpers and patterns, and avoid abstractions or features before they are needed. Test files use `test_*.py`, and test names should describe behavior. Keep generated Hugo reports named like `YYYY-MM-DD-market-analysis.md` under `content/results/`.
 
+## Market Knowledge Wiki
+
+`knowledge/` is an internal, Markdown-only research memory derived from daily market analysis artifacts. Before editing wiki pages, agents must read `knowledge/index.md`, `knowledge/log.md`, the relevant `knowledge/sources/*.md` rendered source, and the corresponding `data/analysis/*.json` artifact.
+
+`data/analysis/*.json` remains the immutable source of truth. `knowledge/sources/*.md` files are deterministic renderings for agent ingestion and should be regenerated with `render_wiki_source.py`, not manually summarized. `knowledge/wiki/**/*.md`, `knowledge/index.md`, and `knowledge/log.md` are derived memory maintained by agents.
+
+Daily analysis can update the wiki with:
+
+```bash
+uv run python .agents/skills/market-wiki/scripts/render_wiki_source.py --input data/analysis/${DATE}.json --output knowledge/sources/${DATE}-market-analysis.md
+uv run python .agents/skills/market-wiki/scripts/update_wiki.py --source knowledge/sources/${DATE}-market-analysis.md --analysis data/analysis/${DATE}.json --wiki-root knowledge
+uv run python .agents/skills/market-wiki/scripts/lint_wiki.py --wiki-root knowledge
+```
+
+Generated analysis PRs should include `knowledge/` changes alongside `data/analysis/` and `content/results/` when wiki updates are enabled.
+
 ## Testing Guidelines
 
 Pytest is configured in `pyproject.toml` and requires 100% branch coverage for the script directories under `.agents/skills/`. Add or update fixtures in `tests/fixtures/` and golden output in `tests/golden/` when changing report generation or parser behavior. Validate CFD data with:

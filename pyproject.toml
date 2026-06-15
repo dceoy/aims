@@ -150,6 +150,18 @@ ignore = [
   "S607",     # git partial path is intentional
   "T201",     # CLI status output via print is intentional
 ]
+".agents/skills/market-wiki/scripts/*.py" = [
+  "D100",
+  "D103",
+  "E501",
+  "C901",
+  "DOC201",
+  "INP001",
+  "PLR0912",
+  "PLR0914",
+  "PLR2004",
+  "T201",
+]
 ".agents/skills/update-cfd-instruments/scripts/*.py" = [
   "C901",     # Agent scraper scripts can have parser/state-machine complexity
   "D100",     # Missing module docstring
@@ -167,11 +179,13 @@ ignore = [
 "tests/*.py" = [
   "D100",    # Test modules are named by behavior rather than docstrings
   "D103",    # Test function names describe the assertion
+  "ANN",     # Test annotations are intentionally lightweight
   "PLC1901", # Explicit empty string comparisons are clearer in assertions
   "PLR2004", # Magic values are natural and readable in test assertions
   "RUF001",  # Japanese fixture text must match source pages
   "RUF069",  # Exact float literals in test assertions are intentional
   "S101",    # Pytest uses assert introspection
+  "PLW1514", # Test fixture reads use default encoding
   "SLF001",  # Tests intentionally access private implementation members
 ]
 
@@ -186,6 +200,7 @@ max-public-methods = 40
 include = [
   ".agents/skills/update-cfd-instruments/scripts",
   ".agents/skills/market-analysis/scripts",
+  ".agents/skills/market-wiki/scripts",
 ]
 exclude = ["build", ".venv", ".claude", "tests"]
 venvPath = "."

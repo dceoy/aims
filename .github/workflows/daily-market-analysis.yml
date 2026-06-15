@@ -37,10 +37,10 @@ jobs:
       INTERVAL: ${{ inputs.interval || 'd' }}
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
     steps:
-      - uses: actions/checkout@v4  # zizmor: ignore[unpinned-uses]
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4.3.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@v5  # zizmor: ignore[unpinned-uses]
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86   # v5.4.2
         with:
           python-version: "3.x"
       - name: Sync dependencies
@@ -117,11 +117,11 @@ jobs:
           uv run python .agents/skills/market-analysis/scripts/generate_report.py \
             --input "data/analysis/${DATE}.json" \
             --output content/results/
-      - uses: actions/setup-go@v5  # zizmor: ignore[unpinned-uses]
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version: stable
       - name: Install Hugo
-        uses: peaceiris/actions-hugo@v3  # zizmor: ignore[unpinned-uses]
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3.2.1
         with:
           hugo-version: latest
           extended: true

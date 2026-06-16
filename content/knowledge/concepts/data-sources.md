@@ -1,17 +1,18 @@
 ---
 description: Authoritative market and instrument data sources used by AIMS and the
   boundaries for durable knowledge updates.
-id: okf/concepts/data-sources
 params:
+  okf_extra:
+    id: okf/concepts/data-sources
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/data-sources.md
   source: repository
-status: seeded
 tags:
 - data-sources
 - market-analysis
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: Data Sources
 type: knowledge
 ---

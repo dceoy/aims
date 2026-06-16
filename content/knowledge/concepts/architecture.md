@@ -1,18 +1,19 @@
 ---
 description: Repository-level architecture for the AIMS analysis pipeline, Hugo site,
   OKF source, and generated knowledge pages.
-id: okf/concepts/architecture
 params:
+  okf_extra:
+    id: okf/concepts/architecture
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/architecture.md
   source: repository
-status: seeded
 tags:
 - architecture
 - okf
 - hugo
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: AIMS Architecture
 type: knowledge
 ---

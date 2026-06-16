@@ -1,18 +1,19 @@
 ---
 description: Canonical CFD instrument reference data and validation responsibilities
   in AIMS.
-id: okf/concepts/instrument-master
 params:
+  okf_extra:
+    id: okf/concepts/instrument-master
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/instrument-master.md
   source: repository
-status: seeded
 tags:
 - cfd
 - data
 - instrument-master
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: Instrument Master
 type: knowledge
 ---

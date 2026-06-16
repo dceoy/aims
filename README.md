@@ -35,7 +35,7 @@ See [OPERATIONS.md](OPERATIONS.md) for data sources, scoring methodology, requir
 
 ## OKF knowledge layer
 
-AIMS uses an OKF-first knowledge layer for durable repository knowledge:
+AIMS uses an OKF-first knowledge layer for durable repository knowledge. AIMS targets OKF v0.1 Draft as described in the [OKF v0.1 draft specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) and the [Google Cloud OKF announcement](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing):
 
 - `okf/` is the canonical source for stable concepts about architecture, data sources, scoring methodology, operations, and Agent Skills.
 - `data/analysis/*.json` remains authoritative for numeric market facts, scores, ranks, dates, risk gates, and data availability.

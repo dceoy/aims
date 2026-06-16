@@ -37,6 +37,8 @@ Do not commit secrets or local environment files. Operational details, scheduled
 
 ## OKF Knowledge Layer
 
+OKF v0.1 Draft primary references: [specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) and [Google Cloud announcement](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing).
+
 - Treat `okf/` as the canonical source for durable AIMS knowledge.
 - Treat `content/knowledge/` as generated Hugo shadow content; do not hand-edit it.
 - Treat OKF v0.1 `index.md` and `log.md` as reserved files, not concept documents; do not add concept front matter to those files.

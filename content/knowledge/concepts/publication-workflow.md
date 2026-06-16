@@ -1,18 +1,19 @@
 ---
 description: How CI/CD, pull requests, and GitHub Pages publish AIMS reports and generated
   OKF shadow content.
-id: okf/concepts/publication-workflow
 params:
+  okf_extra:
+    id: okf/concepts/publication-workflow
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/publication-workflow.md
   source: repository
-status: seeded
 tags:
 - ci
 - hugo
 - publication
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: Publication Workflow
 type: knowledge
 ---

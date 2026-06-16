@@ -1,6 +1,8 @@
 from pathlib import Path
+from typing import Any
 
 import pytest
+import yaml
 
 from tools import okf_hugo_adapter
 
@@ -9,17 +11,32 @@ def write_concept(path: Path, body: str = "# Concept\n") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "---\n"
+        "id: okf/concepts/concept\n"
         "title: Concept\n"
         "description: Test concept\n"
         "type: concept\n"
         "tags: [sales]\n"
         "timestamp: 2026-06-16T00:00:00Z\n"
+        "status: seeded\n"
+        "url: /unsafe\n"
+        "slug: unsafe-slug\n"
+        "layout: unsafe-layout\n"
+        "draft: true\n"
+        "weight: 99\n"
         "unknown_key:\n"
         "  nested: preserved\n"
         "---\n"
         f"{body}",
         encoding="utf-8",
     )
+
+
+def generated_metadata(path: Path) -> dict[str, Any]:
+    text = path.read_text(encoding="utf-8")
+    front_matter = text.split("---\n", 2)[1]
+    metadata = yaml.safe_load(front_matter)
+    assert isinstance(metadata, dict)
+    return metadata
 
 
 def test_adapter_accepts_reserved_files_without_frontmatter(tmp_path: Path) -> None:
@@ -38,15 +55,15 @@ def test_adapter_accepts_reserved_files_without_frontmatter(tmp_path: Path) -> N
 
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
 
-    generated = dst / "_index.md"
-    text = generated.read_text(encoding="utf-8")
-    assert "type: knowledge" in text
-    assert "okf_reserved: index" in text
+    metadata = generated_metadata(dst / "_index.md")
+    text = (dst / "_index.md").read_text(encoding="utf-8")
+    assert metadata["type"] == "knowledge"
+    assert metadata["params"]["okf_reserved"] == "index"
     assert "# Knowledge" in text
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 0
 
 
-def test_adapter_accepts_root_index_with_okf_version_and_preserves_unknown_fields(
+def test_hugo_metadata_isolates_unknown_and_sensitive_okf_fields(
     tmp_path: Path,
 ) -> None:
     src = tmp_path / "okf"
@@ -59,12 +76,15 @@ def test_adapter_accepts_root_index_with_okf_version_and_preserves_unknown_field
 
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
 
-    generated = (dst / "concepts" / "concept.md").read_text(encoding="utf-8")
-    assert "  okf_type: concept" in generated
-    assert "unknown_key:" in generated
-    assert "  nested: preserved" in generated
-    assert "tags:" in generated
-    assert "- sales" in generated
+    metadata = generated_metadata(dst / "concepts" / "concept.md")
+    assert metadata["type"] == "knowledge"
+    assert metadata["params"]["okf_type"] == "concept"
+    assert metadata["tags"] == ["sales"]
+    assert metadata["timestamp"] == "2026-06-16T00:00:00Z"
+    for key in ["id", "status", "url", "slug", "layout", "draft", "weight"]:
+        assert key not in metadata
+        assert key in metadata["params"]["okf_extra"]
+    assert metadata["params"]["okf_extra"]["unknown_key"] == {"nested": "preserved"}
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 0
 
 
@@ -113,3 +133,24 @@ def test_bundle_absolute_links_are_validated(
     )
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
     assert "broken link '/concepts/missing.md'" in capsys.readouterr().err
+
+
+def test_check_detects_generated_drift(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "content" / "knowledge"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    write_concept(src / "concepts" / "concept.md")
+
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+    first = (dst / "concepts" / "concept.md").read_text(encoding="utf-8")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 0
+
+    (dst / "concepts" / "concept.md").write_text(f"{first}\n", encoding="utf-8")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
+    assert (
+        okf_hugo_adapter.render_document(
+            okf_hugo_adapter.load_documents(src, dst)[0][0], src
+        )
+        == first
+    )

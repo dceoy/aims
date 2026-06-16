@@ -13,12 +13,26 @@ from typing import Any
 
 import yaml
 
+
+class OkfYamlLoader(yaml.SafeLoader):
+    """YAML loader that leaves OKF scalar values such as timestamps as strings."""
+
+
+for first_character, resolvers in list(OkfYamlLoader.yaml_implicit_resolvers.items()):
+    OkfYamlLoader.yaml_implicit_resolvers[first_character] = [
+        (tag, regexp)
+        for tag, regexp in resolvers
+        if tag != "tag:yaml.org,2002:timestamp"
+    ]
+
+
 FRONT_MATTER = re.compile(r"\A---\n(?P<meta>.*?)\n---\n(?P<body>.*)\Z", re.DOTALL)
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\((?P<target>[^)]+)\)")
 TAG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 RECOMMENDED_CONCEPT_FIELDS = ("title", "description", "tags", "timestamp")
 ROOT_INDEX_ALLOWED_FIELDS = {"okf_version"}
 RESERVED_NAMES = {"index.md", "log.md"}
+HUGO_TOP_LEVEL_KEYS = {"title", "description", "tags", "resource", "timestamp"}
 
 
 @dataclass(frozen=True)
@@ -39,7 +53,7 @@ def split_front_matter(path: Path) -> tuple[dict[str, Any], str, bool]:
     match = FRONT_MATTER.match(text)
     if match is None:
         return {}, text, False
-    metadata = yaml.safe_load(match.group("meta"))
+    metadata = yaml.load(match.group("meta"), Loader=OkfYamlLoader)
     if metadata is None:
         metadata = {}
     if not isinstance(metadata, dict):
@@ -117,11 +131,22 @@ def heading_title(body: str, fallback: str) -> str:
 
 def hugo_metadata(document: OkfDocument, src_root: Path) -> dict[str, Any]:
     """Map OKF metadata to Hugo-safe metadata."""
-    converted = dict(document.metadata)
-    okf_type = converted.pop("type", None)
-    params = dict(converted.pop("params", {}) or {})
+    converted = {
+        key: value
+        for key, value in document.metadata.items()
+        if key in HUGO_TOP_LEVEL_KEYS
+    }
+    extra = {
+        key: value
+        for key, value in document.metadata.items()
+        if key not in HUGO_TOP_LEVEL_KEYS and key != "type"
+    }
+    params: dict[str, Any] = {}
+    okf_type = document.metadata.get("type")
     if okf_type is not None:
         params["okf_type"] = okf_type
+    if extra:
+        params["okf_extra"] = extra
     if document.reserved:
         params["okf_reserved"] = document.source.name.removesuffix(".md")
     converted["params"] = params

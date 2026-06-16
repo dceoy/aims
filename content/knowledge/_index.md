@@ -1,7 +1,8 @@
 ---
 description: Generated from index.md.
-okf_version: '0.1'
 params:
+  okf_extra:
+    okf_version: '0.1'
   okf_reserved: index
 resource:
   path: index.md

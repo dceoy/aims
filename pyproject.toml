@@ -139,6 +139,7 @@ ignore = [
   "DOC201",
   "DOC501",
   "PERF401",
+  "S506",
   "T201",
 ]
 "tools/__init__.py" = ["D104"]

@@ -1,18 +1,19 @@
 ---
 description: How deterministic JSON analysis artifacts become public Hugo market analysis
   reports.
-id: okf/concepts/report-generation
 params:
+  okf_extra:
+    id: okf/concepts/report-generation
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/report-generation.md
   source: repository
-status: seeded
 tags:
 - reports
 - hugo
 - market-analysis
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: Report Generation
 type: knowledge
 ---

@@ -1,17 +1,18 @@
 ---
 description: How AIMS treats analysis artifacts, score semantics, ranking outputs,
   and risk gates as generated numeric facts.
-id: okf/concepts/scoring-methodology
 params:
+  okf_extra:
+    id: okf/concepts/scoring-methodology
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/scoring-methodology.md
   source: repository
-status: seeded
 tags:
 - scoring
 - market-analysis
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: Scoring Methodology
 type: knowledge
 ---

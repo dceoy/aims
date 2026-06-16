@@ -1,17 +1,18 @@
 ---
 description: Runbook-oriented knowledge for restoring AIMS analysis, validation, and
   publication workflows.
-id: okf/concepts/operational-recovery
 params:
+  okf_extra:
+    id: okf/concepts/operational-recovery
+    status: seeded
   okf_type: concept
 resource:
   path: okf/concepts/operational-recovery.md
   source: repository
-status: seeded
 tags:
 - operations
 - recovery
-timestamp: 2026-06-16 00:00:00+00:00
+timestamp: 2026-06-16T00:00:00Z
 title: Operational Recovery
 type: knowledge
 ---

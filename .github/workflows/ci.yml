@@ -106,6 +106,7 @@ jobs:
       - python-lint-and-scan
       - python-test
       - github-codeql-analysis
+      - okf-hugo-build
     permissions:
       contents: write
       pull-requests: write

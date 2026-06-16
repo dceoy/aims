@@ -10,8 +10,8 @@ This repository combines Python automation scripts with a Hugo static site. Core
 - `uv run pytest`: run the Python test suite with branch coverage.
 - `uv run ruff format .`: format Python files.
 - `uv run ruff check --fix .`: lint and apply safe Ruff fixes.
-- `uv run pyright .`: run strict type checks for skill scripts.
-- `hugo --gc --minify`: build the static site.
+- `uv run pyright .`: run strict type checks for skill scripts and `tools/`.
+- `hugo --gc --minify`: build the static site (requires Go for Hugo Modules).
 - `hugo server --buildDrafts`: preview the site locally, including draft posts.
 - `.agents/skills/local-qa/scripts/qa.sh`: run the full local QA workflow used by contributors.
 
@@ -34,3 +34,23 @@ Recent history uses concise Conventional Commit-style subjects such as `feat: ..
 ## Security & Configuration Tips
 
 Do not commit secrets or local environment files. Operational details, scheduled workflows, Slack notifications, and required repository secrets are documented in `OPERATIONS.md`. GitHub Actions live in `.github/workflows/`; run the full QA script after workflow edits because it applies `zizmor`, `actionlint`, `yamllint`, and `checkov`.
+
+## OKF Knowledge Layer
+
+OKF v0.1 Draft primary references: [specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) and [Google Cloud announcement](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing).
+
+- Treat `okf/` as the canonical source for durable AIMS knowledge.
+- Treat `content/knowledge/` as generated Hugo shadow content; do not hand-edit it.
+- Treat OKF v0.1 `index.md` and `log.md` as reserved files, not concept documents; do not add concept front matter to those files.
+- Keep `data/analysis/*.json` authoritative for numeric market facts, scores, ranks, dates, risk gates, and data availability.
+- Keep `content/results/` as the public daily analysis report output.
+- After OKF edits, regenerate and validate shadow content, then build Hugo:
+
+  ```bash
+  uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clean
+  uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
+  hugo --gc --minify
+  ```
+
+- Do not hand-edit `content/knowledge/`; fix drift by regenerating from `okf/`.
+- Do not introduce vector databases, embeddings pipelines, external RAG services, custom CMS layers, or server-side runtimes for the OKF layer.

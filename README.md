@@ -7,7 +7,7 @@ AI Market Strategist
 ## Static analysis site
 
 Analysis results are saved as Hugo content under `content/results/` and rendered to the ignored `site/` directory.
-The site uses the Congo Hugo theme via Hugo Modules.
+The site uses the Congo Hugo theme via Hugo Modules, so local Hugo builds require a Go toolchain in addition to Hugo Extended.
 
 Create a new result:
 
@@ -43,11 +43,14 @@ AIMS uses an OKF-first knowledge layer for durable repository knowledge. AIMS ta
 - `content/knowledge/` is generated Hugo shadow content derived from `okf/` and must not be hand-edited.
 - Repository-local Agent Skills under `.agents/skills/` guide OKF authoring, curation, Hugo generation, and PR review.
 
-Generate or validate the Hugo shadow content with:
+After editing `okf/`, regenerate and validate the Hugo shadow content, then build the site:
 
 ```bash
 uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clean
 uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
+hugo --gc --minify
 ```
+
+Do not hand-edit `content/knowledge/`. If Markdown formatting or other tooling changes the generated files, fix drift by regenerating from `okf/` with the adapter rather than editing the shadow content directly.
 
 The adapter deterministically maps OKF reserved `index.md` files to Hugo `_index.md` files, accepts OKF v0.1 reserved files without concept front matter, and moves non-reserved OKF front matter `type` into `params.okf_type` so Hugo can use a stable `type: knowledge` presentation type.

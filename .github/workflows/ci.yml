@@ -95,6 +95,7 @@ jobs:
     uses: dceoy/gh-actions-for-devops/.github/workflows/hugo-deploy-to-gh-pages.yml@main   # zizmor: ignore[unpinned-uses]
     with:
       site-path: .
+      go-version: stable
       base-url: https://dceoy.github.io/aims/
       destination-dir: site
   dependabot-auto-merge:

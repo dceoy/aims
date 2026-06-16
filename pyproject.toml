@@ -199,6 +199,7 @@ max-public-methods = 40
 include = [
   ".agents/skills/update-cfd-instruments/scripts",
   ".agents/skills/market-analysis/scripts",
+  "tools",
 ]
 exclude = ["build", ".venv", ".claude", "tests"]
 venvPath = "."

@@ -28,6 +28,7 @@ package = false
 addopts = [
   "--cov=.agents/skills/update-cfd-instruments/scripts",
   "--cov=.agents/skills/market-analysis/scripts",
+  "--cov=.agents/skills/market-wiki/scripts",
   "--cov-branch",
   "--cov-report=term-missing",
   "--cov-fail-under=100",

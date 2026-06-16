@@ -43,8 +43,6 @@ def lint_wiki(wiki_root: Path) -> list[str]:
             if _is_external(link):
                 continue
             target = link.split("#", 1)[0]
-            if not target:
-                continue
             if not (path.parent / target).resolve().is_file():
                 errors.append(f"broken link in {rel}: {link}")
 

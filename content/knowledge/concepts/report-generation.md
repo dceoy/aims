@@ -34,8 +34,8 @@ AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data avai
 
 ## Related concepts
 
-- [Architecture](/knowledge/concepts/architecture/)
-- [Publication Workflow](/knowledge/concepts/publication-workflow/)
+- [Architecture](../architecture/)
+- [Publication Workflow](../publication-workflow/)
 
 # Citations
 

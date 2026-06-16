@@ -34,9 +34,9 @@ AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data avai
 
 ## Related concepts
 
-- [Data Sources](/knowledge/concepts/data-sources/)
-- [Report Generation](/knowledge/concepts/report-generation/)
-- [Publication Workflow](/knowledge/concepts/publication-workflow/)
+- [Data Sources](../data-sources/)
+- [Report Generation](../report-generation/)
+- [Publication Workflow](../publication-workflow/)
 
 # Citations
 

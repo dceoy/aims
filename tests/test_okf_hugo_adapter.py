@@ -151,10 +151,26 @@ def test_internal_links_rewrite_to_hugo_urls(tmp_path: Path) -> None:
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
 
     generated = (dst / "concepts" / "foo.md").read_text(encoding="utf-8")
-    assert "[Bar](/knowledge/concepts/bar/)" in generated
-    assert "[Area](/knowledge/areas/)" in generated
+    assert "[Bar](../bar/)" in generated
+    assert "[Area](../../areas/)" in generated
     assert "./bar.md" not in generated
-    assert "/knowledge/areas/index/" not in generated
+    assert "/knowledge/" not in generated
+
+
+def test_knowledge_index_links_are_relative(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "content" / "knowledge"
+    src.mkdir()
+    (src / "index.md").write_text(
+        "# Knowledge\n\n- [Concept](/concepts/concept.md)\n", encoding="utf-8"
+    )
+    write_concept(src / "concepts" / "concept.md")
+
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+
+    generated = (dst / "_index.md").read_text(encoding="utf-8")
+    assert "[Concept](concepts/concept/)" in generated
+    assert "/knowledge/" not in generated
 
 
 def test_check_detects_generated_drift(tmp_path: Path) -> None:
@@ -172,7 +188,7 @@ def test_check_detects_generated_drift(tmp_path: Path) -> None:
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
     assert (
         okf_hugo_adapter.render_document(
-            okf_hugo_adapter.load_documents(src, dst)[0][0], src
+            okf_hugo_adapter.load_documents(src, dst)[0][0], src, dst
         )
         == first
     )

@@ -163,14 +163,29 @@ def hugo_metadata(document: OkfDocument, src_root: Path) -> dict[str, Any]:
     return converted
 
 
-def hugo_url_for_okf_path(path: Path, src_root: Path) -> str:
-    """Return the Hugo knowledge URL for an OKF Markdown source path."""
-    relative = path.resolve().relative_to(src_root.resolve())
-    if relative.name == "index.md":
-        section = relative.parent.as_posix()
-        return "/knowledge/" if section == "." else f"/knowledge/{section}/"
-    page = relative.with_suffix("").as_posix()
-    return f"/knowledge/{page}/"
+def page_url_parts(destination: Path, dst_root: Path) -> tuple[str, ...]:
+    """Return URL directory components for a Hugo destination file."""
+    relative = destination.relative_to(dst_root)
+    if relative.name == "_index.md":
+        return tuple(relative.parent.parts) if relative.parent != Path() else ()
+    return tuple(relative.with_suffix("").parts)
+
+
+def relative_hugo_link(
+    from_destination: Path, to_destination: Path, dst_root: Path
+) -> str:
+    """Return a baseURL-safe relative link between two Hugo destination files."""
+    from_parts = page_url_parts(from_destination, dst_root)
+    to_parts = page_url_parts(to_destination, dst_root)
+    common = 0
+    for left, right in zip(from_parts, to_parts, strict=False):
+        if left != right:
+            break
+        common += 1
+    up = len(from_parts) - common
+    down = to_parts[common:]
+    path = "/".join(down) if up == 0 else "/".join([".."] * up + list(down))
+    return f"{path}/" if path else "./"
 
 
 def split_link_target(target: str) -> tuple[str, str]:
@@ -184,7 +199,7 @@ def split_link_target(target: str) -> tuple[str, str]:
     return target[:split_at], target[split_at:]
 
 
-def hugo_body(document: OkfDocument, src_root: Path) -> str:
+def hugo_body(document: OkfDocument, src_root: Path, dst_root: Path) -> str:
     """Rewrite OKF internal Markdown links for Hugo knowledge URLs."""
 
     def replace(match: re.Match[str]) -> str:
@@ -203,16 +218,20 @@ def hugo_body(document: OkfDocument, src_root: Path) -> str:
             okf_path = document.source.parent / target_path
         if okf_path.suffix != ".md":
             return match.group(0)
-        rewritten = f"{hugo_url_for_okf_path(okf_path, src_root)}{suffix}"
+        target_destination = destination_for(okf_path, src_root, dst_root)
+        rewritten = (
+            f"{relative_hugo_link(document.destination, target_destination, dst_root)}"
+            f"{suffix}"
+        )
         return match.group(0).replace(target, rewritten)
 
     return LINK.sub(replace, document.body)
 
 
-def render_document(document: OkfDocument, src_root: Path) -> str:
+def render_document(document: OkfDocument, src_root: Path, dst_root: Path) -> str:
     """Render a Hugo Markdown document from an OKF document."""
     front_matter = dump_yaml(hugo_metadata(document, src_root))
-    return f"---\n{front_matter}---\n{hugo_body(document, src_root)}"
+    return f"---\n{front_matter}---\n{hugo_body(document, src_root, dst_root)}"
 
 
 def write_documents(
@@ -224,7 +243,7 @@ def write_documents(
     for document in documents:
         document.destination.parent.mkdir(parents=True, exist_ok=True)
         document.destination.write_text(
-            render_document(document, src_root), encoding="utf-8"
+            render_document(document, src_root, dst_root), encoding="utf-8"
         )
 
 
@@ -240,7 +259,7 @@ def validate_documents(
     for document in documents:
         errors.extend(validate_reserved_or_concept(document, src_root))
         errors.extend(validate_aims_policy(document, sources, src_root))
-        expected = render_document(document, src_root)
+        expected = render_document(document, src_root, dst_root)
         if not document.destination.exists():
             errors.append(
                 f"AIMS policy error: {document.destination}: generated file is missing"

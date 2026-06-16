@@ -34,8 +34,8 @@ AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data avai
 
 ## Related concepts
 
-- [Architecture](/knowledge/concepts/architecture/)
-- [Operational Recovery](/knowledge/concepts/operational-recovery/)
+- [Architecture](../architecture/)
+- [Operational Recovery](../operational-recovery/)
 
 # Citations
 

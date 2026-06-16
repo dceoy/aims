@@ -33,8 +33,8 @@ AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data avai
 
 ## Related concepts
 
-- [Instrument Master](/knowledge/concepts/instrument-master/)
-- [Scoring Methodology](/knowledge/concepts/scoring-methodology/)
+- [Instrument Master](../instrument-master/)
+- [Scoring Methodology](../scoring-methodology/)
 
 # Citations
 

@@ -33,8 +33,8 @@ AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data avai
 
 ## Related concepts
 
-- [Publication Workflow](/knowledge/concepts/publication-workflow/)
-- [Agent Skills](/knowledge/concepts/agent-skills/)
+- [Publication Workflow](../publication-workflow/)
+- [Agent Skills](../agent-skills/)
 
 # Citations
 

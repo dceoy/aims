@@ -16,15 +16,15 @@ The `okf/` tree is the canonical repository-native source for durable AIMS archi
 
 ## Concepts
 
-- [Agent Skills](/knowledge/concepts/agent-skills/)
-- [AIMS Architecture](/knowledge/concepts/architecture/)
-- [Data Sources](/knowledge/concepts/data-sources/)
-- [Instrument Master](/knowledge/concepts/instrument-master/)
-- [Operational Recovery](/knowledge/concepts/operational-recovery/)
-- [Publication Workflow](/knowledge/concepts/publication-workflow/)
-- [Report Generation](/knowledge/concepts/report-generation/)
-- [Scoring Methodology](/knowledge/concepts/scoring-methodology/)
+- [Agent Skills](concepts/agent-skills/)
+- [AIMS Architecture](concepts/architecture/)
+- [Data Sources](concepts/data-sources/)
+- [Instrument Master](concepts/instrument-master/)
+- [Operational Recovery](concepts/operational-recovery/)
+- [Publication Workflow](concepts/publication-workflow/)
+- [Report Generation](concepts/report-generation/)
+- [Scoring Methodology](concepts/scoring-methodology/)
 
 ## Log
 
-- [Knowledge log](/knowledge/logs/log/)
+- [Knowledge log](logs/log/)

@@ -130,6 +130,16 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"tools/*.py" = [
+  "D100",
+  "D101",
+  "D103",
+  "DOC201",
+  "DOC501",
+  "PERF401",
+  "T201",
+]
+"tools/__init__.py" = ["D104"]
 ".agents/skills/market-analysis/scripts/*.py" = [
   "C901",     # Scoring/feature functions have inherent complexity
   "D100",     # Module docstrings are in the module-level string

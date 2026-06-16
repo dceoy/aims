@@ -2,3 +2,8 @@
   name = "Results"
   pageRef = "results"
   weight = 10
+
+[[main]]
+  name = "Knowledge"
+  pageRef = "knowledge"
+  weight = 20

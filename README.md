@@ -32,3 +32,22 @@ hugo server --buildDrafts
 Daily market analysis runs automatically via `.github/workflows/daily-market-analysis.yml`. It fetches market data, scores instruments, generates JSON artifacts and Hugo Markdown reports, builds the site, and creates a pull request with the results for review and merging.
 
 See [OPERATIONS.md](OPERATIONS.md) for data sources, scoring methodology, required secrets, and operational runbooks.
+
+## OKF knowledge layer
+
+AIMS uses an OKF-first knowledge layer for durable repository knowledge:
+
+- `okf/` is the canonical source for stable concepts about architecture, data sources, scoring methodology, operations, and Agent Skills.
+- `data/analysis/*.json` remains authoritative for numeric market facts, scores, ranks, dates, risk gates, and data availability.
+- `content/results/` remains the public daily market-analysis report output.
+- `content/knowledge/` is generated Hugo shadow content derived from `okf/` and must not be hand-edited.
+- Repository-local Agent Skills under `.agents/skills/` guide OKF authoring, curation, Hugo generation, and PR review.
+
+Generate or validate the Hugo shadow content with:
+
+```bash
+uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clean
+uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
+```
+
+The adapter deterministically maps OKF `index.md` files to Hugo `_index.md` files and moves OKF front matter `type` into `params.okf_type` so Hugo can use a stable `type: knowledge` presentation type.

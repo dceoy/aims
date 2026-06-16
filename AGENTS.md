@@ -34,3 +34,13 @@ Recent history uses concise Conventional Commit-style subjects such as `feat: ..
 ## Security & Configuration Tips
 
 Do not commit secrets or local environment files. Operational details, scheduled workflows, Slack notifications, and required repository secrets are documented in `OPERATIONS.md`. GitHub Actions live in `.github/workflows/`; run the full QA script after workflow edits because it applies `zizmor`, `actionlint`, `yamllint`, and `checkov`.
+
+## OKF Knowledge Layer
+
+- Treat `okf/` as the canonical source for durable AIMS knowledge.
+- Treat `content/knowledge/` as generated Hugo shadow content; do not hand-edit it.
+- Keep `data/analysis/*.json` authoritative for numeric market facts, scores, ranks, dates, risk gates, and data availability.
+- Keep `content/results/` as the public daily analysis report output.
+- Use `uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clean` after OKF edits.
+- Use `uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check` to validate OKF metadata, internal links, and generated-content drift.
+- Do not introduce vector databases, embeddings pipelines, external RAG services, custom CMS layers, or server-side runtimes for the OKF layer.

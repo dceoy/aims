@@ -21,6 +21,11 @@ if [ -f data/cfd_instruments.csv ]; then
     --schema data/schema/cfd_instruments.schema.json
 fi
 
+# OKF knowledge shadow content
+if [ -d okf ]; then
+  uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
+fi
+
 # Markdown
 npx -y prettier --write './**/*.md'
 

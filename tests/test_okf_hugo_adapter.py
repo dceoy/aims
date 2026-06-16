@@ -216,3 +216,42 @@ def test_check_detects_generated_drift(tmp_path: Path) -> None:
         )
         == first
     )
+
+
+def test_parent_directory_links_rewrite_to_hugo_urls(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "content" / "knowledge"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    logs = src / "logs"
+    logs.mkdir()
+    (logs / "log.md").write_text("# Log\n", encoding="utf-8")
+    write_concept(
+        src / "concepts" / "foo.md",
+        "# Foo\n[Index](../index.md)\n[Log](../logs/log.md)\n",
+    )
+
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+
+    generated = (dst / "concepts" / "foo.md").read_text(encoding="utf-8")
+    assert "[Index](../../)" in generated
+    assert "[Log](../../logs/log/)" in generated
+    assert "../index.md" not in generated
+    assert "../logs/log.md" not in generated
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 0
+
+
+def test_check_rejects_internal_links_that_escape_okf_bundle(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "content" / "knowledge"
+    outside = tmp_path / "outside.md"
+    outside.write_text("# Outside\n", encoding="utf-8")
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    write_concept(src / "concepts" / "foo.md", "# Foo\n[Outside](../../outside.md)\n")
+
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
+    captured = capsys.readouterr().err
+    assert "unsafe internal link '../../outside.md' escapes OKF bundle" in captured

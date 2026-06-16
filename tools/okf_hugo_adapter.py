@@ -78,7 +78,7 @@ def dump_yaml(metadata: dict[str, Any]) -> str:
 
 def destination_for(source: Path, src_root: Path, dst_root: Path) -> Path:
     """Return the Hugo destination path for an OKF Markdown source path."""
-    relative = source.relative_to(src_root)
+    relative = source.resolve().relative_to(src_root.resolve())
     if relative.name == "index.md":
         relative = relative.with_name("_index.md")
     return dst_root / relative
@@ -203,6 +203,21 @@ def split_link_target(target: str) -> tuple[str, str]:
     return target[:split_at], target[split_at:]
 
 
+def resolve_internal_okf_target(
+    document: OkfDocument, target_path: str, src_root: Path
+) -> Path | None:
+    """Resolve an internal OKF link target to an absolute path inside the bundle."""
+    if target_path.startswith("/"):
+        okf_path = src_root / target_path.removeprefix("/")
+    else:
+        okf_path = document.source.parent / target_path
+    resolved = okf_path.resolve()
+    src_resolved = src_root.resolve()
+    if not resolved.is_relative_to(src_resolved):
+        return None
+    return resolved
+
+
 def hugo_body(document: OkfDocument, src_root: Path, dst_root: Path) -> str:
     """Rewrite OKF internal Markdown links for Hugo knowledge URLs."""
 
@@ -216,13 +231,10 @@ def hugo_body(document: OkfDocument, src_root: Path, dst_root: Path) -> str:
             or pending_link(target)
         ):
             return match.group(0)
-        if target_path.startswith("/"):
-            okf_path = src_root / target_path.removeprefix("/")
-        else:
-            okf_path = document.source.parent / target_path
-        if okf_path.suffix != ".md":
+        resolved = resolve_internal_okf_target(document, target_path, src_root)
+        if resolved is None or resolved.suffix != ".md":
             return match.group(0)
-        target_destination = destination_for(okf_path, src_root, dst_root)
+        target_destination = destination_for(resolved, src_root, dst_root)
         rewritten = (
             f"{relative_hugo_link(document.destination, target_destination, dst_root)}"
             f"{suffix}"
@@ -372,11 +384,14 @@ def validate_links(
             or pending_link(target)
         ):
             continue
-        resolved = (
-            src_root / clean_target.removeprefix("/")
-            if clean_target.startswith("/")
-            else document.source.parent / clean_target
-        ).resolve()
+        resolved = resolve_internal_okf_target(document, clean_target, src_root)
+        if resolved is None:
+            errors.append(
+                "AIMS policy error: "
+                f"{document.source}: unsafe internal link '{target}' "
+                "escapes OKF bundle"
+            )
+            continue
         if resolved not in sources:
             errors.append(
                 f"AIMS policy error: {document.source}: broken link '{target}'"

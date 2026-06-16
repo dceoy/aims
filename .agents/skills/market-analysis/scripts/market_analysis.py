@@ -50,6 +50,11 @@ _MIN_HISTORY: Final[int] = _DAILY_POLICY.thresholds.min_history
 _MAX_GAP_DAYS: Final[int] = _DAILY_POLICY.thresholds.max_gap_days
 _HIGH_VOL_THRESHOLD: Final[float] = 1.0
 
+_FETCH_STATUS_VERSION: Final[str] = "1.0.0"
+_FETCH_STATUS_SUCCESS: Final[str] = "success"
+_FETCH_STATUS_FAILED: Final[str] = "failed"
+_FETCH_STATUS_PENDING: Final[str] = "pending"
+
 SCORING_VERSION: Final[str] = "1.0.0"
 ARTIFACT_VERSION: Final[str] = "1.0.0"
 
@@ -267,6 +272,83 @@ def load_ohlcv(
                 )
             )
     return sorted(bars, key=lambda b: b.timestamp)
+
+
+# ── Fetch status (current-run coverage source of truth) ───────────────────────
+
+
+def init_fetch_status(
+    path: Path,
+    symbols: list[str],
+    *,
+    interval: str,
+    analysis_date: str | None = None,
+) -> None:
+    """Initialize a fetch-status file with all symbols marked pending."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "version": _FETCH_STATUS_VERSION,
+        "interval": interval,
+        "analysis_date": analysis_date,
+        "symbols": {
+            symbol: {"status": _FETCH_STATUS_PENDING} for symbol in symbols
+        },
+    }
+    with path.open("w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+
+
+def load_fetch_status(path: Path) -> dict[str, Any]:
+    """Load a fetch-status JSON file."""
+    with path.open(encoding="utf-8") as fh:
+        data = json.load(fh)
+    if not isinstance(data, dict):
+        msg = f"fetch status at {path} must be a JSON object"
+        raise TypeError(msg)
+    return data
+
+
+def record_fetch_status(
+    path: Path,
+    symbol: str,
+    *,
+    success: bool,
+    error: str | None = None,
+) -> None:
+    """Record the outcome of a single-symbol fetch in *path*."""
+    data = load_fetch_status(path)
+    symbols = data.get("symbols")
+    if not isinstance(symbols, dict):
+        msg = f"fetch status at {path} is missing a valid 'symbols' object"
+        raise TypeError(msg)
+    entry: dict[str, str] = {
+        "status": _FETCH_STATUS_SUCCESS if success else _FETCH_STATUS_FAILED
+    }
+    if error:
+        entry["error"] = error
+    symbols[symbol] = entry
+    with path.open("w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2)
+
+
+def resolve_symbols_from_fetch_status(
+    symbols: list[str],
+    fetch_status: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    """Return (fetched, missing) symbol lists from a fetch-status payload."""
+    raw_symbols = fetch_status.get("symbols")
+    if not isinstance(raw_symbols, dict):
+        msg = "fetch status is missing a valid 'symbols' object"
+        raise TypeError(msg)
+    fetched: list[str] = []
+    missing: list[str] = []
+    for symbol in symbols:
+        entry = raw_symbols.get(symbol)
+        if isinstance(entry, dict) and entry.get("status") == _FETCH_STATUS_SUCCESS:
+            fetched.append(symbol)
+        else:
+            missing.append(symbol)
+    return fetched, missing
 
 
 # ── Data quality ──────────────────────────────────────────────────────────────
@@ -712,16 +794,32 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
     start = datetime.strptime(args.start, "%Y-%m-%d").replace(tzinfo=UTC)
     end = datetime.strptime(args.end, "%Y-%m-%d").replace(tzinfo=UTC)
     provider = StooqProvider()
+    fetch_status_path: Path | None = (
+        Path(args.fetch_status) if getattr(args, "fetch_status", None) else None
+    )
     try:
         bars = provider.fetch_ohlcv(args.symbol, start, end, args.interval)
     except (URLError, ValueError) as exc:
         print(f"ERROR: fetch failed for {args.symbol}: {exc}")
+        if fetch_status_path is not None:
+            record_fetch_status(
+                fetch_status_path, args.symbol, success=False, error=str(exc)
+            )
         return 1
     if not bars:
         print(f"ERROR: no data returned for {args.symbol}")
+        if fetch_status_path is not None:
+            record_fetch_status(
+                fetch_status_path,
+                args.symbol,
+                success=False,
+                error="no data returned",
+            )
         return 1
     path = save_ohlcv(bars, Path(args.output))
     print(f"saved {len(bars)} bars to {path}")
+    if fetch_status_path is not None:
+        record_fetch_status(fetch_status_path, args.symbol, success=True)
     if not args.no_validate:
         policy = get_data_quality_policy(args.interval)
         thresholds = policy.thresholds
@@ -785,6 +883,21 @@ def _cmd_score(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_init_fetch_status(args: argparse.Namespace) -> int:
+    symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
+    if not symbols:
+        print("ERROR: no symbols provided")
+        return 1
+    init_fetch_status(
+        Path(args.output),
+        symbols,
+        interval=args.interval,
+        analysis_date=getattr(args, "analysis_date", None) or None,
+    )
+    print(f"fetch status initialized for {len(symbols)} symbol(s) at {args.output}")
+    return 0
+
+
 def _cmd_generate(args: argparse.Namespace) -> int:
     symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
     if not symbols:
@@ -798,17 +911,49 @@ def _cmd_generate(args: argparse.Namespace) -> int:
     policy = get_data_quality_policy(args.interval, coverage=coverage_policy)
     thresholds = policy.thresholds
 
+    fetch_status_path: Path | None = (
+        Path(args.fetch_status) if getattr(args, "fetch_status", None) else None
+    )
+    if fetch_status_path is not None:
+        try:
+            fetch_status = load_fetch_status(fetch_status_path)
+        except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            print(f"ERROR: invalid fetch status file: {exc}")
+            return 1
+        fetched_symbols, missing = resolve_symbols_from_fetch_status(
+            symbols, fetch_status
+        )
+    else:
+        fetched_symbols = []
+        missing = []
+        for sym in symbols:
+            try:
+                load_ohlcv(sym, args.interval, Path(args.data_dir))
+            except FileNotFoundError:
+                missing.append(sym)
+            else:
+                fetched_symbols.append(sym)
+
+    coverage_result = evaluate_coverage(
+        symbols, fetched_symbols, missing, coverage_policy
+    )
+    coverage_metadata = build_coverage_metadata(coverage_result)
+
     data: dict[str, list[OhlcvBar]] = {}
-    missing: list[str] = []
-    for sym in symbols:
+    load_failures: list[str] = []
+    for sym in fetched_symbols:
         try:
             data[sym] = load_ohlcv(sym, args.interval, Path(args.data_dir))
         except FileNotFoundError:
-            print(f"WARNING: no data for {sym}, marking as missing")
-            missing.append(sym)
-
-    coverage_result = evaluate_coverage(symbols, list(data), missing, coverage_policy)
-    coverage_metadata = build_coverage_metadata(coverage_result)
+            print(f"WARNING: fetch status success but no data file for {sym}")
+            load_failures.append(sym)
+    if load_failures:
+        fetched_symbols = [s for s in fetched_symbols if s not in load_failures]
+        missing = sorted(set(missing) | set(load_failures))
+        coverage_result = evaluate_coverage(
+            symbols, fetched_symbols, missing, coverage_policy
+        )
+        coverage_metadata = build_coverage_metadata(coverage_result)
 
     if not data:
         print("ERROR: no symbols could be loaded")
@@ -861,6 +1006,30 @@ def main(argv: list[str] | None = None) -> int:
     p_fetch.add_argument("--interval", default=_DEFAULT_INTERVAL, help="d/w/m")
     p_fetch.add_argument("--output", default=str(_DEFAULT_PRICES_DIR))
     p_fetch.add_argument("--no-validate", action="store_true", dest="no_validate")
+    p_fetch.add_argument(
+        "--fetch-status",
+        default=None,
+        dest="fetch_status",
+        help="Path to fetch-status JSON updated with this fetch result",
+    )
+
+    p_init_status = sub.add_parser(
+        "init-fetch-status",
+        help="Initialize fetch-status JSON for a symbol list",
+    )
+    p_init_status.add_argument("--symbols", required=True, help="Comma-separated list")
+    p_init_status.add_argument("--interval", default=_DEFAULT_INTERVAL)
+    p_init_status.add_argument(
+        "--output",
+        required=True,
+        help="Path to fetch-status JSON file to create",
+    )
+    p_init_status.add_argument(
+        "--analysis-date",
+        default=None,
+        dest="analysis_date",
+        help="Analysis date (YYYY-MM-DD) recorded in fetch status",
+    )
 
     p_check = sub.add_parser("check", help="Check data quality of saved OHLCV")
     p_check.add_argument("--symbol", required=True)
@@ -901,6 +1070,12 @@ def main(argv: list[str] | None = None) -> int:
         dest="max_missing_symbols",
         help="Maximum allowed missing symbols (default: 1)",
     )
+    p_gen.add_argument(
+        "--fetch-status",
+        default=None,
+        dest="fetch_status",
+        help="Path to fetch-status JSON from the current fetch run",
+    )
 
     args = parser.parse_args(argv)
 
@@ -910,6 +1085,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_check(args)
     if args.command == "score":
         return _cmd_score(args)
+    if args.command == "init-fetch-status":
+        return _cmd_init_fetch_status(args)
     return _cmd_generate(args)
 
 

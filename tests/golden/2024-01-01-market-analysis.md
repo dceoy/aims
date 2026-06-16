@@ -45,10 +45,8 @@ Data source: **stooq**
 | Symbol | Latest Bar |
 | ------ | ---------- |
 | ^DJI   | 2023-12-29 |
-| ^NDX   | n/a        |
+| ^NDX   | 2023-12-28 |
 | ^SPX   | 2024-01-01 |
-
-> **Warning:** 1 instrument(s) have no data: ^NDX.
 
 ## Methodology
 

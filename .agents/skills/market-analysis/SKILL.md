@@ -10,14 +10,15 @@ All scripts are in `.agents/skills/market-analysis/scripts/`.
 
 ### `market_analysis.py`
 
-Four sub-commands:
+Five sub-commands:
 
-| Command    | Purpose                                                   |
-| ---------- | --------------------------------------------------------- |
-| `fetch`    | Download OHLCV data from Stooq and save to `data/prices/` |
-| `check`    | Run data-quality checks on saved data                     |
-| `score`    | Score and rank instruments cross-sectionally              |
-| `generate` | Generate a versioned JSON analysis artifact               |
+| Command             | Purpose                                                   |
+| ------------------- | --------------------------------------------------------- |
+| `fetch`             | Download OHLCV data from Stooq and save to `data/prices/` |
+| `init-fetch-status` | Initialize per-run fetch-status JSON before a fetch loop  |
+| `check`             | Run data-quality checks on saved data                     |
+| `score`             | Score and rank instruments cross-sectionally              |
+| `generate`          | Generate a versioned JSON analysis artifact               |
 
 ### `validate_analysis.py`
 
@@ -166,3 +167,5 @@ Instruments failing quality checks are included in output but marked
 | `missing_data`         | No price history available for the symbol                     |
 
 Interval thresholds and coverage policy defaults are defined in `data_quality_policy.py`. The `generate` command exits with a non-zero status when coverage gates fail, preventing publication and success Slack notifications while still writing an artifact for local inspection when some symbols loaded successfully.
+
+In the daily workflow, coverage is derived from `data/prices/fetch_status_<interval>.json`, which records per-symbol fetch outcomes for the current run. Pass this file to `generate --fetch-status` so pre-existing price CSVs cannot mask fetch failures.

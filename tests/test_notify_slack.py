@@ -92,10 +92,30 @@ def test_build_success_payload_regime_in_blocks(
     assert "^SPX" in fields_text
 
 
-def test_build_success_payload_stale_warning(
-    ns: ModuleType, fixture_artifact: dict[str, Any]
-) -> None:
-    payload = ns.build_success_payload(fixture_artifact, "https://example.com/")
+def test_build_success_payload_stale_warning(ns: ModuleType) -> None:
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {
+            "generated_at": "2024-01-01T00:00:00+00:00",
+            "git_commit": "abc",
+            "data_source": "stooq",
+            "data_freshness": {"^SPX": "2024-01-01", "^NDX": "n/a"},
+            "scoring_version": "1.0.0",
+            "config": {},
+        },
+        "instruments": [
+            {
+                "symbol": "^SPX",
+                "rank": 1,
+                "score": 70.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "explanation": "Good",
+                "features": {},
+            }
+        ],
+    }
+    payload = ns.build_success_payload(artifact, "https://example.com/")
     fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
     assert "^NDX" in fields_text
 
@@ -126,7 +146,7 @@ def test_build_success_payload_coverage_summary(
     payload = ns.build_success_payload(fixture_artifact, "https://example.com/")
     fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
     assert "Coverage:" in fields_text
-    assert "2/3" in fields_text
+    assert "3/3" in fields_text
 
 
 def test_build_success_payload_no_reliable(ns: ModuleType) -> None:

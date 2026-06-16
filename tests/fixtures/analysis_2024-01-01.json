@@ -7,7 +7,7 @@
     "data_freshness": {
       "^SPX": "2024-01-01",
       "^DJI": "2023-12-29",
-      "^NDX": "n/a"
+      "^NDX": "2023-12-28"
     },
     "scoring_version": "1.0.0",
     "config": {
@@ -22,13 +22,11 @@
     },
     "coverage": {
       "attempted_count": 3,
-      "fetched_count": 2,
-      "missing_symbols": ["^NDX"],
-      "success_ratio": 0.6667,
-      "passed": false,
-      "violations": [
-        "success ratio (66.67% < 80%)"
-      ]
+      "fetched_count": 3,
+      "missing_symbols": [],
+      "success_ratio": 1.0,
+      "passed": true,
+      "violations": []
     }
   },
   "instruments": [

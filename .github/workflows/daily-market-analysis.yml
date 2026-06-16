@@ -83,11 +83,19 @@ jobs:
           d = datetime.strptime('${DATE}', '%Y-%m-%d')
           print((d - timedelta(days=365)).strftime('%Y-%m-%d'))
           ")
+          FETCH_STATUS="data/prices/fetch_status_${INTERVAL}.json"
+          uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+            init-fetch-status \
+            --symbols "${SYMBOLS}" \
+            --interval "$INTERVAL" \
+            --analysis-date "${DATE}" \
+            --output "${FETCH_STATUS}"
           IFS=',' read -ra SYMS <<< "${SYMBOLS}"
           for SYM in "${SYMS[@]}"; do
             uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
               fetch --symbol "$SYM" --start "$START" --end "$DATE" \
               --interval "$INTERVAL" \
+              --fetch-status "${FETCH_STATUS}" \
               || echo "WARNING: fetch failed for $SYM; symbol will be marked missing in artifact"
           done
       - name: Generate analysis artifact
@@ -101,6 +109,7 @@ jobs:
             --symbols "${SYMBOLS}" \
             --interval "$INTERVAL" \
             --analysis-date "${DATE}" \
+            --fetch-status "data/prices/fetch_status_${INTERVAL}.json" \
             --output data/analysis/
       - name: Validate artifact
         if: steps.symbols.outputs.symbols != ''

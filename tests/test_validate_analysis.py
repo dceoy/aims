@@ -308,22 +308,22 @@ def test_validate_coverage_passed_not_boolean(va: ModuleType) -> None:
     assert any("coverage.passed must be a boolean" in e for e in errors)
 
 
-def test_validate_config_null_skips_nested_checks(va: ModuleType) -> None:
+def test_validate_config_null_rejected(va: ModuleType) -> None:
     data = {
         **VALID_ARTIFACT,
         "metadata": {**VALID_ARTIFACT["metadata"], "config": None},
     }
     errors = va.validate_artifact(data)
-    assert not any("metadata.config must be a JSON object" in e for e in errors)
+    assert any("metadata.config must not be null" in e for e in errors)
 
 
-def test_validate_coverage_null_skips_nested_checks(va: ModuleType) -> None:
+def test_validate_coverage_null_rejected(va: ModuleType) -> None:
     data = {
         **VALID_ARTIFACT,
         "metadata": {**VALID_ARTIFACT["metadata"], "coverage": None},
     }
     errors = va.validate_artifact(data)
-    assert not any("metadata.coverage must be a JSON object" in e for e in errors)
+    assert any("metadata.coverage must not be null" in e for e in errors)
 
 
 def test_validate_data_freshness_valid(va: ModuleType) -> None:

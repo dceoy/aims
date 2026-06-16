@@ -120,6 +120,8 @@ The daily workflow evaluates systemic data-source health before publishing resul
 
 Override coverage gates locally or in manual workflow runs via `market_analysis.py generate --min-success-ratio` and `--max-missing-symbols`.
 
+**Current-run fetch status:** The daily workflow initializes `data/prices/fetch_status_<interval>.json` before fetching, records per-symbol success or failure during each `fetch` call, and passes that file to `generate --fetch-status`. Coverage gates use this fetch-status file as the source of truth, not merely the presence of pre-existing local price CSVs. A stale on-disk price file cannot mask a failed fetch in the current run.
+
 ### Market regime
 
 The market regime label is derived from the median composite score of reliable instruments:
@@ -191,8 +193,8 @@ Pipeline order:
 1. Validate CFD instrument master
 2. Set analysis date (default: today UTC)
 3. Load symbols from `data/stooq_symbols.txt`
-4. Fetch market data from Stooq (1-year lookback)
-5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`); fail if coverage gates are violated
+4. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from Stooq (1-year lookback), recording per-symbol outcomes in fetch status
+5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`) using `--fetch-status`; fail if coverage gates are violated
 6. Validate artifact
 7. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`)
 8. Build Hugo site (validation only — catches template or content errors before commit)

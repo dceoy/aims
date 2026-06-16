@@ -94,38 +94,40 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
                         )
 
         config = metadata.get("config")
-        if config is not None:
-            if not isinstance(config, dict):
-                errors.append("metadata.config must be a JSON object")
-            else:
-                errors.extend(
-                    f"metadata.config missing required key: {key!r}"
-                    for key in _REQUIRED_CONFIG
-                    if key not in config
+        if config is None:
+            errors.append("metadata.config must not be null")
+        elif not isinstance(config, dict):
+            errors.append("metadata.config must be a JSON object")
+        else:
+            errors.extend(
+                f"metadata.config missing required key: {key!r}"
+                for key in _REQUIRED_CONFIG
+                if key not in config
+            )
+            coverage_policy = config.get("coverage_policy")
+            if coverage_policy is not None and not isinstance(
+                coverage_policy, dict
+            ):
+                errors.append(
+                    "metadata.config.coverage_policy must be a JSON object"
                 )
-                coverage_policy = config.get("coverage_policy")
-                if coverage_policy is not None and not isinstance(
-                    coverage_policy, dict
-                ):
-                    errors.append(
-                        "metadata.config.coverage_policy must be a JSON object"
-                    )
 
         coverage = metadata.get("coverage")
-        if coverage is not None:
-            if not isinstance(coverage, dict):
-                errors.append("metadata.coverage must be a JSON object")
-            else:
-                errors.extend(
-                    f"metadata.coverage missing required key: {key!r}"
-                    for key in _REQUIRED_COVERAGE
-                    if key not in coverage
-                )
-                passed = coverage.get("passed")
-                if passed is not None and not isinstance(passed, bool):
-                    errors.append("metadata.coverage.passed must be a boolean")
-                elif passed is False:
-                    errors.append("metadata.coverage.passed is false")
+        if coverage is None:
+            errors.append("metadata.coverage must not be null")
+        elif not isinstance(coverage, dict):
+            errors.append("metadata.coverage must be a JSON object")
+        else:
+            errors.extend(
+                f"metadata.coverage missing required key: {key!r}"
+                for key in _REQUIRED_COVERAGE
+                if key not in coverage
+            )
+            passed = coverage.get("passed")
+            if passed is not None and not isinstance(passed, bool):
+                errors.append("metadata.coverage.passed must be a boolean")
+            elif passed is False:
+                errors.append("metadata.coverage.passed is false")
 
     instruments = data["instruments"]
     if not isinstance(instruments, list):

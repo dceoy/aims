@@ -135,6 +135,28 @@ def test_bundle_absolute_links_are_validated(
     assert "broken link '/concepts/missing.md'" in capsys.readouterr().err
 
 
+def test_internal_links_rewrite_to_hugo_urls(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "content" / "knowledge"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    (src / "areas").mkdir()
+    (src / "areas" / "index.md").write_text("# Area Index\n", encoding="utf-8")
+    write_concept(src / "concepts" / "bar.md", "# Bar\n")
+    write_concept(
+        src / "concepts" / "foo.md",
+        "# Foo\n[Bar](./bar.md)\n[Area](/areas/index.md)\n",
+    )
+
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+
+    generated = (dst / "concepts" / "foo.md").read_text(encoding="utf-8")
+    assert "[Bar](/knowledge/concepts/bar/)" in generated
+    assert "[Area](/knowledge/areas/)" in generated
+    assert "./bar.md" not in generated
+    assert "/knowledge/areas/index/" not in generated
+
+
 def test_check_detects_generated_drift(tmp_path: Path) -> None:
     src = tmp_path / "okf"
     dst = tmp_path / "content" / "knowledge"

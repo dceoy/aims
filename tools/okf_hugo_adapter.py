@@ -163,31 +163,56 @@ def hugo_metadata(document: OkfDocument, src_root: Path) -> dict[str, Any]:
     return converted
 
 
-def hugo_body(body: str) -> str:
-    """Rewrite OKF bundle-absolute Markdown links for Hugo knowledge URLs."""
+def hugo_url_for_okf_path(path: Path, src_root: Path) -> str:
+    """Return the Hugo knowledge URL for an OKF Markdown source path."""
+    relative = path.resolve().relative_to(src_root.resolve())
+    if relative.name == "index.md":
+        section = relative.parent.as_posix()
+        return "/knowledge/" if section == "." else f"/knowledge/{section}/"
+    page = relative.with_suffix("").as_posix()
+    return f"/knowledge/{page}/"
+
+
+def split_link_target(target: str) -> tuple[str, str]:
+    """Split a Markdown link target into path and suffix components."""
+    separators = [
+        index for index in (target.find("?"), target.find("#")) if index != -1
+    ]
+    if not separators:
+        return target, ""
+    split_at = min(separators)
+    return target[:split_at], target[split_at:]
+
+
+def hugo_body(document: OkfDocument, src_root: Path) -> str:
+    """Rewrite OKF internal Markdown links for Hugo knowledge URLs."""
 
     def replace(match: re.Match[str]) -> str:
         target = match.group("target")
+        target_path, suffix = split_link_target(target)
         if (
-            not target.startswith("/")
-            or "://" in target
-            or target.startswith("mailto:")
+            not target_path
+            or "://" in target_path
+            or target_path.startswith("mailto:")
+            or pending_link(target)
         ):
             return match.group(0)
-        target_path, separator, suffix = target.partition("#")
-        path = target_path.removesuffix(".md")
-        rewritten = f"/knowledge{path}/"
-        if separator:
-            rewritten = f"{rewritten}#{suffix}"
+        if target_path.startswith("/"):
+            okf_path = src_root / target_path.removeprefix("/")
+        else:
+            okf_path = document.source.parent / target_path
+        if okf_path.suffix != ".md":
+            return match.group(0)
+        rewritten = f"{hugo_url_for_okf_path(okf_path, src_root)}{suffix}"
         return match.group(0).replace(target, rewritten)
 
-    return LINK.sub(replace, body)
+    return LINK.sub(replace, document.body)
 
 
 def render_document(document: OkfDocument, src_root: Path) -> str:
     """Render a Hugo Markdown document from an OKF document."""
     front_matter = dump_yaml(hugo_metadata(document, src_root))
-    return f"---\n{front_matter}---\n{hugo_body(document.body)}"
+    return f"---\n{front_matter}---\n{hugo_body(document, src_root)}"
 
 
 def write_documents(

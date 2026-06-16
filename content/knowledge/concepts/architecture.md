@@ -13,7 +13,7 @@ tags:
 - architecture
 - okf
 - hugo
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: AIMS Architecture
 type: knowledge
 ---

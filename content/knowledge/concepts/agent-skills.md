@@ -13,7 +13,7 @@ tags:
 - agents
 - skills
 - okf
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: Agent Skills
 type: knowledge
 ---

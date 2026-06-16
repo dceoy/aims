@@ -13,7 +13,7 @@ tags:
 - reports
 - hugo
 - market-analysis
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: Report Generation
 type: knowledge
 ---

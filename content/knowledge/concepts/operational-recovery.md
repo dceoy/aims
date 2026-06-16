@@ -12,7 +12,7 @@ resource:
 tags:
 - operations
 - recovery
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: Operational Recovery
 type: knowledge
 ---

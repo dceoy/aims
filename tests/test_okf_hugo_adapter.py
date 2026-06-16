@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -171,6 +172,29 @@ def test_knowledge_index_links_are_relative(tmp_path: Path) -> None:
     generated = (dst / "_index.md").read_text(encoding="utf-8")
     assert "[Concept](concepts/concept/)" in generated
     assert "/knowledge/" not in generated
+
+
+def test_okf_yaml_loader_does_not_mutate_safe_loader() -> None:
+    parsed = yaml.safe_load("value: 2026-06-16T00:00:00Z")
+    assert isinstance(parsed, dict)
+    assert isinstance(parsed["value"], datetime)
+
+
+def test_internal_links_preserve_label_when_it_matches_target(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "content" / "knowledge"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    write_concept(src / "concepts" / "bar.md", "# Bar\n")
+    write_concept(
+        src / "concepts" / "foo.md",
+        "# Foo\n[./bar.md](./bar.md)\n",
+    )
+
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+
+    generated = (dst / "concepts" / "foo.md").read_text(encoding="utf-8")
+    assert "[./bar.md](../bar/)" in generated
 
 
 def test_check_detects_generated_drift(tmp_path: Path) -> None:

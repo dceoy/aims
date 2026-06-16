@@ -13,7 +13,7 @@ tags:
 - ci
 - hugo
 - publication
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: Publication Workflow
 type: knowledge
 ---

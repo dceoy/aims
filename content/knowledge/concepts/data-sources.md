@@ -12,7 +12,7 @@ resource:
 tags:
 - data-sources
 - market-analysis
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: Data Sources
 type: knowledge
 ---

@@ -18,6 +18,10 @@ class OkfYamlLoader(yaml.SafeLoader):
     """YAML loader that leaves OKF scalar values such as timestamps as strings."""
 
 
+OkfYamlLoader.yaml_implicit_resolvers = {
+    first_character: list(resolvers)
+    for first_character, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
 for first_character, resolvers in list(OkfYamlLoader.yaml_implicit_resolvers.items()):
     OkfYamlLoader.yaml_implicit_resolvers[first_character] = [
         (tag, regexp)
@@ -27,7 +31,7 @@ for first_character, resolvers in list(OkfYamlLoader.yaml_implicit_resolvers.ite
 
 
 FRONT_MATTER = re.compile(r"\A---\n(?P<meta>.*?)\n---\n(?P<body>.*)\Z", re.DOTALL)
-LINK = re.compile(r"(?<!!)\[[^\]]+\]\((?P<target>[^)]+)\)")
+LINK = re.compile(r"(?<!!)\[(?P<label>[^\]]+)\]\((?P<target>[^)]+)\)")
 TAG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 RECOMMENDED_CONCEPT_FIELDS = ("title", "description", "tags", "timestamp")
 ROOT_INDEX_ALLOWED_FIELDS = {"okf_version"}
@@ -223,7 +227,7 @@ def hugo_body(document: OkfDocument, src_root: Path, dst_root: Path) -> str:
             f"{relative_hugo_link(document.destination, target_destination, dst_root)}"
             f"{suffix}"
         )
-        return match.group(0).replace(target, rewritten)
+        return f"[{match.group('label')}]({rewritten})"
 
     return LINK.sub(replace, document.body)
 

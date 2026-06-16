@@ -13,7 +13,7 @@ tags:
 - cfd
 - data
 - instrument-master
-timestamp: 2026-06-16T00:00:00Z
+timestamp: '2026-06-16T00:00:00Z'
 title: Instrument Master
 type: knowledge
 ---

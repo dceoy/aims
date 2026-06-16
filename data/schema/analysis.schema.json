@@ -10,7 +10,23 @@
     "data_source",
     "data_freshness",
     "scoring_version",
-    "config"
+    "config",
+    "coverage"
+  ],
+  "required_config_keys": [
+    "interval",
+    "stale_days",
+    "max_gap_days",
+    "min_history",
+    "coverage_policy"
+  ],
+  "required_coverage_keys": [
+    "attempted_count",
+    "fetched_count",
+    "missing_symbols",
+    "success_ratio",
+    "passed",
+    "violations"
   ],
   "notes": {
     "data_source": "Sorted comma-separated provider names, e.g. 'stooq' or 'csv,stooq'.",

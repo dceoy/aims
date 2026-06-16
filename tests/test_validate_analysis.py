@@ -52,7 +52,24 @@ VALID_ARTIFACT: dict[str, Any] = {
         "data_source": "stooq",
         "data_freshness": {"AAPL.US": "2024-01-01"},
         "scoring_version": "1.0.0",
-        "config": {"stale_days": 5},
+        "config": {
+            "interval": "d",
+            "stale_days": 5,
+            "max_gap_days": 7,
+            "min_history": 60,
+            "coverage_policy": {
+                "min_success_ratio": 0.8,
+                "max_missing_symbols": 1,
+            },
+        },
+        "coverage": {
+            "attempted_count": 1,
+            "fetched_count": 1,
+            "missing_symbols": [],
+            "success_ratio": 1.0,
+            "passed": True,
+            "violations": [],
+        },
     },
     "instruments": [VALID_INSTRUMENT],
 }
@@ -199,6 +216,114 @@ def test_validate_empty_instruments_list(va: ModuleType) -> None:
 
 
 # ── data_freshness validation ──────────────────────────────────────────────────
+
+
+def test_validate_coverage_failed(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {
+            **VALID_ARTIFACT["metadata"],
+            "coverage": {
+                **VALID_ARTIFACT["metadata"]["coverage"],
+                "passed": False,
+                "violations": ["success ratio (50.00% < 80%)"],
+            },
+        },
+    }
+    errors = va.validate_artifact(data)
+    assert any("coverage.passed is false" in e for e in errors)
+
+
+def test_validate_config_missing_key(va: ModuleType) -> None:
+    bad_config = {
+        k: v
+        for k, v in VALID_ARTIFACT["metadata"]["config"].items()
+        if k != "max_gap_days"
+    }
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "config": bad_config},
+    }
+    errors = va.validate_artifact(data)
+    assert any("max_gap_days" in e for e in errors)
+
+
+def test_validate_config_not_dict(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "config": "bad"},
+    }
+    errors = va.validate_artifact(data)
+    assert any("metadata.config must be a JSON object" in e for e in errors)
+
+
+def test_validate_coverage_policy_not_dict(va: ModuleType) -> None:
+    bad_config = {
+        **VALID_ARTIFACT["metadata"]["config"],
+        "coverage_policy": "bad",
+    }
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "config": bad_config},
+    }
+    errors = va.validate_artifact(data)
+    assert any("coverage_policy must be a JSON object" in e for e in errors)
+
+
+def test_validate_coverage_not_dict(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "coverage": "bad"},
+    }
+    errors = va.validate_artifact(data)
+    assert any("metadata.coverage must be a JSON object" in e for e in errors)
+
+
+def test_validate_coverage_missing_key(va: ModuleType) -> None:
+    bad_coverage = {
+        k: v
+        for k, v in VALID_ARTIFACT["metadata"]["coverage"].items()
+        if k != "violations"
+    }
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "coverage": bad_coverage},
+    }
+    errors = va.validate_artifact(data)
+    assert any("violations" in e for e in errors)
+
+
+def test_validate_coverage_passed_not_boolean(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {
+            **VALID_ARTIFACT["metadata"],
+            "coverage": {
+                **VALID_ARTIFACT["metadata"]["coverage"],
+                "passed": "yes",
+            },
+        },
+    }
+    errors = va.validate_artifact(data)
+    assert any("coverage.passed must be a boolean" in e for e in errors)
+
+
+def test_validate_config_null_skips_nested_checks(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "config": None},
+    }
+    errors = va.validate_artifact(data)
+    assert not any("metadata.config must be a JSON object" in e for e in errors)
+
+
+def test_validate_coverage_null_skips_nested_checks(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "coverage": None},
+    }
+    errors = va.validate_artifact(data)
+    assert not any("metadata.coverage must be a JSON object" in e for e in errors)
 
 
 def test_validate_data_freshness_valid(va: ModuleType) -> None:

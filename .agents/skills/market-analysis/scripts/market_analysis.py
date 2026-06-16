@@ -30,15 +30,25 @@ from typing import Any, Final
 from urllib.error import URLError
 from urllib.request import urlopen
 
+from data_quality_policy import (
+    DEFAULT_COVERAGE_POLICY,
+    CoveragePolicy,
+    build_config_dict,
+    build_coverage_metadata,
+    evaluate_coverage,
+    get_data_quality_policy,
+)
+
 # ── Constants ────────────────────────────────────────────────────────────────
 
 _DEFAULT_PRICES_DIR: Final[Path] = Path("data/prices")
 _DEFAULT_ANALYSIS_DIR: Final[Path] = Path("data/analysis")
 _DEFAULT_INTERVAL: Final[str] = "d"
-_STALE_DAYS: Final[int] = 5
-_MIN_HISTORY: Final[int] = 60
+_DAILY_POLICY = get_data_quality_policy(_DEFAULT_INTERVAL)
+_STALE_DAYS: Final[int] = _DAILY_POLICY.thresholds.stale_days
+_MIN_HISTORY: Final[int] = _DAILY_POLICY.thresholds.min_history
+_MAX_GAP_DAYS: Final[int] = _DAILY_POLICY.thresholds.max_gap_days
 _HIGH_VOL_THRESHOLD: Final[float] = 1.0
-_MAX_GAP_DAYS: Final[int] = 7
 
 SCORING_VERSION: Final[str] = "1.0.0"
 ARTIFACT_VERSION: Final[str] = "1.0.0"
@@ -267,6 +277,7 @@ def check_data_quality(
     *,
     stale_days: int = _STALE_DAYS,
     min_history: int = _MIN_HISTORY,
+    max_gap_days: int = _MAX_GAP_DAYS,
     reference_time: datetime | None = None,
 ) -> DataQualityReport:
     if not bars:
@@ -315,7 +326,7 @@ def check_data_quality(
     if len(bars) >= 2:
         for i in range(1, len(bars)):
             gap = (bars[i].timestamp - bars[i - 1].timestamp).days
-            if gap > _MAX_GAP_DAYS:
+            if gap > max_gap_days:
                 report.issues.append(
                     f"possible missing bars: {gap}-day gap between"
                     f" {bars[i - 1].timestamp.date()} and"
@@ -497,6 +508,7 @@ def score_instruments(
     reference_time: datetime | None = None,
     stale_days: int = _STALE_DAYS,
     min_history: int = _MIN_HISTORY,
+    max_gap_days: int = _MAX_GAP_DAYS,
 ) -> list[InstrumentScore]:
     if not data:
         return []
@@ -507,6 +519,7 @@ def score_instruments(
             data[s],
             stale_days=stale_days,
             min_history=min_history,
+            max_gap_days=max_gap_days,
             reference_time=reference_time,
         )
         for s in symbols
@@ -611,6 +624,7 @@ def generate_artifact(
     *,
     analysis_date: str | None = None,
     missing_symbols: list[str] | None = None,
+    coverage: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
     generated_at = (
@@ -660,16 +674,19 @@ def generate_artifact(
             "features": _features_to_dict(empty_feats),
         })
         next_rank += 1
+    metadata: dict[str, Any] = {
+        "generated_at": generated_at,
+        "git_commit": _get_git_commit(),
+        "data_source": data_source,
+        "data_freshness": freshness,
+        "scoring_version": SCORING_VERSION,
+        "config": config,
+    }
+    if coverage is not None:
+        metadata["coverage"] = coverage
     return {
         "version": ARTIFACT_VERSION,
-        "metadata": {
-            "generated_at": generated_at,
-            "git_commit": _get_git_commit(),
-            "data_source": data_source,
-            "data_freshness": freshness,
-            "scoring_version": SCORING_VERSION,
-            "config": config,
-        },
+        "metadata": metadata,
         "instruments": instruments,
     }
 
@@ -706,7 +723,14 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
     path = save_ohlcv(bars, Path(args.output))
     print(f"saved {len(bars)} bars to {path}")
     if not args.no_validate:
-        report = check_data_quality(bars)
+        policy = get_data_quality_policy(args.interval)
+        thresholds = policy.thresholds
+        report = check_data_quality(
+            bars,
+            stale_days=thresholds.stale_days,
+            min_history=thresholds.min_history,
+            max_gap_days=thresholds.max_gap_days,
+        )
         for issue in report.issues:
             print(f"WARNING: {issue}")
     return 0
@@ -718,7 +742,13 @@ def _cmd_check(args: argparse.Namespace) -> int:
     except FileNotFoundError as exc:
         print(f"ERROR: {exc}")
         return 1
-    report = check_data_quality(bars)
+    policy = get_data_quality_policy(args.interval)
+    report = check_data_quality(
+        bars,
+        stale_days=policy.thresholds.stale_days,
+        min_history=policy.thresholds.min_history,
+        max_gap_days=policy.thresholds.max_gap_days,
+    )
     if report.is_valid:
         sym_interval = f"{args.symbol}/{args.interval}"
         print(f"data quality OK: {report.bar_count} bars for {sym_interval}")
@@ -739,7 +769,14 @@ def _cmd_score(args: argparse.Namespace) -> int:
     if not data:
         print("ERROR: no symbols could be loaded")
         return 1
-    results = score_instruments(data)
+    policy = get_data_quality_policy(args.interval)
+    thresholds = policy.thresholds
+    results = score_instruments(
+        data,
+        stale_days=thresholds.stale_days,
+        min_history=thresholds.min_history,
+        max_gap_days=thresholds.max_gap_days,
+    )
     print(f"{'rank':>4}  {'symbol':<20}  {'score':>6}  {'reliable':>8}  gates")
     for s in results:
         reliable = "yes" if s.is_reliable else "no"
@@ -750,6 +787,17 @@ def _cmd_score(args: argparse.Namespace) -> int:
 
 def _cmd_generate(args: argparse.Namespace) -> int:
     symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
+    if not symbols:
+        print("ERROR: no symbols provided")
+        return 1
+
+    coverage_policy = CoveragePolicy(
+        min_success_ratio=args.min_success_ratio,
+        max_missing_symbols=args.max_missing_symbols,
+    )
+    policy = get_data_quality_policy(args.interval, coverage=coverage_policy)
+    thresholds = policy.thresholds
+
     data: dict[str, list[OhlcvBar]] = {}
     missing: list[str] = []
     for sym in symbols:
@@ -758,33 +806,47 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         except FileNotFoundError:
             print(f"WARNING: no data for {sym}, marking as missing")
             missing.append(sym)
+
+    coverage_result = evaluate_coverage(symbols, list(data), missing, coverage_policy)
+    coverage_metadata = build_coverage_metadata(coverage_result)
+
     if not data:
         print("ERROR: no symbols could be loaded")
+        for violation in coverage_result.violations:
+            print(f"ERROR: coverage gate failed: {violation}")
         return 1
-    config: dict[str, Any] = {
-        "stale_days": _STALE_DAYS,
-        "min_history": _MIN_HISTORY,
-        "interval": args.interval,
-    }
+
+    config = build_config_dict(policy)
     analysis_date: str | None = getattr(args, "analysis_date", None) or None
     reference_time: datetime | None = None
     if analysis_date:
         reference_time = datetime.strptime(analysis_date, "%Y-%m-%d").replace(
             tzinfo=UTC
         )
-    results = score_instruments(data, reference_time=reference_time)
+    results = score_instruments(
+        data,
+        reference_time=reference_time,
+        stale_days=thresholds.stale_days,
+        min_history=thresholds.min_history,
+        max_gap_days=thresholds.max_gap_days,
+    )
     artifact = generate_artifact(
         results,
         data,
         config,
         analysis_date=analysis_date,
         missing_symbols=missing or None,
+        coverage=coverage_metadata,
     )
     path = save_artifact(artifact, Path(args.output))
     print(f"artifact saved to {path}")
     if missing:
         syms = ", ".join(sorted(missing))
         print(f"WARNING: {len(missing)} symbol(s) had no data: {syms}")
+    if not coverage_result.passed:
+        for violation in coverage_result.violations:
+            print(f"ERROR: coverage gate failed: {violation}")
+        return 1
     return 0
 
 
@@ -824,6 +886,20 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         dest="analysis_date",
         help="Override analysis date (YYYY-MM-DD; default: today UTC)",
+    )
+    p_gen.add_argument(
+        "--min-success-ratio",
+        type=float,
+        default=DEFAULT_COVERAGE_POLICY.min_success_ratio,
+        dest="min_success_ratio",
+        help="Minimum fetched/total symbol ratio (default: 0.8)",
+    )
+    p_gen.add_argument(
+        "--max-missing-symbols",
+        type=int,
+        default=DEFAULT_COVERAGE_POLICY.max_missing_symbols,
+        dest="max_missing_symbols",
+        help="Maximum allowed missing symbols (default: 1)",
     )
 
     args = parser.parse_args(argv)

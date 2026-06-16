@@ -100,6 +100,35 @@ def test_build_success_payload_stale_warning(
     assert "^NDX" in fields_text
 
 
+def test_build_success_payload_coverage_invalid_types(ns: ModuleType) -> None:
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {
+            "generated_at": "2024-01-01T00:00:00+00:00",
+            "data_source": "stooq",
+            "data_freshness": {},
+            "coverage": {
+                "attempted_count": "5",
+                "fetched_count": 4,
+                "success_ratio": 0.8,
+            },
+        },
+        "instruments": [],
+    }
+    payload = ns.build_success_payload(artifact, "https://example.com/")
+    fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
+    assert "Coverage:" not in fields_text
+
+
+def test_build_success_payload_coverage_summary(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    payload = ns.build_success_payload(fixture_artifact, "https://example.com/")
+    fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
+    assert "Coverage:" in fields_text
+    assert "2/3" in fields_text
+
+
 def test_build_success_payload_no_reliable(ns: ModuleType) -> None:
     artifact: dict[str, Any] = {
         "version": "1.0.0",

@@ -12,8 +12,23 @@
     "scoring_version": "1.0.0",
     "config": {
       "stale_days": 5,
+      "max_gap_days": 7,
       "min_history": 60,
-      "interval": "d"
+      "interval": "d",
+      "coverage_policy": {
+        "min_success_ratio": 0.8,
+        "max_missing_symbols": 1
+      }
+    },
+    "coverage": {
+      "attempted_count": 3,
+      "fetched_count": 2,
+      "missing_symbols": ["^NDX"],
+      "success_ratio": 0.6667,
+      "passed": false,
+      "violations": [
+        "success ratio (66.67% < 80%)"
+      ]
     }
   },
   "instruments": [

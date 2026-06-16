@@ -67,9 +67,11 @@ def lint_wiki(wiki_root: Path) -> list[str]:
     sources = sorted((wiki_root / "sources").glob("*.md"))
     log = wiki_root / "log.md"
     if sources and log.is_file():
-        latest = sources[-1].relative_to(wiki_root).as_posix()
-        if latest not in log.read_text():
-            errors.append(f"log missing latest source entry: {latest}")
+        log_text = log.read_text()
+        for source in sources:
+            rel = source.relative_to(wiki_root).as_posix()
+            if rel not in log_text:
+                errors.append(f"log missing source entry: {rel}")
     return errors
 
 

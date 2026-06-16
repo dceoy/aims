@@ -175,10 +175,7 @@ def test_lint_wiki_reports_structural_source_and_log_errors(tmp_path):
         "source missing artifact fingerprint: sources/2024-01-02-market-analysis.md"
         in errors
     )
-    assert (
-        "log missing latest source entry: sources/2024-01-02-market-analysis.md"
-        in errors
-    )
+    assert "log missing source entry: sources/2024-01-02-market-analysis.md" in errors
     assert not any("https://example.com" in error for error in errors)
 
 
@@ -201,3 +198,64 @@ def test_update_wiki_handles_missing_metadata_date(tmp_path):
     update.update_wiki(source, analysis, wiki_root)
 
     assert "ingest unknown" in (wiki_root / "log.md").read_text()
+
+
+def test_lint_wiki_accepts_log_entries_for_all_sources(tmp_path):
+    lint = _load("lint_wiki")
+    wiki_root = tmp_path / "knowledge"
+    source_dir = wiki_root / "sources"
+    source_dir.mkdir(parents=True)
+    (wiki_root / "index.md").write_text("# Index\n")
+    (wiki_root / "log.md").write_text(
+        "# Log\n\n"
+        "- Source: [sources/2024-01-01-market-analysis.md]"
+        "(sources/2024-01-01-market-analysis.md)\n"
+        "- Source: [sources/2024-01-02-market-analysis.md]"
+        "(sources/2024-01-02-market-analysis.md)\n"
+    )
+    (wiki_root / "wiki").mkdir()
+    (wiki_root / "wiki" / "overview.md").write_text("# Overview\n")
+    source_text = (
+        "<!-- generated-by: market-wiki/render_wiki_source.py -->\n"
+        "<!-- source-sha256: "
+        "e0cf55e5218f7da1a65d48d86cdbdf90ae262496a8c98cf5cc041bd6d85dab89"
+        " -->\n"
+    )
+    (source_dir / "2024-01-01-market-analysis.md").write_text(source_text)
+    (source_dir / "2024-01-02-market-analysis.md").write_text(source_text)
+
+    errors = lint.lint_wiki(wiki_root)
+
+    assert not [
+        error for error in errors if error.startswith("log missing source entry:")
+    ]
+
+
+def test_lint_wiki_reports_missing_older_source_log_entry(tmp_path):
+    lint = _load("lint_wiki")
+    wiki_root = tmp_path / "knowledge"
+    source_dir = wiki_root / "sources"
+    source_dir.mkdir(parents=True)
+    (wiki_root / "index.md").write_text("# Index\n")
+    (wiki_root / "log.md").write_text(
+        "# Log\n\n"
+        "- Source: [sources/2024-01-02-market-analysis.md]"
+        "(sources/2024-01-02-market-analysis.md)\n"
+    )
+    (wiki_root / "wiki").mkdir()
+    (wiki_root / "wiki" / "overview.md").write_text("# Overview\n")
+    source_text = (
+        "<!-- generated-by: market-wiki/render_wiki_source.py -->\n"
+        "<!-- source-sha256: "
+        "e0cf55e5218f7da1a65d48d86cdbdf90ae262496a8c98cf5cc041bd6d85dab89"
+        " -->\n"
+    )
+    (source_dir / "2024-01-01-market-analysis.md").write_text(source_text)
+    (source_dir / "2024-01-02-market-analysis.md").write_text(source_text)
+
+    errors = lint.lint_wiki(wiki_root)
+
+    assert "log missing source entry: sources/2024-01-01-market-analysis.md" in errors
+    assert (
+        "log missing source entry: sources/2024-01-02-market-analysis.md" not in errors
+    )

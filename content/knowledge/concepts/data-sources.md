@@ -1,15 +1,17 @@
 ---
-description: Authoritative market and instrument data sources used by AIMS and the boundaries for durable knowledge updates.
+description: Authoritative market and instrument data sources used by AIMS and the
+  boundaries for durable knowledge updates.
 id: okf/concepts/data-sources
 params:
   okf_type: concept
 resource:
   path: okf/concepts/data-sources.md
   source: repository
+status: seeded
 tags:
-  - data-sources
-  - market-analysis
-timestamp: 2026-06-16T00:00:00Z
+- data-sources
+- market-analysis
+timestamp: 2026-06-16 00:00:00+00:00
 title: Data Sources
 type: knowledge
 ---
@@ -18,15 +20,23 @@ type: knowledge
 
 Authoritative market and instrument data sources used by AIMS and the boundaries for durable knowledge updates.
 
+## Repository facts
+
+AIMS fetches daily OHLCV history from Stooq using its free CSV download API. Configured Stooq symbols are maintained in `data/stooq_symbols.txt`.
+
+The CFD instrument master is a separate data source maintained in `data/cfd_instruments.csv`. It is refreshed by the weekly updater workflow and validated before the daily market analysis workflow runs.
+
 ## Source-of-truth boundary
 
-AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data availability in `data/analysis/*.json` and generated daily reports in `content/results/`. This OKF concept captures durable repository knowledge only and must not invent or override generated numeric facts.
-
-## AIMS notes
-
-This concept is seeded from repository documentation, operations guidance, tests, workflows, and issue dceoy/aims#57. Update it through the OKF authoring and curation workflow when durable architecture or operational knowledge changes.
+AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data availability in generated artifacts and validated reports. This OKF concept captures durable repository knowledge only.
 
 ## Related concepts
 
-- [Related: instrument-master](./instrument-master.md)
-- [Related: scoring-methodology](./scoring-methodology.md)
+- [Instrument Master](/knowledge/concepts/instrument-master/)
+- [Scoring Methodology](/knowledge/concepts/scoring-methodology/)
+
+# Citations
+
+- `OPERATIONS.md`
+- `.github/workflows/daily-market-analysis.yml`
+- `.github/workflows/update-cfd-instruments.yml`

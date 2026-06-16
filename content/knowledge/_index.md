@@ -1,34 +1,29 @@
 ---
-description: Canonical OKF source for durable AIMS market-analysis knowledge.
-id: okf/index
+description: Generated from index.md.
+okf_version: '0.1'
 params:
-  okf_type: index
+  okf_reserved: index
 resource:
-  path: okf/index.md
-  source: repository
-tags:
-  - okf
-  - knowledge
-timestamp: 2026-06-16T00:00:00Z
+  path: index.md
 title: AIMS Knowledge Base
 type: knowledge
 ---
 
 # AIMS Knowledge Base
 
-The `okf/` tree is the canonical repository-native knowledge source for durable AIMS architecture, operations, and market-analysis methodology. Hugo pages under `content/knowledge/` are generated shadow content and must not be hand-edited.
+The `okf/` tree is the canonical repository-native source for durable AIMS architecture, operations, and methodology knowledge. Hugo pages under `content/knowledge/` are generated shadow content and must not be hand-edited.
 
 ## Concepts
 
-- [Agent Skills](./concepts/agent-skills.md)
-- [AIMS Architecture](./concepts/architecture.md)
-- [Data Sources](./concepts/data-sources.md)
-- [Instrument Master](./concepts/instrument-master.md)
-- [Operational Recovery](./concepts/operational-recovery.md)
-- [Publication Workflow](./concepts/publication-workflow.md)
-- [Report Generation](./concepts/report-generation.md)
-- [Scoring Methodology](./concepts/scoring-methodology.md)
+- [Agent Skills](/knowledge/concepts/agent-skills/)
+- [AIMS Architecture](/knowledge/concepts/architecture/)
+- [Data Sources](/knowledge/concepts/data-sources/)
+- [Instrument Master](/knowledge/concepts/instrument-master/)
+- [Operational Recovery](/knowledge/concepts/operational-recovery/)
+- [Publication Workflow](/knowledge/concepts/publication-workflow/)
+- [Report Generation](/knowledge/concepts/report-generation/)
+- [Scoring Methodology](/knowledge/concepts/scoring-methodology/)
 
-## Logs
+## Log
 
-- [Knowledge log](./logs/log.md)
+- [Knowledge log](/knowledge/logs/log/)

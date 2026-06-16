@@ -3,29 +3,35 @@ id: okf/concepts/instrument-master
 title: Instrument Master
 description: Canonical CFD instrument reference data and validation responsibilities in AIMS.
 type: concept
-tags:
-  - cfd
-  - data
-  - instrument-master
+tags: [cfd, data, instrument-master]
 timestamp: 2026-06-16T00:00:00Z
 resource:
   path: okf/concepts/instrument-master.md
   source: repository
+status: seeded
 ---
 
 # Instrument Master
 
 Canonical CFD instrument reference data and validation responsibilities in AIMS.
 
+## Repository facts
+
+The CFD instrument master is stored in `data/cfd_instruments.csv` and sourced from GMO Click Securities and Rakuten Securities CFD lineup pages. Broker ticker symbols are maintained separately from Stooq symbols, with mappings in `data/mappings/cfd_ticker_mappings.csv`.
+
+The master CSV is validated against `data/schema/cfd_instruments.schema.json` after updates and before daily analysis.
+
 ## Source-of-truth boundary
 
-AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data availability in `data/analysis/*.json` and generated daily reports in `content/results/`. This OKF concept captures durable repository knowledge only and must not invent or override generated numeric facts.
-
-## AIMS notes
-
-This concept is seeded from repository documentation, operations guidance, tests, workflows, and issue dceoy/aims#57. Update it through the OKF authoring and curation workflow when durable architecture or operational knowledge changes.
+AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data availability in generated artifacts and validated reports. This OKF concept captures durable repository knowledge only.
 
 ## Related concepts
 
-- [Related: data-sources](./data-sources.md)
-- [Related: scoring-methodology](./scoring-methodology.md)
+- [Data Sources](/concepts/data-sources.md)
+- [Scoring Methodology](/concepts/scoring-methodology.md)
+
+# Citations
+
+- `OPERATIONS.md`
+- `data/schema/cfd_instruments.schema.json`
+- `.agents/skills/update-cfd-instruments/SKILL.md`

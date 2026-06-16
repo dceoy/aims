@@ -1,16 +1,18 @@
 ---
-description: Repository-local Agent Skills that guide AIMS automation, OKF curation, site generation, and PR review.
+description: Repository-local Agent Skills that guide AIMS automation, OKF curation,
+  site generation, and PR review.
 id: okf/concepts/agent-skills
 params:
   okf_type: concept
 resource:
   path: okf/concepts/agent-skills.md
   source: repository
+status: seeded
 tags:
-  - agents
-  - skills
-  - okf
-timestamp: 2026-06-16T00:00:00Z
+- agents
+- skills
+- okf
+timestamp: 2026-06-16 00:00:00+00:00
 title: Agent Skills
 type: knowledge
 ---
@@ -19,15 +21,24 @@ type: knowledge
 
 Repository-local Agent Skills that guide AIMS automation, OKF curation, site generation, and PR review.
 
+## Repository facts
+
+Repository-local Agent Skills describe repeatable workflows for market analysis, CFD instrument updates, local QA, PR feedback triage, and OKF maintenance. The OKF author, curator, site, and PR-review skills point agents at canonical `okf/` edits and generated `content/knowledge/` validation.
+
+Agent workflows must keep generated knowledge separate from canonical OKF and must not invent numeric market facts.
+
 ## Source-of-truth boundary
 
-AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data availability in `data/analysis/*.json` and generated daily reports in `content/results/`. This OKF concept captures durable repository knowledge only and must not invent or override generated numeric facts.
-
-## AIMS notes
-
-This concept is seeded from repository documentation, operations guidance, tests, workflows, and issue dceoy/aims#57. Update it through the OKF authoring and curation workflow when durable architecture or operational knowledge changes.
+AIMS keeps numeric market facts, scores, ranks, dates, risk gates, and data availability in generated artifacts and validated reports. This OKF concept captures durable repository knowledge only.
 
 ## Related concepts
 
-- [Related: architecture](./architecture.md)
-- [Related: operational-recovery](./operational-recovery.md)
+- [Architecture](/knowledge/concepts/architecture/)
+- [Operational Recovery](/knowledge/concepts/operational-recovery/)
+
+# Citations
+
+- `.agents/skills/local-qa/SKILL.md`
+- `.agents/skills/market-analysis/SKILL.md`
+- `.agents/skills/update-cfd-instruments/SKILL.md`
+- `.agents/skills/aims-okf-author/SKILL.md`

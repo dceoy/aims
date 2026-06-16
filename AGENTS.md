@@ -39,6 +39,7 @@ Do not commit secrets or local environment files. Operational details, scheduled
 
 - Treat `okf/` as the canonical source for durable AIMS knowledge.
 - Treat `content/knowledge/` as generated Hugo shadow content; do not hand-edit it.
+- Treat OKF v0.1 `index.md` and `log.md` as reserved files, not concept documents; do not add concept front matter to those files.
 - Keep `data/analysis/*.json` authoritative for numeric market facts, scores, ranks, dates, risk gates, and data availability.
 - Keep `content/results/` as the public daily analysis report output.
 - Use `uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clean` after OKF edits.

@@ -50,4 +50,4 @@ uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clea
 uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
 ```
 
-The adapter deterministically maps OKF `index.md` files to Hugo `_index.md` files and moves OKF front matter `type` into `params.okf_type` so Hugo can use a stable `type: knowledge` presentation type.
+The adapter deterministically maps OKF reserved `index.md` files to Hugo `_index.md` files, accepts OKF v0.1 reserved files without concept front matter, and moves non-reserved OKF front matter `type` into `params.okf_type` so Hugo can use a stable `type: knowledge` presentation type.

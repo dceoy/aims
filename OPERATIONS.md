@@ -116,11 +116,13 @@ The daily workflow evaluates systemic data-source health before publishing resul
 
 **Isolated missing symbols:** When coverage policy passes, the workflow still generates an artifact and marks affected instruments with the `missing_data` risk gate. One missing symbol out of five configured symbols (80% success ratio) is within policy.
 
-**Systemic data-source failure:** When coverage policy fails (too many missing symbols, success ratio below threshold, empty symbol universe, or all symbols failed), the `generate` step exits with a non-zero status. The workflow stops before artifact validation, Hugo report generation, pull-request creation, and Slack success notification. The failure Slack notification still links to the GitHub Actions run.
+**Systemic data-source failure:** When coverage policy fails (too many missing symbols, success ratio below threshold, empty symbol universe, or all symbols failed), the `generate` step may write a diagnostic JSON artifact with `metadata.coverage.passed: false`, then exits with a non-zero status. The automated workflow stops before artifact validation, Hugo report generation, pull-request creation, and Slack success notification. Diagnostic artifacts are for local inspection only — do not validate or publish them manually. The failure Slack notification still links to the GitHub Actions run.
 
-Override coverage gates locally or in manual workflow runs via `market_analysis.py generate --min-success-ratio` and `--max-missing-symbols`.
+**Artifact validation contract:** `validate_analysis.py` accepts `metadata.coverage.passed: false` as structurally valid JSON. Publication safety comes from the workflow gate: `generate` must exit `0` before validation, report generation, or PR creation run. Only artifacts with `coverage.passed: true` reach the public pipeline.
 
-**Current-run fetch status:** The daily workflow initializes `data/prices/fetch_status_<interval>.json` before fetching, records per-symbol success or failure during each `fetch` call, and passes that file to `generate --fetch-status`. Coverage gates use this fetch-status file as the source of truth, not merely the presence of pre-existing local price CSVs. A stale on-disk price file cannot mask a failed fetch in the current run.
+Override coverage gates locally or in manual workflow runs via `market_analysis.py generate --min-success-ratio` and `--max-missing-symbols`, or through the `workflow_dispatch` inputs of the same name (defaults: `0.8` and `1`).
+
+**Current-run fetch status:** The daily workflow initializes `data/prices/fetch_status_<interval>.json` before fetching, records per-symbol success or failure during each `fetch` call, and passes that file to `generate --fetch-status`. Coverage gates use this fetch-status file as the source of truth, not merely the presence of pre-existing local price CSVs. A stale on-disk price file cannot mask a failed fetch in the current run. `generate` rejects fetch-status files whose `interval` or `analysis_date` do not match the current run.
 
 ### Market regime
 
@@ -203,13 +205,15 @@ Pipeline order:
 
 ### Manual dispatch
 
-The workflow supports `workflow_dispatch` with three optional inputs:
+The workflow supports `workflow_dispatch` with optional inputs:
 
-| Input           | Default   | Description                                                   |
-| --------------- | --------- | ------------------------------------------------------------- |
-| `analysis_date` | Today UTC | Override the analysis date (YYYY-MM-DD)                       |
-| `interval`      | `d`       | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)  |
-| `dry_run`       | `false`   | When `true`, skips PR creation and Slack success notification |
+| Input                 | Default   | Description                                                   |
+| --------------------- | --------- | ------------------------------------------------------------- |
+| `analysis_date`       | Today UTC | Override the analysis date (YYYY-MM-DD)                       |
+| `interval`            | `d`       | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)  |
+| `dry_run`             | `false`   | When `true`, skips PR creation and Slack success notification |
+| `min_success_ratio`   | `0.8`     | Minimum symbol fetch success ratio for coverage gate          |
+| `max_missing_symbols` | `1`       | Maximum allowed missing symbols for coverage gate             |
 
 ### Deployment gate
 

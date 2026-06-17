@@ -24,6 +24,16 @@ on:
         required: false
         default: "false"
         type: boolean
+      min_success_ratio:
+        description: "Minimum symbol fetch success ratio (default 0.8)"
+        required: false
+        default: "0.8"
+        type: string
+      max_missing_symbols:
+        description: "Maximum allowed missing symbols (default 1)"
+        required: false
+        default: "1"
+        type: string
 permissions:
   contents: read
 jobs:
@@ -36,6 +46,8 @@ jobs:
       ANALYSIS_DATE: ${{ inputs.analysis_date || '' }}
       INTERVAL: ${{ inputs.interval || 'd' }}
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
+      MIN_SUCCESS_RATIO: ${{ inputs.min_success_ratio || '0.8' }}
+      MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '1' }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
         with:
@@ -110,6 +122,8 @@ jobs:
             --interval "$INTERVAL" \
             --analysis-date "${DATE}" \
             --fetch-status "data/prices/fetch_status_${INTERVAL}.json" \
+            --min-success-ratio "${MIN_SUCCESS_RATIO}" \
+            --max-missing-symbols "${MAX_MISSING_SYMBOLS}" \
             --output data/analysis/
       - name: Validate artifact
         if: steps.symbols.outputs.symbols != ''

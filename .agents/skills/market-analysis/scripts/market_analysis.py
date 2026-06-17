@@ -290,9 +290,7 @@ def init_fetch_status(
         "version": _FETCH_STATUS_VERSION,
         "interval": interval,
         "analysis_date": analysis_date,
-        "symbols": {
-            symbol: {"status": _FETCH_STATUS_PENDING} for symbol in symbols
-        },
+        "symbols": {symbol: {"status": _FETCH_STATUS_PENDING} for symbol in symbols},
     }
     with path.open("w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2)
@@ -329,6 +327,33 @@ def record_fetch_status(
     symbols[symbol] = entry
     with path.open("w", encoding="utf-8") as fh:
         json.dump(data, fh, indent=2)
+
+
+def validate_fetch_status(
+    fetch_status: dict[str, Any],
+    *,
+    interval: str,
+    analysis_date: str | None = None,
+) -> None:
+    """Reject fetch-status metadata that does not match the current run."""
+    status_interval = fetch_status.get("interval")
+    if status_interval != interval:
+        msg = (
+            f"fetch status interval {status_interval!r} does not match"
+            f" requested interval {interval!r}"
+        )
+        raise ValueError(msg)
+    status_date = fetch_status.get("analysis_date")
+    if (
+        analysis_date is not None
+        and status_date is not None
+        and status_date != analysis_date
+    ):
+        msg = (
+            f"fetch status analysis_date {status_date!r} does not match"
+            f" requested analysis_date {analysis_date!r}"
+        )
+        raise ValueError(msg)
 
 
 def resolve_symbols_from_fetch_status(
@@ -917,6 +942,11 @@ def _cmd_generate(args: argparse.Namespace) -> int:
     if fetch_status_path is not None:
         try:
             fetch_status = load_fetch_status(fetch_status_path)
+            validate_fetch_status(
+                fetch_status,
+                interval=args.interval,
+                analysis_date=getattr(args, "analysis_date", None) or None,
+            )
         except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError) as exc:
             print(f"ERROR: invalid fetch status file: {exc}")
             return 1

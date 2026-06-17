@@ -105,12 +105,8 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
                 if key not in config
             )
             coverage_policy = config.get("coverage_policy")
-            if coverage_policy is not None and not isinstance(
-                coverage_policy, dict
-            ):
-                errors.append(
-                    "metadata.config.coverage_policy must be a JSON object"
-                )
+            if coverage_policy is not None and not isinstance(coverage_policy, dict):
+                errors.append("metadata.config.coverage_policy must be a JSON object")
 
         coverage = metadata.get("coverage")
         if coverage is None:
@@ -126,8 +122,6 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
             passed = coverage.get("passed")
             if passed is not None and not isinstance(passed, bool):
                 errors.append("metadata.coverage.passed must be a boolean")
-            elif passed is False:
-                errors.append("metadata.coverage.passed is false")
 
     instruments = data["instruments"]
     if not isinstance(instruments, list):

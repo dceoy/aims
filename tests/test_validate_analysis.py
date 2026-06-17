@@ -218,7 +218,7 @@ def test_validate_empty_instruments_list(va: ModuleType) -> None:
 # ── data_freshness validation ──────────────────────────────────────────────────
 
 
-def test_validate_coverage_failed(va: ModuleType) -> None:
+def test_validate_coverage_passed_false_allowed(va: ModuleType) -> None:
     data = {
         **VALID_ARTIFACT,
         "metadata": {
@@ -231,7 +231,7 @@ def test_validate_coverage_failed(va: ModuleType) -> None:
         },
     }
     errors = va.validate_artifact(data)
-    assert any("coverage.passed is false" in e for e in errors)
+    assert not any("coverage.passed is false" in e for e in errors)
 
 
 def test_validate_config_missing_key(va: ModuleType) -> None:

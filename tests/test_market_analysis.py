@@ -1739,9 +1739,75 @@ def test_resolve_symbols_from_fetch_status_rejects_invalid(
         ma.resolve_symbols_from_fetch_status(["A"], {"symbols": "bad"})
 
 
-def test_cmd_generate_invalid_fetch_status_file(
-    ma: ModuleType, tmp_path: Path
+def test_validate_fetch_status_rejects_interval_mismatch(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="interval"):
+        ma.validate_fetch_status({"interval": "w"}, interval="d")
+
+
+def test_validate_fetch_status_rejects_analysis_date_mismatch(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="analysis_date"):
+        ma.validate_fetch_status(
+            {"interval": "d", "analysis_date": "2024-01-01"},
+            interval="d",
+            analysis_date="2024-01-02",
+        )
+
+
+def test_validate_fetch_status_allows_matching_metadata(ma: ModuleType) -> None:
+    ma.validate_fetch_status(
+        {"interval": "d", "analysis_date": "2024-01-01"},
+        interval="d",
+        analysis_date="2024-01-01",
+    )
+
+
+def test_cmd_generate_rejects_wrong_interval_fetch_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
 ) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["A"], interval="w", analysis_date="2024-07-05")
+    ma.record_fetch_status(status_path, "A", success=True)
+
+    class Args:
+        symbols = "A"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-05"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_rejects_wrong_analysis_date_fetch_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["A"], interval="d", analysis_date="2024-07-05")
+    ma.record_fetch_status(status_path, "A", success=True)
+
+    class Args:
+        symbols = "A"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-06"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_invalid_fetch_status_file(ma: ModuleType, tmp_path: Path) -> None:
     bad_status = tmp_path / "bad.json"
     bad_status.write_text("not json")
 

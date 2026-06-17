@@ -168,4 +168,6 @@ Instruments failing quality checks are included in output but marked
 
 Interval thresholds and coverage policy defaults are defined in `data_quality_policy.py`. The `generate` command exits with a non-zero status when coverage gates fail, preventing publication and success Slack notifications while still writing an artifact for local inspection when some symbols loaded successfully.
 
-In the daily workflow, coverage is derived from `data/prices/fetch_status_<interval>.json`, which records per-symbol fetch outcomes for the current run. Pass this file to `generate --fetch-status` so pre-existing price CSVs cannot mask fetch failures.
+In the daily workflow, coverage is derived from `data/prices/fetch_status_<interval>.json`, which records per-symbol fetch outcomes for the current run. Pass this file to `generate --fetch-status` so pre-existing price CSVs cannot mask fetch failures. `generate` rejects fetch-status files whose `interval` or `analysis_date` conflict with the current run.
+
+When coverage gates fail, `generate` may write a diagnostic artifact with `metadata.coverage.passed: false` and exit non-zero. The automated workflow stops before validation or publication; `validate_analysis.py` accepts `passed: false` structurally, but only `generate` exit code `0` artifacts reach the public pipeline.

@@ -24,6 +24,22 @@ _REQUIRED_META: Final[tuple[str, ...]] = (
     "data_freshness",
     "scoring_version",
     "config",
+    "coverage",
+)
+_REQUIRED_CONFIG: Final[tuple[str, ...]] = (
+    "interval",
+    "stale_days",
+    "max_gap_days",
+    "min_history",
+    "coverage_policy",
+)
+_REQUIRED_COVERAGE: Final[tuple[str, ...]] = (
+    "attempted_count",
+    "fetched_count",
+    "missing_symbols",
+    "success_ratio",
+    "passed",
+    "violations",
 )
 _FRESHNESS_SENTINEL: Final[str] = "n/a"
 _DATE_LEN: Final[int] = 10
@@ -76,6 +92,36 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
                             f"metadata.data_freshness[{sym!r}]: {val!r} is not"
                             f" a YYYY-MM-DD date or {_FRESHNESS_SENTINEL!r}"
                         )
+
+        config = metadata.get("config")
+        if config is None:
+            errors.append("metadata.config must not be null")
+        elif not isinstance(config, dict):
+            errors.append("metadata.config must be a JSON object")
+        else:
+            errors.extend(
+                f"metadata.config missing required key: {key!r}"
+                for key in _REQUIRED_CONFIG
+                if key not in config
+            )
+            coverage_policy = config.get("coverage_policy")
+            if coverage_policy is not None and not isinstance(coverage_policy, dict):
+                errors.append("metadata.config.coverage_policy must be a JSON object")
+
+        coverage = metadata.get("coverage")
+        if coverage is None:
+            errors.append("metadata.coverage must not be null")
+        elif not isinstance(coverage, dict):
+            errors.append("metadata.coverage must be a JSON object")
+        else:
+            errors.extend(
+                f"metadata.coverage missing required key: {key!r}"
+                for key in _REQUIRED_COVERAGE
+                if key not in coverage
+            )
+            passed = coverage.get("passed")
+            if passed is not None and not isinstance(passed, bool):
+                errors.append("metadata.coverage.passed must be a boolean")
 
     instruments = data["instruments"]
     if not isinstance(instruments, list):

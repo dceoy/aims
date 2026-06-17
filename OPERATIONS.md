@@ -90,11 +90,39 @@ Instruments that fail quality checks are included in output but marked `is_relia
 
 | Gate                   | Trigger                                                       |
 | ---------------------- | ------------------------------------------------------------- |
-| `stale_data`           | Latest bar older than `stale_days` calendar days (default: 5) |
+| `stale_data`           | Latest bar older than interval-specific `stale_days`          |
 | `insufficient_history` | Fewer than `min_history` bars (default: 60)                   |
-| `missing_bars`         | Gap > 7 calendar days between consecutive bars                |
+| `missing_bars`         | Gap greater than interval-specific `max_gap_days`             |
 | `malformed_input`      | Non-positive prices, high < low, or price outside [low, high] |
 | `high_volatility`      | 20-day annualised volatility > 100%                           |
+| `missing_data`         | No price history returned for the symbol                      |
+
+Interval-specific freshness and missing-bar thresholds are defined in `data_quality_policy.py` and recorded in each artifact under `metadata.config`:
+
+| Interval | `stale_days` | `max_gap_days` | `min_history` |
+| -------- | ------------ | -------------- | ------------- |
+| `d`      | 5            | 7              | 60            |
+| `w`      | 21           | 21             | 60            |
+| `m`      | 62           | 62             | 60            |
+
+### Data coverage gates
+
+The daily workflow evaluates systemic data-source health before publishing results. Coverage statistics are stored in `metadata.coverage`; policy defaults live in `metadata.config.coverage_policy`.
+
+| Policy                | Default | Description                                              |
+| --------------------- | ------- | -------------------------------------------------------- |
+| `min_success_ratio`   | `0.8`   | Minimum fraction of configured symbols with fetched data |
+| `max_missing_symbols` | `1`     | Maximum allowed count of symbols with no fetched data    |
+
+**Isolated missing symbols:** When coverage policy passes, the workflow still generates an artifact and marks affected instruments with the `missing_data` risk gate. One missing symbol out of five configured symbols (80% success ratio) is within policy.
+
+**Systemic data-source failure:** When coverage policy fails (too many missing symbols, success ratio below threshold, empty symbol universe, or all symbols failed), the `generate` step may write a diagnostic JSON artifact with `metadata.coverage.passed: false`, then exits with a non-zero status. The automated workflow stops before artifact validation, Hugo report generation, pull-request creation, and Slack success notification. Diagnostic artifacts are for local inspection only — do not validate or publish them manually. The failure Slack notification still links to the GitHub Actions run.
+
+**Artifact validation contract:** `validate_analysis.py` accepts `metadata.coverage.passed: false` as structurally valid JSON. Publication safety comes from the workflow gate: `generate` must exit `0` before validation, report generation, or PR creation run. Only artifacts with `coverage.passed: true` reach the public pipeline.
+
+Override coverage gates locally or in manual workflow runs via `market_analysis.py generate --min-success-ratio` and `--max-missing-symbols`, or through the `workflow_dispatch` inputs of the same name (defaults: `0.8` and `1`).
+
+**Current-run fetch status:** The daily workflow initializes `data/prices/fetch_status_<interval>.json` before fetching, records per-symbol success or failure during each `fetch` call, and passes that file to `generate --fetch-status`. Coverage gates use this fetch-status file as the source of truth, not merely the presence of pre-existing local price CSVs. A stale on-disk price file cannot mask a failed fetch in the current run. `generate` rejects fetch-status files whose `interval` or `analysis_date` do not match the current run.
 
 ### Market regime
 
@@ -167,8 +195,8 @@ Pipeline order:
 1. Validate CFD instrument master
 2. Set analysis date (default: today UTC)
 3. Load symbols from `data/stooq_symbols.txt`
-4. Fetch market data from Stooq (1-year lookback)
-5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`)
+4. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from Stooq (1-year lookback), recording per-symbol outcomes in fetch status
+5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`) using `--fetch-status`; fail if coverage gates are violated
 6. Validate artifact
 7. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`)
 8. Build Hugo site (validation only — catches template or content errors before commit)
@@ -177,13 +205,15 @@ Pipeline order:
 
 ### Manual dispatch
 
-The workflow supports `workflow_dispatch` with three optional inputs:
+The workflow supports `workflow_dispatch` with optional inputs:
 
-| Input           | Default   | Description                                                   |
-| --------------- | --------- | ------------------------------------------------------------- |
-| `analysis_date` | Today UTC | Override the analysis date (YYYY-MM-DD)                       |
-| `interval`      | `d`       | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)  |
-| `dry_run`       | `false`   | When `true`, skips PR creation and Slack success notification |
+| Input                 | Default   | Description                                                   |
+| --------------------- | --------- | ------------------------------------------------------------- |
+| `analysis_date`       | Today UTC | Override the analysis date (YYYY-MM-DD)                       |
+| `interval`            | `d`       | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)  |
+| `dry_run`             | `false`   | When `true`, skips PR creation and Slack success notification |
+| `min_success_ratio`   | `0.8`     | Minimum symbol fetch success ratio for coverage gate          |
+| `max_missing_symbols` | `1`       | Maximum allowed missing symbols for coverage gate             |
 
 ### Deployment gate
 
@@ -230,9 +260,9 @@ The `ci.yml` workflow adds:
 ERROR: fetch failed for ^SPX
 ```
 
-Stooq may be temporarily unavailable or the symbol may be invalid. Per-symbol fetch failures are non-fatal — a `WARNING` is logged and the fetch loop continues. The symbol is passed to the `generate` step which marks it as `missing_data` in the artifact and report. The workflow only fails if no symbols at all can be fetched and the artifact cannot be generated.
+Stooq may be temporarily unavailable or the symbol may be invalid. Per-symbol fetch failures are non-fatal — a `WARNING` is logged and the fetch loop continues. The symbol is passed to the `generate` step which marks it as `missing_data` in the artifact and report when coverage policy still passes. The workflow fails before publishing when coverage gates detect a systemic data-source failure (too many missing symbols or success ratio below threshold). It also fails when no symbols at all can be fetched.
 
-**Fix:** Check `data/stooq_symbols.txt` for typos. Verify the symbol at https://stooq.com. Remove permanently unavailable symbols to keep the analysis clean.
+**Fix:** Check `data/stooq_symbols.txt` for typos. Verify the symbol at https://stooq.com. Remove permanently unavailable symbols to keep the analysis clean. Re-run the workflow after the data source recovers.
 
 ### Artifact validation failure
 
@@ -268,7 +298,14 @@ All new Python scripts in `.agents/skills/market-analysis/scripts/` are included
 
 ### Re-run the daily workflow
 
-Trigger it from **Actions → Daily market analysis → Run workflow** with the desired `analysis_date`.
+Trigger it from **Actions → Daily market analysis → Run workflow** with the desired `analysis_date`. Use `dry_run = true` to test fetch, scoring, and artifact generation without opening a pull request or sending a success Slack notification.
+
+### Recover from a coverage gate failure
+
+1. Inspect the failed GitHub Actions run log for `ERROR: coverage gate failed` messages and the saved artifact (if generated locally).
+2. Verify Stooq availability and symbol validity in `data/stooq_symbols.txt`.
+3. Re-run the workflow manually once the data source has recovered.
+4. For temporary outages affecting multiple symbols, wait for recovery rather than lowering coverage thresholds in automation.
 
 ### Re-fetch data for a symbol
 

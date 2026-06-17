@@ -7,13 +7,26 @@
     "data_freshness": {
       "^SPX": "2024-01-01",
       "^DJI": "2023-12-29",
-      "^NDX": "n/a"
+      "^NDX": "2023-12-28"
     },
     "scoring_version": "1.0.0",
     "config": {
       "stale_days": 5,
+      "max_gap_days": 7,
       "min_history": 60,
-      "interval": "d"
+      "interval": "d",
+      "coverage_policy": {
+        "min_success_ratio": 0.8,
+        "max_missing_symbols": 1
+      }
+    },
+    "coverage": {
+      "attempted_count": 3,
+      "fetched_count": 3,
+      "missing_symbols": [],
+      "success_ratio": 1.0,
+      "passed": true,
+      "violations": []
     }
   },
   "instruments": [

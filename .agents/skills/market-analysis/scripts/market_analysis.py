@@ -30,15 +30,30 @@ from typing import Any, Final
 from urllib.error import URLError
 from urllib.request import urlopen
 
+from data_quality_policy import (
+    DEFAULT_COVERAGE_POLICY,
+    CoveragePolicy,
+    build_config_dict,
+    build_coverage_metadata,
+    evaluate_coverage,
+    get_data_quality_policy,
+)
+
 # ── Constants ────────────────────────────────────────────────────────────────
 
 _DEFAULT_PRICES_DIR: Final[Path] = Path("data/prices")
 _DEFAULT_ANALYSIS_DIR: Final[Path] = Path("data/analysis")
 _DEFAULT_INTERVAL: Final[str] = "d"
-_STALE_DAYS: Final[int] = 5
-_MIN_HISTORY: Final[int] = 60
+_DAILY_POLICY = get_data_quality_policy(_DEFAULT_INTERVAL)
+_STALE_DAYS: Final[int] = _DAILY_POLICY.thresholds.stale_days
+_MIN_HISTORY: Final[int] = _DAILY_POLICY.thresholds.min_history
+_MAX_GAP_DAYS: Final[int] = _DAILY_POLICY.thresholds.max_gap_days
 _HIGH_VOL_THRESHOLD: Final[float] = 1.0
-_MAX_GAP_DAYS: Final[int] = 7
+
+_FETCH_STATUS_VERSION: Final[str] = "1.0.0"
+_FETCH_STATUS_SUCCESS: Final[str] = "success"
+_FETCH_STATUS_FAILED: Final[str] = "failed"
+_FETCH_STATUS_PENDING: Final[str] = "pending"
 
 SCORING_VERSION: Final[str] = "1.0.0"
 ARTIFACT_VERSION: Final[str] = "1.0.0"
@@ -259,6 +274,108 @@ def load_ohlcv(
     return sorted(bars, key=lambda b: b.timestamp)
 
 
+# ── Fetch status (current-run coverage source of truth) ───────────────────────
+
+
+def init_fetch_status(
+    path: Path,
+    symbols: list[str],
+    *,
+    interval: str,
+    analysis_date: str | None = None,
+) -> None:
+    """Initialize a fetch-status file with all symbols marked pending."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "version": _FETCH_STATUS_VERSION,
+        "interval": interval,
+        "analysis_date": analysis_date,
+        "symbols": {symbol: {"status": _FETCH_STATUS_PENDING} for symbol in symbols},
+    }
+    with path.open("w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+
+
+def load_fetch_status(path: Path) -> dict[str, Any]:
+    """Load a fetch-status JSON file."""
+    with path.open(encoding="utf-8") as fh:
+        data = json.load(fh)
+    if not isinstance(data, dict):
+        msg = f"fetch status at {path} must be a JSON object"
+        raise TypeError(msg)
+    return data
+
+
+def record_fetch_status(
+    path: Path,
+    symbol: str,
+    *,
+    success: bool,
+    error: str | None = None,
+) -> None:
+    """Record the outcome of a single-symbol fetch in *path*."""
+    data = load_fetch_status(path)
+    symbols = data.get("symbols")
+    if not isinstance(symbols, dict):
+        msg = f"fetch status at {path} is missing a valid 'symbols' object"
+        raise TypeError(msg)
+    entry: dict[str, str] = {
+        "status": _FETCH_STATUS_SUCCESS if success else _FETCH_STATUS_FAILED
+    }
+    if error:
+        entry["error"] = error
+    symbols[symbol] = entry
+    with path.open("w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2)
+
+
+def validate_fetch_status(
+    fetch_status: dict[str, Any],
+    *,
+    interval: str,
+    analysis_date: str | None = None,
+) -> None:
+    """Reject fetch-status metadata that does not match the current run."""
+    status_interval = fetch_status.get("interval")
+    if status_interval != interval:
+        msg = (
+            f"fetch status interval {status_interval!r} does not match"
+            f" requested interval {interval!r}"
+        )
+        raise ValueError(msg)
+    status_date = fetch_status.get("analysis_date")
+    if (
+        analysis_date is not None
+        and status_date is not None
+        and status_date != analysis_date
+    ):
+        msg = (
+            f"fetch status analysis_date {status_date!r} does not match"
+            f" requested analysis_date {analysis_date!r}"
+        )
+        raise ValueError(msg)
+
+
+def resolve_symbols_from_fetch_status(
+    symbols: list[str],
+    fetch_status: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    """Return (fetched, missing) symbol lists from a fetch-status payload."""
+    raw_symbols = fetch_status.get("symbols")
+    if not isinstance(raw_symbols, dict):
+        msg = "fetch status is missing a valid 'symbols' object"
+        raise TypeError(msg)
+    fetched: list[str] = []
+    missing: list[str] = []
+    for symbol in symbols:
+        entry = raw_symbols.get(symbol)
+        if isinstance(entry, dict) and entry.get("status") == _FETCH_STATUS_SUCCESS:
+            fetched.append(symbol)
+        else:
+            missing.append(symbol)
+    return fetched, missing
+
+
 # ── Data quality ──────────────────────────────────────────────────────────────
 
 
@@ -267,6 +384,7 @@ def check_data_quality(
     *,
     stale_days: int = _STALE_DAYS,
     min_history: int = _MIN_HISTORY,
+    max_gap_days: int = _MAX_GAP_DAYS,
     reference_time: datetime | None = None,
 ) -> DataQualityReport:
     if not bars:
@@ -315,7 +433,7 @@ def check_data_quality(
     if len(bars) >= 2:
         for i in range(1, len(bars)):
             gap = (bars[i].timestamp - bars[i - 1].timestamp).days
-            if gap > _MAX_GAP_DAYS:
+            if gap > max_gap_days:
                 report.issues.append(
                     f"possible missing bars: {gap}-day gap between"
                     f" {bars[i - 1].timestamp.date()} and"
@@ -497,6 +615,7 @@ def score_instruments(
     reference_time: datetime | None = None,
     stale_days: int = _STALE_DAYS,
     min_history: int = _MIN_HISTORY,
+    max_gap_days: int = _MAX_GAP_DAYS,
 ) -> list[InstrumentScore]:
     if not data:
         return []
@@ -507,6 +626,7 @@ def score_instruments(
             data[s],
             stale_days=stale_days,
             min_history=min_history,
+            max_gap_days=max_gap_days,
             reference_time=reference_time,
         )
         for s in symbols
@@ -611,6 +731,7 @@ def generate_artifact(
     *,
     analysis_date: str | None = None,
     missing_symbols: list[str] | None = None,
+    coverage: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
     generated_at = (
@@ -660,16 +781,19 @@ def generate_artifact(
             "features": _features_to_dict(empty_feats),
         })
         next_rank += 1
+    metadata: dict[str, Any] = {
+        "generated_at": generated_at,
+        "git_commit": _get_git_commit(),
+        "data_source": data_source,
+        "data_freshness": freshness,
+        "scoring_version": SCORING_VERSION,
+        "config": config,
+    }
+    if coverage is not None:
+        metadata["coverage"] = coverage
     return {
         "version": ARTIFACT_VERSION,
-        "metadata": {
-            "generated_at": generated_at,
-            "git_commit": _get_git_commit(),
-            "data_source": data_source,
-            "data_freshness": freshness,
-            "scoring_version": SCORING_VERSION,
-            "config": config,
-        },
+        "metadata": metadata,
         "instruments": instruments,
     }
 
@@ -695,18 +819,41 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
     start = datetime.strptime(args.start, "%Y-%m-%d").replace(tzinfo=UTC)
     end = datetime.strptime(args.end, "%Y-%m-%d").replace(tzinfo=UTC)
     provider = StooqProvider()
+    fetch_status_path: Path | None = (
+        Path(args.fetch_status) if getattr(args, "fetch_status", None) else None
+    )
     try:
         bars = provider.fetch_ohlcv(args.symbol, start, end, args.interval)
     except (URLError, ValueError) as exc:
         print(f"ERROR: fetch failed for {args.symbol}: {exc}")
+        if fetch_status_path is not None:
+            record_fetch_status(
+                fetch_status_path, args.symbol, success=False, error=str(exc)
+            )
         return 1
     if not bars:
         print(f"ERROR: no data returned for {args.symbol}")
+        if fetch_status_path is not None:
+            record_fetch_status(
+                fetch_status_path,
+                args.symbol,
+                success=False,
+                error="no data returned",
+            )
         return 1
     path = save_ohlcv(bars, Path(args.output))
     print(f"saved {len(bars)} bars to {path}")
+    if fetch_status_path is not None:
+        record_fetch_status(fetch_status_path, args.symbol, success=True)
     if not args.no_validate:
-        report = check_data_quality(bars)
+        policy = get_data_quality_policy(args.interval)
+        thresholds = policy.thresholds
+        report = check_data_quality(
+            bars,
+            stale_days=thresholds.stale_days,
+            min_history=thresholds.min_history,
+            max_gap_days=thresholds.max_gap_days,
+        )
         for issue in report.issues:
             print(f"WARNING: {issue}")
     return 0
@@ -718,7 +865,13 @@ def _cmd_check(args: argparse.Namespace) -> int:
     except FileNotFoundError as exc:
         print(f"ERROR: {exc}")
         return 1
-    report = check_data_quality(bars)
+    policy = get_data_quality_policy(args.interval)
+    report = check_data_quality(
+        bars,
+        stale_days=policy.thresholds.stale_days,
+        min_history=policy.thresholds.min_history,
+        max_gap_days=policy.thresholds.max_gap_days,
+    )
     if report.is_valid:
         sym_interval = f"{args.symbol}/{args.interval}"
         print(f"data quality OK: {report.bar_count} bars for {sym_interval}")
@@ -739,7 +892,14 @@ def _cmd_score(args: argparse.Namespace) -> int:
     if not data:
         print("ERROR: no symbols could be loaded")
         return 1
-    results = score_instruments(data)
+    policy = get_data_quality_policy(args.interval)
+    thresholds = policy.thresholds
+    results = score_instruments(
+        data,
+        stale_days=thresholds.stale_days,
+        min_history=thresholds.min_history,
+        max_gap_days=thresholds.max_gap_days,
+    )
     print(f"{'rank':>4}  {'symbol':<20}  {'score':>6}  {'reliable':>8}  gates")
     for s in results:
         reliable = "yes" if s.is_reliable else "no"
@@ -748,43 +908,120 @@ def _cmd_score(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_init_fetch_status(args: argparse.Namespace) -> int:
+    symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
+    if not symbols:
+        print("ERROR: no symbols provided")
+        return 1
+    init_fetch_status(
+        Path(args.output),
+        symbols,
+        interval=args.interval,
+        analysis_date=getattr(args, "analysis_date", None) or None,
+    )
+    print(f"fetch status initialized for {len(symbols)} symbol(s) at {args.output}")
+    return 0
+
+
 def _cmd_generate(args: argparse.Namespace) -> int:
     symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
+    if not symbols:
+        print("ERROR: no symbols provided")
+        return 1
+
+    coverage_policy = CoveragePolicy(
+        min_success_ratio=args.min_success_ratio,
+        max_missing_symbols=args.max_missing_symbols,
+    )
+    policy = get_data_quality_policy(args.interval, coverage=coverage_policy)
+    thresholds = policy.thresholds
+
+    fetch_status_path: Path | None = (
+        Path(args.fetch_status) if getattr(args, "fetch_status", None) else None
+    )
+    if fetch_status_path is not None:
+        try:
+            fetch_status = load_fetch_status(fetch_status_path)
+            validate_fetch_status(
+                fetch_status,
+                interval=args.interval,
+                analysis_date=getattr(args, "analysis_date", None) or None,
+            )
+        except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            print(f"ERROR: invalid fetch status file: {exc}")
+            return 1
+        fetched_symbols, missing = resolve_symbols_from_fetch_status(
+            symbols, fetch_status
+        )
+    else:
+        fetched_symbols = []
+        missing = []
+        for sym in symbols:
+            try:
+                load_ohlcv(sym, args.interval, Path(args.data_dir))
+            except FileNotFoundError:
+                missing.append(sym)
+            else:
+                fetched_symbols.append(sym)
+
+    coverage_result = evaluate_coverage(
+        symbols, fetched_symbols, missing, coverage_policy
+    )
+    coverage_metadata = build_coverage_metadata(coverage_result)
+
     data: dict[str, list[OhlcvBar]] = {}
-    missing: list[str] = []
-    for sym in symbols:
+    load_failures: list[str] = []
+    for sym in fetched_symbols:
         try:
             data[sym] = load_ohlcv(sym, args.interval, Path(args.data_dir))
         except FileNotFoundError:
-            print(f"WARNING: no data for {sym}, marking as missing")
-            missing.append(sym)
+            print(f"WARNING: fetch status success but no data file for {sym}")
+            load_failures.append(sym)
+    if load_failures:
+        fetched_symbols = [s for s in fetched_symbols if s not in load_failures]
+        missing = sorted(set(missing) | set(load_failures))
+        coverage_result = evaluate_coverage(
+            symbols, fetched_symbols, missing, coverage_policy
+        )
+        coverage_metadata = build_coverage_metadata(coverage_result)
+
     if not data:
         print("ERROR: no symbols could be loaded")
+        for violation in coverage_result.violations:
+            print(f"ERROR: coverage gate failed: {violation}")
         return 1
-    config: dict[str, Any] = {
-        "stale_days": _STALE_DAYS,
-        "min_history": _MIN_HISTORY,
-        "interval": args.interval,
-    }
+
+    config = build_config_dict(policy)
     analysis_date: str | None = getattr(args, "analysis_date", None) or None
     reference_time: datetime | None = None
     if analysis_date:
         reference_time = datetime.strptime(analysis_date, "%Y-%m-%d").replace(
             tzinfo=UTC
         )
-    results = score_instruments(data, reference_time=reference_time)
+    results = score_instruments(
+        data,
+        reference_time=reference_time,
+        stale_days=thresholds.stale_days,
+        min_history=thresholds.min_history,
+        max_gap_days=thresholds.max_gap_days,
+    )
     artifact = generate_artifact(
         results,
         data,
         config,
         analysis_date=analysis_date,
         missing_symbols=missing or None,
+        coverage=coverage_metadata,
     )
     path = save_artifact(artifact, Path(args.output))
     print(f"artifact saved to {path}")
     if missing:
         syms = ", ".join(sorted(missing))
         print(f"WARNING: {len(missing)} symbol(s) had no data: {syms}")
+    if not coverage_result.passed:
+        for violation in coverage_result.violations:
+            print(f"ERROR: coverage gate failed: {violation}")
+        return 1
     return 0
 
 
@@ -799,6 +1036,30 @@ def main(argv: list[str] | None = None) -> int:
     p_fetch.add_argument("--interval", default=_DEFAULT_INTERVAL, help="d/w/m")
     p_fetch.add_argument("--output", default=str(_DEFAULT_PRICES_DIR))
     p_fetch.add_argument("--no-validate", action="store_true", dest="no_validate")
+    p_fetch.add_argument(
+        "--fetch-status",
+        default=None,
+        dest="fetch_status",
+        help="Path to fetch-status JSON updated with this fetch result",
+    )
+
+    p_init_status = sub.add_parser(
+        "init-fetch-status",
+        help="Initialize fetch-status JSON for a symbol list",
+    )
+    p_init_status.add_argument("--symbols", required=True, help="Comma-separated list")
+    p_init_status.add_argument("--interval", default=_DEFAULT_INTERVAL)
+    p_init_status.add_argument(
+        "--output",
+        required=True,
+        help="Path to fetch-status JSON file to create",
+    )
+    p_init_status.add_argument(
+        "--analysis-date",
+        default=None,
+        dest="analysis_date",
+        help="Analysis date (YYYY-MM-DD) recorded in fetch status",
+    )
 
     p_check = sub.add_parser("check", help="Check data quality of saved OHLCV")
     p_check.add_argument("--symbol", required=True)
@@ -825,6 +1086,26 @@ def main(argv: list[str] | None = None) -> int:
         dest="analysis_date",
         help="Override analysis date (YYYY-MM-DD; default: today UTC)",
     )
+    p_gen.add_argument(
+        "--min-success-ratio",
+        type=float,
+        default=DEFAULT_COVERAGE_POLICY.min_success_ratio,
+        dest="min_success_ratio",
+        help="Minimum fetched/total symbol ratio (default: 0.8)",
+    )
+    p_gen.add_argument(
+        "--max-missing-symbols",
+        type=int,
+        default=DEFAULT_COVERAGE_POLICY.max_missing_symbols,
+        dest="max_missing_symbols",
+        help="Maximum allowed missing symbols (default: 1)",
+    )
+    p_gen.add_argument(
+        "--fetch-status",
+        default=None,
+        dest="fetch_status",
+        help="Path to fetch-status JSON from the current fetch run",
+    )
 
     args = parser.parse_args(argv)
 
@@ -834,6 +1115,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_check(args)
     if args.command == "score":
         return _cmd_score(args)
+    if args.command == "init-fetch-status":
+        return _cmd_init_fetch_status(args)
     return _cmd_generate(args)
 
 

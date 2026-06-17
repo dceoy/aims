@@ -86,6 +86,23 @@ def build_success_payload(
             "text": f"*⚠️ No data:* {', '.join(stale)}",
         })
 
+    coverage_raw = meta.get("coverage")
+    if isinstance(coverage_raw, dict):
+        fetched = coverage_raw.get("fetched_count")
+        attempted = coverage_raw.get("attempted_count")
+        ratio = coverage_raw.get("success_ratio")
+        if (
+            isinstance(fetched, int)
+            and isinstance(attempted, int)
+            and isinstance(ratio, (int, float))
+        ):
+            fields.append({
+                "type": "mrkdwn",
+                "text": (
+                    f"*Coverage:* {fetched}/{attempted} ({float(ratio):.0%} success)"
+                ),
+            })
+
     if pr_url is not None:
         text = f"AIMS Market Analysis {date_str}: {regime} market. Analysis PR created."
         button_text = "View PR"

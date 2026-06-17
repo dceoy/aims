@@ -308,8 +308,66 @@ def test_quality_large_gap_detected(ma: ModuleType) -> None:
     bar1 = ma.OhlcvBar("X", ts1, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "d")
     bar2 = ma.OhlcvBar("X", ts2, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "d")
     ref = ts2 + timedelta(days=1)
-    report = ma.check_data_quality([bar1, bar2], min_history=1, reference_time=ref)
+    report = ma.check_data_quality(
+        [bar1, bar2], min_history=1, max_gap_days=7, reference_time=ref
+    )
     assert any("gap" in i or "missing" in i for i in report.issues)
+
+
+def test_quality_weekly_gap_within_threshold(ma: ModuleType) -> None:
+    ts1 = datetime(2024, 1, 2, tzinfo=UTC)
+    ts2 = datetime(2024, 1, 16, tzinfo=UTC)
+    bars = [
+        ma.OhlcvBar("X", ts1, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "w"),
+        ma.OhlcvBar("X", ts2, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "w"),
+    ]
+    report = ma.check_data_quality(
+        bars, min_history=1, max_gap_days=21, reference_time=ts2
+    )
+    assert not any("gap" in i or "missing" in i for i in report.issues)
+
+
+def test_quality_weekly_gap_exceeds_threshold(ma: ModuleType) -> None:
+    ts1 = datetime(2024, 1, 2, tzinfo=UTC)
+    ts2 = datetime(2024, 3, 1, tzinfo=UTC)
+    bars = [
+        ma.OhlcvBar("X", ts1, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "w"),
+        ma.OhlcvBar("X", ts2, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "w"),
+    ]
+    report = ma.check_data_quality(
+        bars, min_history=1, max_gap_days=21, reference_time=ts2
+    )
+    assert any("gap" in i or "missing" in i for i in report.issues)
+
+
+def test_quality_weekly_stale_threshold(ma: ModuleType) -> None:
+    ts = datetime(2024, 1, 1, tzinfo=UTC)
+    bar = ma.OhlcvBar("X", ts, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "w")
+    fresh_ref = ts + timedelta(days=20)
+    stale_ref = ts + timedelta(days=22)
+    fresh = ma.check_data_quality(
+        [bar], min_history=1, stale_days=21, reference_time=fresh_ref
+    )
+    stale = ma.check_data_quality(
+        [bar], min_history=1, stale_days=21, reference_time=stale_ref
+    )
+    assert not any("stale" in i for i in fresh.issues)
+    assert any("stale" in i for i in stale.issues)
+
+
+def test_quality_monthly_stale_threshold(ma: ModuleType) -> None:
+    ts = datetime(2024, 1, 1, tzinfo=UTC)
+    bar = ma.OhlcvBar("X", ts, 100.0, 100.0, 100.0, 100.0, 0.0, "test", "m")
+    fresh_ref = ts + timedelta(days=61)
+    stale_ref = ts + timedelta(days=63)
+    fresh = ma.check_data_quality(
+        [bar], min_history=1, stale_days=62, reference_time=fresh_ref
+    )
+    stale = ma.check_data_quality(
+        [bar], min_history=1, stale_days=62, reference_time=stale_ref
+    )
+    assert not any("stale" in i for i in fresh.issues)
+    assert any("stale" in i for i in stale.issues)
 
 
 def test_quality_no_gap_with_two_bars(ma: ModuleType) -> None:
@@ -1123,6 +1181,8 @@ def test_cmd_generate_no_data(ma: ModuleType, tmp_path: Path) -> None:
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
         analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
 
     result = ma._cmd_generate(Args())
     assert result == 1
@@ -1141,6 +1201,8 @@ def test_cmd_generate_success(
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
         analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
 
     result = ma._cmd_generate(Args())
     assert result == 0
@@ -1162,6 +1224,8 @@ def test_cmd_generate_with_analysis_date(
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
         analysis_date = "2024-03-15"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
 
     result = ma._cmd_generate(Args())
     assert result == 0
@@ -1176,15 +1240,18 @@ def test_cmd_generate_partial_missing_in_artifact(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     mocker.patch.object(ma, "_get_git_commit", return_value="abc")
-    bars = _make_bars(ma, "G", [float(100 + i) for i in range(70)])
-    ma.save_ohlcv(bars, tmp_path)
+    for sym in ("G", "H", "I", "J"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
 
     class Args:
-        symbols = "G,MISSING"
+        symbols = "G,H,I,J,MISSING"
         interval = "d"
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
         analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
 
     result = ma._cmd_generate(Args())
     assert result == 0
@@ -1326,6 +1393,8 @@ def test_cmd_generate_analysis_date_as_reference_time(
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
         analysis_date = "2024-01-05"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
 
     result = ma._cmd_generate(Args())
     assert result == 0
@@ -1352,6 +1421,8 @@ def test_cmd_generate_no_analysis_date_may_mark_stale(
         data_dir = str(tmp_path)
         output = str(tmp_path / "analysis")
         analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
 
     result = ma._cmd_generate(Args())
     assert result == 0
@@ -1360,3 +1431,448 @@ def test_cmd_generate_no_analysis_date_may_mark_stale(
     inst = next(i for i in artifact["instruments"] if i["symbol"] == "STALE")
     # Without reference_time fix, old bars stale relative to today
     assert ma.RISK_GATE_STALE in inst["risk_gates"]
+
+
+# ── Coverage gates and artifact metadata ───────────────────────────────────────
+
+
+def test_generate_artifact_includes_policy_and_coverage(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    policy = ma.get_data_quality_policy("d")
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    coverage = ma.build_coverage_metadata(
+        ma.evaluate_coverage(["A"], ["A"], [], policy.coverage)
+    )
+    artifact = ma.generate_artifact(
+        scores,
+        {"A": bars},
+        ma.build_config_dict(policy),
+        coverage=coverage,
+    )
+    assert artifact["metadata"]["config"]["max_gap_days"] == 7
+    assert artifact["metadata"]["coverage"]["passed"] is True
+
+
+def test_cmd_generate_coverage_all_symbols(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    for sym in ("A", "B", "C", "D", "E"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "A,B,C,D,E"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-06-01"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-06-01.json").read_text())
+    assert artifact["metadata"]["coverage"]["passed"] is True
+
+
+def test_cmd_generate_one_missing_within_policy(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    for sym in ("A", "B", "C", "D"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "A,B,C,D,MISSING"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-06-02"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-06-02.json").read_text())
+    assert artifact["metadata"]["coverage"]["passed"] is True
+    missing_inst = next(i for i in artifact["instruments"] if i["symbol"] == "MISSING")
+    assert ma.RISK_GATE_MISSING_DATA in missing_inst["risk_gates"]
+
+
+def test_cmd_generate_too_many_missing_symbols(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "A,MISS1,MISS2"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-06-03"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+
+    assert ma._cmd_generate(Args()) == 1
+    artifact = json.loads((tmp_path / "analysis" / "2024-06-03.json").read_text())
+    assert artifact["metadata"]["coverage"]["passed"] is False
+
+
+def test_cmd_generate_success_ratio_below_threshold(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    for sym in ("A", "B"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "A,B,MISS1,MISS2"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-06-04"
+        min_success_ratio = 0.8
+        max_missing_symbols = 2
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_empty_symbol_universe(ma: ModuleType, tmp_path: Path) -> None:
+    class Args:
+        symbols = ""
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_all_symbols_failed(ma: ModuleType, tmp_path: Path) -> None:
+    class Args:
+        symbols = "MISS1,MISS2"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+# ── Fetch status coverage ─────────────────────────────────────────────────────
+
+
+def test_fetch_status_masks_stale_price_file(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    """A pre-existing price file must not count as fetched when status says failed."""
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    symbols = ["G1", "G2", "G3", "G4", "STALE"]
+    for sym in symbols:
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, symbols, interval="d")
+    for sym in ("G1", "G2", "G3", "G4"):
+        ma.record_fetch_status(status_path, sym, success=True)
+    ma.record_fetch_status(status_path, "STALE", success=False, error="fetch failed")
+
+    class Args:
+        symbols = "G1,G2,G3,G4,STALE"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-01"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-07-01.json").read_text())
+    assert artifact["metadata"]["coverage"]["missing_symbols"] == ["STALE"]
+    stale_inst = next(i for i in artifact["instruments"] if i["symbol"] == "STALE")
+    assert ma.RISK_GATE_MISSING_DATA in stale_inst["risk_gates"]
+
+
+def test_fetch_status_success_counts_fetched_symbol(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "GOOD", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["GOOD"], interval="d")
+    ma.record_fetch_status(status_path, "GOOD", success=True)
+
+    class Args:
+        symbols = "GOOD"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-02"
+        min_success_ratio = 0.8
+        max_missing_symbols = 0
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-07-02.json").read_text())
+    assert artifact["metadata"]["coverage"]["passed"] is True
+
+
+def test_cmd_init_fetch_status(ma: ModuleType, tmp_path: Path) -> None:
+    class Args:
+        symbols = "A,B"
+        interval = "d"
+        output = str(tmp_path / "fetch_status.json")
+        analysis_date = "2024-07-03"
+
+    assert ma._cmd_init_fetch_status(Args()) == 0
+    status = ma.load_fetch_status(tmp_path / "fetch_status.json")
+    assert status["symbols"]["A"]["status"] == ma._FETCH_STATUS_PENDING
+
+
+def test_cmd_fetch_records_failed_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch("market_analysis.urlopen", side_effect=URLError("network error"))
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["FAIL"], interval="d")
+
+    class Args:
+        symbol = "FAIL"
+        start = "2024-01-01"
+        end = "2024-01-31"
+        interval = "d"
+        output = str(tmp_path)
+        no_validate = True
+        fetch_status = str(status_path)
+
+    assert ma._cmd_fetch(Args()) == 1
+    status = ma.load_fetch_status(status_path)
+    assert status["symbols"]["FAIL"]["status"] == ma._FETCH_STATUS_FAILED
+
+
+def test_cmd_fetch_records_success_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    csv_content = "Date,Open,High,Low,Close,Volume\n2024-01-02,100,110,90,105,1000\n"
+    mock_resp = mocker.MagicMock()
+    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
+    mock_resp.__exit__ = mocker.MagicMock(return_value=False)
+    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["AAPL.US"], interval="d")
+
+    class Args:
+        symbol = "AAPL.US"
+        start = "2024-01-01"
+        end = "2024-01-31"
+        interval = "d"
+        output = str(tmp_path)
+        no_validate = True
+        fetch_status = str(status_path)
+
+    assert ma._cmd_fetch(Args()) == 0
+    status = ma.load_fetch_status(status_path)
+    assert status["symbols"]["AAPL.US"]["status"] == ma._FETCH_STATUS_SUCCESS
+
+
+def test_cmd_fetch_records_empty_result_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    csv_content = "Date,Open,High,Low,Close,Volume\n"
+    mock_resp = mocker.MagicMock()
+    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
+    mock_resp.__exit__ = mocker.MagicMock(return_value=False)
+    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["EMPTY"], interval="d")
+
+    class Args:
+        symbol = "EMPTY"
+        start = "2024-01-01"
+        end = "2024-01-31"
+        interval = "d"
+        output = str(tmp_path)
+        no_validate = True
+        fetch_status = str(status_path)
+
+    assert ma._cmd_fetch(Args()) == 1
+    status = ma.load_fetch_status(status_path)
+    assert status["symbols"]["EMPTY"]["status"] == ma._FETCH_STATUS_FAILED
+
+
+def test_load_fetch_status_rejects_non_object(ma: ModuleType, tmp_path: Path) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text("[1, 2, 3]")
+    with pytest.raises(TypeError):
+        ma.load_fetch_status(path)
+
+
+def test_record_fetch_status_rejects_invalid_symbols(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text('{"symbols": "bad"}')
+    with pytest.raises(TypeError):
+        ma.record_fetch_status(path, "X", success=True)
+
+
+def test_resolve_symbols_from_fetch_status_rejects_invalid(
+    ma: ModuleType,
+) -> None:
+    with pytest.raises(TypeError):
+        ma.resolve_symbols_from_fetch_status(["A"], {"symbols": "bad"})
+
+
+def test_validate_fetch_status_rejects_interval_mismatch(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="interval"):
+        ma.validate_fetch_status({"interval": "w"}, interval="d")
+
+
+def test_validate_fetch_status_rejects_analysis_date_mismatch(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="analysis_date"):
+        ma.validate_fetch_status(
+            {"interval": "d", "analysis_date": "2024-01-01"},
+            interval="d",
+            analysis_date="2024-01-02",
+        )
+
+
+def test_validate_fetch_status_allows_matching_metadata(ma: ModuleType) -> None:
+    ma.validate_fetch_status(
+        {"interval": "d", "analysis_date": "2024-01-01"},
+        interval="d",
+        analysis_date="2024-01-01",
+    )
+
+
+def test_cmd_generate_rejects_wrong_interval_fetch_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["A"], interval="w", analysis_date="2024-07-05")
+    ma.record_fetch_status(status_path, "A", success=True)
+
+    class Args:
+        symbols = "A"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-05"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_rejects_wrong_analysis_date_fetch_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["A"], interval="d", analysis_date="2024-07-05")
+    ma.record_fetch_status(status_path, "A", success=True)
+
+    class Args:
+        symbols = "A"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-06"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_invalid_fetch_status_file(ma: ModuleType, tmp_path: Path) -> None:
+    bad_status = tmp_path / "bad.json"
+    bad_status.write_text("not json")
+
+    class Args:
+        symbols = "A"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = str(bad_status)
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_generate_fetch_status_success_without_price_file(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    status_path = tmp_path / "fetch_status.json"
+    ma.init_fetch_status(status_path, ["GHOST"], interval="d")
+    ma.record_fetch_status(status_path, "GHOST", success=True)
+
+    class Args:
+        symbols = "GHOST"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-04"
+        min_success_ratio = 0.8
+        max_missing_symbols = 0
+        fetch_status = str(status_path)
+
+    assert ma._cmd_generate(Args()) == 1
+
+
+def test_cmd_init_fetch_status_empty_symbols(ma: ModuleType, tmp_path: Path) -> None:
+    class Args:
+        symbols = ""
+        interval = "d"
+        output = str(tmp_path / "fetch_status.json")
+        analysis_date = None
+
+    assert ma._cmd_init_fetch_status(Args()) == 1
+
+
+def test_main_routes_init_fetch_status(ma: ModuleType, mocker: MockerFixture) -> None:
+    called = []
+    mocker.patch.object(
+        ma,
+        "_cmd_init_fetch_status",
+        side_effect=lambda _a: called.append("init-fetch-status") or 0,
+    )
+    mocker.patch.object(
+        sys,
+        "argv",
+        [
+            "market_analysis.py",
+            "init-fetch-status",
+            "--symbols",
+            "X",
+            "--output",
+            "status.json",
+        ],
+    )
+    ma.main()
+    assert called == ["init-fetch-status"]

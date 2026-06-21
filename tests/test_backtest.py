@@ -64,7 +64,14 @@ def test_helpers_and_validation(modules: tuple[ModuleType, ModuleType]) -> None:
     assert backtest._parse_positive_csv("1,5") == (1, 5)
     with pytest.raises(Exception, match="positive"):
         backtest._parse_positive_csv("0")
-    for kwargs in ({"top_k": 0}, {"buckets": 0}, {"min_history": 0}, {"horizons": ()}):
+    for kwargs in (
+        {"top_k": 0},
+        {"buckets": 0},
+        {"min_history": 0},
+        {"horizons": ()},
+        {"horizons": (0,)},
+        {"horizons": (-1,)},
+    ):
         with pytest.raises(ValueError, match="positive"):
             backtest.run_backtest({}, **kwargs)
     with pytest.raises(ValueError, match="unique"):

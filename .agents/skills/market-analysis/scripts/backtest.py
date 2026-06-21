@@ -39,7 +39,13 @@ def run_backtest(
     min_history: int = 60,
 ) -> dict[str, Any]:
     """Score each available date without look-ahead and aggregate forward returns."""
-    if top_k < 1 or buckets < 1 or min_history < 1 or not horizons:
+    if (
+        top_k < 1
+        or buckets < 1
+        or min_history < 1
+        or not horizons
+        or any(horizon < 1 for horizon in horizons)
+    ):
         msg = "top-k, buckets, min-history, and horizons must be positive"
         raise ValueError(msg)
     if len(horizons) != len(set(horizons)):

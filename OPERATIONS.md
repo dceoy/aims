@@ -65,6 +65,28 @@ The master is validated against `data/schema/cfd_instruments.schema.json` after 
 
 AIMS scores and ranks instruments cross-sectionally using ten features computed from daily OHLCV history.
 
+### Walk-forward backtesting
+
+Run the scoring engine historically against saved daily prices without using future
+data in each score:
+
+```bash
+uv run .agents/skills/market-analysis/scripts/backtest.py \
+    --symbols "^SPX,^DJI,^NDX" --horizons 1,5,20,60
+```
+
+The deterministic JSON artifact is written to
+`data/backtests/START_END_d.json`. It records the configuration, scoring version,
+date range, forward-return averages by score bucket (bucket 1 is highest), top-k
+average return and hit rate, top-k turnover, and the maximum drawdown of the
+equal-weighted one-day top-k return series.
+
+These results measure historical association, not causation or an executable
+strategy. They exclude fees, slippage, financing, order timing, survivorship bias,
+and market-impact constraints. Overlapping forward horizons are not independent;
+small samples and the selected universe can materially distort results. Backtest
+output is informational and is not investment advice.
+
 ### Features
 
 | Feature             | Window            | Direction        |

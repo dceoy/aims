@@ -38,7 +38,20 @@ Examples: `^SPX` (S&P 500), `^DJI` (Dow Jones), `^NDX` (NASDAQ 100), `^NKX` (Nik
 
 **Terms of use:** Data obtained from Stooq is subject to Stooq's own terms. AIMS does not redistribute raw Stooq data — it stores derived analysis artifacts only. Verify Stooq's terms before commercial or redistribution use.
 
-**Configured symbols:** `data/stooq_symbols.txt` — one Stooq symbol per line; lines starting with `#` are comments. Edit this file to add or remove instruments from the daily run.
+**Configured symbols:** `data/stooq_symbols.txt` — one Stooq symbol per line; lines starting with `#` are comments. Edit this file to add or remove instruments from the daily run when using `--symbols` mode.
+
+### Provider registry
+
+AIMS routes market-data fetches through a provider registry defined in `market_analysis.py`. Registered providers:
+
+| Provider | Supported intervals | Notes                                    |
+| -------- | ------------------- | ---------------------------------------- |
+| `stooq`  | `d`, `w`, `m`       | Free CSV download; default provider      |
+| `csv`    | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir  |
+
+Pass `--provider <name>` to `init-fetch-status`, `fetch`, or `generate`. The default is `stooq`.
+
+**Adding a future provider:** Subclass `MarketDataProvider` in `market_analysis.py`, register it in `_PROVIDER_REGISTRY` with a `ProviderMetadata` entry listing its supported intervals and any known limitations, and mirror the entry in `validate_instrument_mappings.py`'s `_KNOWN_PROVIDERS` and `_PROVIDER_INTERVALS`. Update the `provider` input choices in `.github/workflows/daily-market-analysis.yml`. Add the new provider to the test suite to maintain 100% coverage.
 
 ### CFD instrument master
 
@@ -58,6 +71,44 @@ Ticker symbols in the instrument master follow each broker's own convention and 
 The master is validated against `data/schema/cfd_instruments.schema.json` after every update.
 
 **Update frequency:** Weekly (Monday 05:00 UTC) via `.github/workflows/update-cfd-instruments.yml`. Changes are submitted as pull requests for review.
+
+### Canonical instrument mappings
+
+`data/mappings/canonical_instrument_mappings.csv` links broker CFD products and provider symbols to a stable canonical identifier and display name shown in reports.
+
+| Column                   | Required | Description                                                       |
+| ------------------------ | -------- | ----------------------------------------------------------------- |
+| `canonical_id`           | Yes      | Stable lowercase identifier, e.g. `spx`                          |
+| `display_name`           | Yes      | Human-readable name shown in reports, e.g. `S&P 500`             |
+| `asset_class`            | Yes      | `equity_index`, `commodity`, etc.                                 |
+| `broker`                 | No       | Broker name; leave blank if no broker link is needed              |
+| `broker_instrument_name` | No       | Broker CFD product name (used for CFD reference validation)       |
+| `broker_ticker_symbol`   | No       | Broker's own ticker symbol                                        |
+| `provider`               | Yes      | Data provider: `stooq` or `csv`                                  |
+| `provider_symbol`        | Yes      | Provider symbol, e.g. `^SPX`                                     |
+| `provider_interval`      | Yes      | Bar interval: `d`, `w`, or `m`                                   |
+| `tradable`               | Yes      | `true` if the instrument is currently tradable at the broker      |
+| `notes`                  | No       | Free-form notes                                                   |
+
+Multiple rows may share a `canonical_id` — one per (provider, interval, broker) combination. A `(provider, provider_symbol, provider_interval)` triple must map to exactly one `canonical_id`.
+
+**Validate the mapping file:**
+
+```bash
+uv run .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
+    --input data/mappings/canonical_instrument_mappings.csv \
+    --cfd-instruments data/cfd_instruments.csv
+```
+
+Exits 0 when clean; exits 1 on hard errors (missing columns, unknown provider, unsupported interval, duplicate key). Warnings are printed for tradable CFD entries in `cfd_instruments.csv` that have no mapping row — these are informational and do not block the run.
+
+**Adding a new instrument:**
+1. Add one or more rows to `canonical_instrument_mappings.csv` — one per provider/interval combination to analyze, plus one per broker CFD pairing.
+2. Run the validator above to confirm no errors.
+3. Run `uv run pytest` to confirm 100% coverage still holds.
+4. Optionally add the provider symbol to `data/stooq_symbols.txt` to include it in `--symbols` mode.
+
+**Connecting new CFD entries to canonical mappings:** After `update-cfd-instruments` adds new rows to `data/cfd_instruments.csv`, the mapping validator warns about tradable CFD entries with no mapping row. Add the corresponding canonical mapping rows to clear those warnings.
 
 ---
 
@@ -247,6 +298,7 @@ The workflow supports `workflow_dispatch` with optional inputs:
 | `dry_run`             | `false`   | When `true`, skips PR creation and Slack success notification |
 | `min_success_ratio`   | `0.8`     | Minimum symbol fetch success ratio for coverage gate          |
 | `max_missing_symbols` | `1`       | Maximum allowed missing symbols for coverage gate             |
+| `provider`            | `stooq`   | Market data provider: `stooq`                                 |
 
 ### Deployment gate
 
@@ -317,6 +369,19 @@ A generated Markdown file has invalid front matter or content that causes Hugo t
 
 **Fix:** Run `hugo --gc --minify` locally with the failing content file, fix the generator, and regenerate.
 
+### Mapping validation errors
+
+```
+ERROR: row 5: unknown provider 'bloomberg'; known: csv, stooq
+WARNING: CFD instrument ('TestBroker', 'US30') has no canonical mapping entry
+```
+
+Run `validate_instrument_mappings.py` locally to see all errors before committing. Common causes:
+- **Unknown provider:** only `stooq` and `csv` are registered. Add the provider to `_PROVIDER_REGISTRY` before using it in a mapping.
+- **Broker/instrument not found in cfd_instruments.csv:** the CFD product has not been fetched yet. Run `update-cfd-instruments` first, or leave the broker columns blank to skip the reference check.
+- **Duplicate provider mapping:** two different `canonical_id` values claim the same `(provider, provider_symbol, provider_interval)` triple. Each provider symbol/interval combination must map to exactly one canonical instrument.
+- **Unmapped tradable CFD warning:** a tradable entry in `cfd_instruments.csv` has no row in `canonical_instrument_mappings.csv`. Add a mapping row or accept the warning as informational.
+
 ### Stale data warning
 
 Reports include a freshness table. Symbols with `n/a` in the freshness column had no data returned from Stooq. Symbols with old dates may be delisted or have restricted access.
@@ -347,13 +412,24 @@ uv run .agents/skills/market-analysis/scripts/market_analysis.py \
     fetch --symbol ^SPX --start 2023-01-01 --end 2024-12-31
 ```
 
-### Regenerate an artifact from saved data
+### Regenerate an artifact from saved data (explicit symbols)
 
 ```sh
 uv run .agents/skills/market-analysis/scripts/market_analysis.py \
     generate --symbols "^SPX,^DJI,^NDX" --output data/analysis/ \
     --analysis-date YYYY-MM-DD
 ```
+
+### Regenerate an artifact using canonical mapping
+
+```sh
+uv run .agents/skills/market-analysis/scripts/market_analysis.py \
+    generate --mapping data/mappings/canonical_instrument_mappings.csv \
+    --provider stooq --interval d --output data/analysis/ \
+    --analysis-date YYYY-MM-DD
+```
+
+`--mapping` and `--symbols` are mutually exclusive. With `--mapping`, the symbol list is derived from the mapping file for the given `--provider` and `--interval`, and each instrument entry in the artifact is enriched with `canonical_id` and `display_name`. Reports render these as "Display Name / symbol" (e.g. "S&P 500 / ^SPX").
 
 ### Regenerate a report from an existing artifact
 

@@ -134,6 +134,15 @@ def _section_market_regime(
     )
 
 
+def _instrument_label(inst: dict[str, Any]) -> str:
+    """Return 'Display Name / symbol' when display_name is available, else symbol."""
+    symbol = str(inst.get("symbol", ""))
+    display_name = inst.get("display_name")
+    if display_name and str(display_name) != symbol:
+        return f"{display_name} / {symbol}"
+    return symbol
+
+
 def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
     header = "## Top Opportunities"
     top5 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:5]
@@ -141,7 +150,7 @@ def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
         return f"{header}\n\n_No reliable instruments available._"
     lines = []
     for inst in top5:
-        symbol = str(inst.get("symbol", ""))
+        label = _instrument_label(inst)
         score = float(inst.get("score", 0))
         features = inst.get("features") or {}
         ret_20d = features.get("ret_20d")
@@ -149,7 +158,7 @@ def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
         rsi_str = f"{rsi_raw:.0f}" if isinstance(rsi_raw, (int, float)) else "n/a"
         explanation = str(inst.get("explanation", ""))
         lines.append(
-            f"- **{symbol}** — score {score:.1f},"
+            f"- **{label}** — score {score:.1f},"
             f" 20d return {_format_pct(ret_20d)},"
             f" RSI14={rsi_str}. {explanation}"
         )
@@ -165,10 +174,10 @@ def _section_instruments_to_avoid(unreliable: list[dict[str, Any]]) -> str:
     )
     lines = []
     for inst in unreliable:
-        symbol = str(inst.get("symbol", ""))
+        label = _instrument_label(inst)
         gates = inst.get("risk_gates") or []
         gates_str = ", ".join(str(g) for g in gates)
-        lines.append(f"- **{symbol}** — {gates_str}")
+        lines.append(f"- **{label}** — {gates_str}")
     return f"{header}\n\n{preamble}\n\n" + "\n".join(lines)
 
 
@@ -282,7 +291,7 @@ def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
     header = "## Instrument Scores"
     table_headers = [
         "Rank",
-        "Symbol",
+        "Instrument",
         "Score",
         "Reliable",
         "Risk Gates",
@@ -299,7 +308,7 @@ def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
     rows: list[list[str]] = []
     for inst in instruments:
         rank = inst.get("rank", "")
-        symbol = str(inst.get("symbol", ""))
+        label = _instrument_label(inst)
         score = float(inst.get("score", 0))
         reliable = "Yes" if inst.get("is_reliable") else "No"
         gates = inst.get("risk_gates") or []
@@ -307,7 +316,7 @@ def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
         explanation = str(inst.get("explanation", ""))
         rows.append([
             str(rank),
-            symbol,
+            label,
             f"{score:.1f}",
             reliable,
             gates_str,

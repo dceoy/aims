@@ -36,11 +36,11 @@ These instruments have quality or risk issues and are excluded from ranking:
 
 ## Instrument Scores
 
-| Rank | Symbol | Score | Reliable | Risk Gates           | Explanation                                |
-| ---: | ------ | ----: | :------: | -------------------- | ------------------------------------------ |
-|    1 | ^SPX   |  72.5 |   Yes    | —                    | 20d up +5.3%; above MA20 by 2.1%; RSI14=62 |
-|    2 | ^DJI   |  58.3 |   Yes    | —                    | 20d up +2.1%; above MA20 by 0.8%; RSI14=55 |
-|    3 | ^NDX   |  31.7 |    No    | insufficient_history | Suppressed: insufficient_history           |
+| Rank | Instrument | Score | Reliable | Risk Gates           | Explanation                                |
+| ---: | ---------- | ----: | :------: | -------------------- | ------------------------------------------ |
+|    1 | ^SPX       |  72.5 |   Yes    | —                    | 20d up +5.3%; above MA20 by 2.1%; RSI14=62 |
+|    2 | ^DJI       |  58.3 |   Yes    | —                    | 20d up +2.1%; above MA20 by 0.8%; RSI14=55 |
+|    3 | ^NDX       |  31.7 |    No    | insufficient_history | Suppressed: insufficient_history           |
 
 ## Data Freshness
 

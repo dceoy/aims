@@ -241,7 +241,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: list[str] | None = None) -> int:  # noqa: PLR0911
+def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     webhook_url = os.environ.get("SLACK_WEBHOOK_URL", "")
     if not webhook_url:

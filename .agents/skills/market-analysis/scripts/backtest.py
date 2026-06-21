@@ -39,19 +39,11 @@ def run_backtest(
     buckets: int = 4,
     min_history: int = 60,
 ) -> dict[str, Any]:
-    """Score each common date without look-ahead and aggregate forward returns."""
+    """Score each available date without look-ahead and aggregate forward returns."""
     if top_k < 1 or buckets < 1 or min_history < 1 or not horizons:
         msg = "top-k, buckets, min-history, and horizons must be positive"
         raise ValueError(msg)
-    dates = (
-        sorted(
-            set.intersection(
-                *({bar.timestamp for bar in bars} for bars in data.values())
-            )
-        )
-        if data
-        else []
-    )
+    dates = sorted({bar.timestamp for bars in data.values() for bar in bars})
     positions = {
         symbol: {bar.timestamp: i for i, bar in enumerate(bars)}
         for symbol, bars in data.items()
@@ -67,8 +59,12 @@ def run_backtest(
     observations = 0
 
     for date in dates:
-        window = {s: bars[: positions[s][date] + 1] for s, bars in data.items()}
-        if any(len(bars) < min_history for bars in window.values()):
+        window = {
+            symbol: bars[: positions[symbol][date] + 1]
+            for symbol, bars in data.items()
+            if date in positions[symbol] and positions[symbol][date] + 1 >= min_history
+        }
+        if not window:
             continue
         scores = [
             s
@@ -77,17 +73,9 @@ def run_backtest(
             )
             if s.is_reliable
         ]
-        eligible = [
-            s
-            for s in scores
-            if all(
-                positions[s.symbol][date] + h < len(data[s.symbol]) for h in horizons
-            )
-        ]
-        if not eligible:
+        if not scores:
             continue
-        observations += 1
-        selected = eligible[:top_k]
+        selected = scores[:top_k]
         selected_symbols = {s.symbol for s in selected}
         if previous is not None:
             turnovers.append(
@@ -96,23 +84,31 @@ def run_backtest(
                 / max(len(previous), len(selected_symbols))
             )
         previous = selected_symbols
-        if 1 in horizons:
-            one_day = []
-            for score in selected:
+        date_observed = False
+        for horizon in horizons:
+            eligible = [
+                score
+                for score in scores
+                if positions[score.symbol][date] + horizon < len(data[score.symbol])
+            ]
+            if not eligible:
+                continue
+            date_observed = True
+            horizon_selected = eligible[:top_k]
+            horizon_returns = []
+            for rank_index, score in enumerate(eligible):
+                bucket = min(buckets, rank_index * buckets // len(eligible) + 1)
                 index = positions[score.symbol][date]
                 close = data[score.symbol][index].close
-                one_day.append(data[score.symbol][index + 1].close / close - 1.0)
-            daily_top_returns.append(sum(one_day) / len(one_day))
-        for rank_index, score in enumerate(eligible):
-            bucket = min(buckets, rank_index * buckets // len(eligible) + 1)
-            index = positions[score.symbol][date]
-            close = data[score.symbol][index].close
-            for horizon in horizons:
                 forward = data[score.symbol][index + horizon].close / close - 1.0
                 bucket_returns[horizon][bucket].append(forward)
-                if score in selected:
+                if score in horizon_selected:
                     top_returns[horizon].append(forward)
                     top_hits[horizon].append(forward > 0)
+                    horizon_returns.append(forward)
+            if horizon == 1:
+                daily_top_returns.append(sum(horizon_returns) / len(horizon_returns))
+        observations += date_observed
 
     metrics = {}
     for horizon in horizons:

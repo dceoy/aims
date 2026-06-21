@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -74,8 +75,8 @@ def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
     result = backtest.run_backtest(
         data, horizons=(1, 5), top_k=1, buckets=2, min_history=60
     )
-    assert result["observations"] == 6
-    assert result["metrics"]["1d"]["top_k"]["count"] == 6
+    assert result["observations"] == 10
+    assert result["metrics"]["1d"]["top_k"]["count"] == 10
     assert result["metrics"]["1d"]["top_k"]["hit_rate"] == 1.0
     assert result["metrics"]["5d"]["score_buckets"]["1"]["count"] == 6
     assert result["turnover"] == 0.0
@@ -85,6 +86,26 @@ def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
     assert empty["metrics"]["1d"]["top_k"]["average_return"] is None
     no_daily = backtest.run_backtest(data, horizons=(5,), min_history=60)
     assert no_daily["max_drawdown"] is None
+
+
+def test_short_history_symbol_does_not_suppress_mature_symbols(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    data = {
+        "MATURE": _bars(ma, "MATURE", 1.0),
+        "NEW": _bars(ma, "NEW", 2.0, count=10),
+    }
+    result = backtest.run_backtest(data, horizons=(1,), min_history=60)
+    assert result["observations"] == 10
+    assert result["metrics"]["1d"]["top_k"]["count"] == 10
+    gapped = _bars(ma, "GAPPED", 1.0, count=3)
+    gapped = [
+        replace(bar, timestamp=bar.timestamp + timedelta(days=10 * index))
+        for index, bar in enumerate(gapped)
+    ]
+    unreliable = backtest.run_backtest({"GAPPED": gapped}, horizons=(1,), min_history=2)
+    assert unreliable["observations"] == 0
 
 
 def test_main_writes_artifact(

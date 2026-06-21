@@ -182,6 +182,15 @@ uv run .agents/skills/market-analysis/scripts/generate_report.py \
 
 The script reads the JSON artifact produced by `market_analysis.py generate` and writes a Hugo-compatible Markdown file to `content/results/YYYY-MM-DD-market-analysis.md`.
 
+Before report generation, `generate_history.py` reads the current and all earlier
+available `data/analysis/YYYY-MM-DD.json` files and writes the deterministic,
+versioned `data/history/YYYY-MM-DD.json` artifact. Version 1.0.0 records previous
+rank/score, deltas (positive rank delta means improvement), new and dropped top-5
+signals, consecutive reliable and top-5 available-report counts, and added/removed
+risk gates. Missing calendar dates are intentionally ignored. The format reference
+is `data/schema/history.schema.json`; candidates with a different configured bar
+interval are excluded, and numeric history remains separate from OKF.
+
 ### Output format
 
 The report includes:
@@ -189,6 +198,7 @@ The report includes:
 - TOML front matter: title, date, draft status, summary, ticker symbols, market regime, scoring metadata
 - Market regime section
 - Top opportunities (up to 5 reliable instruments)
+- Changes versus the previous available report and persistent top signals
 - Instruments to avoid (unreliable instruments)
 - Key risks (triggered risk gates)
 - Full instrument scores table
@@ -220,10 +230,11 @@ Pipeline order:
 4. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from Stooq (1-year lookback), recording per-symbol outcomes in fetch status
 5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`) using `--fetch-status`; fail if coverage gates are violated
 6. Validate artifact
-7. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`)
-8. Build Hugo site (validation only — catches template or content errors before commit)
-9. Create a pull-request branch `generated/analysis-YYYY-MM-DD` with the artifact and report
-10. A Slack notification is sent with a link to the analysis PR.
+7. Generate score history (`data/history/YYYY-MM-DD.json`)
+8. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`)
+9. Build Hugo site (validation only — catches template or content errors before commit)
+10. Create a pull-request branch `generated/analysis-YYYY-MM-DD` with both artifacts and the report
+11. A Slack notification summarizes new/persistent signals and risk-gate changes and links to the analysis PR.
 
 ### Manual dispatch
 

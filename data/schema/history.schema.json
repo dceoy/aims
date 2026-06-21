@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS score-history artifact",
+  "artifact_version": "1.0.0",
+  "required_top_keys": [
+    "version",
+    "analysis_date",
+    "previous_analysis_date",
+    "top_k",
+    "instruments",
+    "dropped_from_top_k"
+  ],
+  "notes": {
+    "rank_delta": "Previous rank minus current rank; positive values indicate improvement.",
+    "consecutive_reports": "Counts consecutive available artifacts, not calendar days.",
+    "instrument_rows": "Rows require symbol, current/previous ranks and scores, deltas, reliability/top-k booleans, consecutive report counts, and added/removed risk-gate string arrays."
+  }
+}

@@ -81,6 +81,35 @@ def test_build_success_payload(
     assert "Bullish" in text
 
 
+def test_build_success_payload_history(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    history = {
+        "previous_analysis_date": "2023-12-30",
+        "instruments": [
+            {
+                "symbol": "^SPX",
+                "new_top_k": True,
+                "consecutive_top_k_reports": 2,
+                "risk_gates_added": ["high_volatility"],
+                "risk_gates_removed": [],
+            },
+            {
+                "symbol": "^NDX",
+                "new_top_k": False,
+                "consecutive_top_k_reports": 1,
+                "risk_gates_added": [],
+                "risk_gates_removed": [],
+            },
+        ],
+    }
+    payload = ns.build_success_payload(fixture_artifact, history=history)
+    text = json.dumps(payload, ensure_ascii=False)
+    assert "new top: ^SPX" in text
+    assert "persistent: ^SPX" in text
+    assert "risk changes: ^SPX" in text
+
+
 def test_build_success_payload_regime_in_blocks(
     ns: ModuleType, fixture_artifact: dict[str, Any]
 ) -> None:
@@ -374,6 +403,42 @@ def test_main_success_mode(ns: ModuleType, tmp_path: Path) -> None:
             "https://example.com/report/",
         ])
     assert result == 0
+
+
+def test_main_success_with_history(ns: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    history_path = tmp_path / "history.json"
+    history_path.write_text(json.dumps({"previous_analysis_date": None}))
+    mock_response = MagicMock()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+    with (
+        patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
+        patch("urllib.request.urlopen", return_value=mock_response),
+    ):
+        assert (
+            ns.main(["--artifact", str(artifact_path), "--history", str(history_path)])
+            == 0
+        )
+
+
+@pytest.mark.parametrize("content", [None, "{"])
+def test_main_invalid_history(
+    ns: ModuleType, tmp_path: Path, content: str | None
+) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    history_path = tmp_path / "history.json"
+    if content is not None:
+        history_path.write_text(content)
+    with patch.dict(
+        "os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}
+    ):
+        assert (
+            ns.main(["--artifact", str(artifact_path), "--history", str(history_path)])
+            == 1
+        )
 
 
 def test_main_failure_mode(ns: ModuleType) -> None:

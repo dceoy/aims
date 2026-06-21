@@ -47,6 +47,7 @@ def build_success_payload(
     report_url: str = "",
     *,
     pr_url: str | None = None,
+    history: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -85,6 +86,25 @@ def build_success_payload(
             "type": "mrkdwn",
             "text": f"*⚠️ No data:* {', '.join(stale)}",
         })
+    if history is not None and history.get("previous_analysis_date") is not None:
+        rows = history.get("instruments", [])
+        new_top = sorted(str(row["symbol"]) for row in rows if row.get("new_top_k"))
+        persistent = sorted(
+            str(row["symbol"])
+            for row in rows
+            if int(row.get("consecutive_top_k_reports", 0)) >= 2
+        )
+        risk_changes = sorted(
+            str(row["symbol"])
+            for row in rows
+            if row.get("risk_gates_added") or row.get("risk_gates_removed")
+        )
+        summary = (
+            f"*History:* new top: {', '.join(new_top) or 'none'}; "
+            f"persistent: {', '.join(persistent) or 'none'}; "
+            f"risk changes: {', '.join(risk_changes) or 'none'}"
+        )
+        fields.append({"type": "mrkdwn", "text": summary})
 
     coverage_raw = meta.get("coverage")
     if isinstance(coverage_raw, dict):
@@ -187,6 +207,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Send a failure notification instead of a success notification",
     )
+    parser.add_argument("--history", type=str, help="Path to score-history JSON")
     parser.add_argument(
         "--artifact",
         type=str,
@@ -220,7 +241,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:  # noqa: PLR0911
     args = parse_args(argv)
     webhook_url = os.environ.get("SLACK_WEBHOOK_URL", "")
     if not webhook_url:
@@ -244,8 +265,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR: invalid JSON in {args.artifact}: {exc}")
             return 1
         report_url = args.report_url or ""
+        history = None
+        if args.history:
+            try:
+                with open(args.history, encoding="utf-8") as fh:  # noqa: PTH123
+                    history = json.load(fh)
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                print(f"ERROR: invalid history artifact: {exc}")
+                return 1
         payload = build_success_payload(
-            artifact, report_url, pr_url=args.pr_url or None
+            artifact, report_url, pr_url=args.pr_url or None, history=history
         )
 
     try:

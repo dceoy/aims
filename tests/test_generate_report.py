@@ -54,6 +54,45 @@ def test_generate_report_golden(
     assert actual == expected
 
 
+def test_generate_report_with_history(
+    gr: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    history = {
+        "previous_analysis_date": "2023-12-30",
+        "top_k": 2,
+        "instruments": [
+            {
+                "symbol": "^SPX",
+                "new_top_k": True,
+                "consecutive_top_k_reports": 2,
+                "risk_gates_added": [],
+                "risk_gates_removed": ["stale_data"],
+            },
+            {
+                "symbol": "^NDX",
+                "new_top_k": False,
+                "consecutive_top_k_reports": 1,
+                "risk_gates_added": [],
+                "risk_gates_removed": [],
+            },
+        ],
+        "dropped_from_top_k": ["^DJI"],
+    }
+    result = gr.generate_report(fixture_artifact, history)
+    assert "data/history/2024-01-01.json" in result
+    assert "New top-2:** ^SPX" in result
+    assert "Persistent top signals:** ^SPX (2 reports)" in result
+    assert "Dropped from top-2:** ^DJI" in result
+    assert "removed stale_data" in result
+
+
+def test_generate_report_history_without_previous(
+    gr: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    result = gr.generate_report(fixture_artifact, {"previous_analysis_date": None})
+    assert "No previous analysis artifact" in result
+
+
 # ── Edge-case artifact tests ────────────────────────────────────────────────────
 
 
@@ -231,6 +270,17 @@ def test_generate_and_save(gr: ModuleType, tmp_path: Path) -> None:
     result_path = gr.generate_and_save(artifact_path, output_dir)
     assert result_path.exists()
     assert result_path.name == "2024-01-01-market-analysis.md"
+
+
+def test_generate_and_save_with_history(gr: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "analysis.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    history_path = tmp_path / "history.json"
+    history_path.write_text(json.dumps({"previous_analysis_date": None}))
+    result_path = gr.generate_and_save(
+        artifact_path, tmp_path / "results", history_path
+    )
+    assert "data/history/2024-01-01.json" in result_path.read_text()
 
 
 def test_generate_and_save_file_not_found(gr: ModuleType, tmp_path: Path) -> None:

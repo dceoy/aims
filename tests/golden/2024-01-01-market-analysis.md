@@ -20,6 +20,10 @@ git_commit = "abc1234"
 - **^SPX** — score 72.5, 20d return +5.3%, RSI14=62. 20d up +5.3%; above MA20 by 2.1%; RSI14=62
 - **^DJI** — score 58.3, 20d return +2.1%, RSI14=55. 20d up +2.1%; above MA20 by 0.8%; RSI14=55
 
+## Signal History
+
+_No previous analysis artifact available._
+
 ## Instruments to Avoid
 
 These instruments have quality or risk issues and are excluded from ranking:

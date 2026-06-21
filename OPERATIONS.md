@@ -225,7 +225,7 @@ GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), 
 
 | Secret              | Required | Description                                                                                                                                      |
 | ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the notification steps exit silently (exit code 0).                |
+| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                       |
 | `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed. |
 
 **How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.

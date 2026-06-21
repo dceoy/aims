@@ -39,7 +39,10 @@ def _artifact(date: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
             "risk_gates": row.get("gates", []),
         })
     return {
-        "metadata": {"generated_at": f"{date}T00:00:00+00:00"},
+        "metadata": {
+            "generated_at": f"{date}T00:00:00+00:00",
+            "config": {"interval": "d"},
+        },
         "instruments": instruments,
     }
 
@@ -110,12 +113,29 @@ def test_invalid_input(
 
 
 def test_invalid_instruments_and_duplicate_dates(gh: ModuleType) -> None:
-    bad = {"metadata": {"generated_at": "2024-01-01T00:00:00Z"}}
+    bad = {
+        "metadata": {
+            "generated_at": "2024-01-01T00:00:00Z",
+            "config": {"interval": "d"},
+        }
+    }
     with pytest.raises(TypeError, match="instruments"):
         gh.build_history([bad])
     artifact = _artifact("2024-01-01", [])
     with pytest.raises(ValueError, match="unique"):
         gh.build_history([artifact, artifact])
+
+
+def test_invalid_or_mixed_intervals(gh: ModuleType) -> None:
+    invalid = _artifact("2024-01-01", [])
+    invalid["metadata"]["config"]["interval"] = "h"
+    with pytest.raises(ValueError, match=r"config\.interval"):
+        gh.build_history([invalid])
+    daily = _artifact("2024-01-01", [])
+    weekly = _artifact("2024-01-02", [])
+    weekly["metadata"]["config"]["interval"] = "w"
+    with pytest.raises(ValueError, match="same interval"):
+        gh.build_history([daily, weekly])
 
 
 def test_generate_history_and_main(gh: ModuleType, tmp_path: Path) -> None:
@@ -124,9 +144,13 @@ def test_generate_history_and_main(gh: ModuleType, tmp_path: Path) -> None:
     old_path = analysis / "2024-01-01.json"
     current_path = analysis / "2024-01-03.json"
     future_path = analysis / "2024-01-04.json"
+    weekly_path = analysis / "2024-01-02.json"
     old_path.write_text(json.dumps(_artifact("2024-01-01", [{"symbol": "A"}])))
     current_path.write_text(json.dumps(_artifact("2024-01-03", [{"symbol": "A"}])))
     future_path.write_text(json.dumps(_artifact("2024-01-04", [{"symbol": "A"}])))
+    weekly = _artifact("2024-01-02", [{"symbol": "B"}])
+    weekly["metadata"]["config"]["interval"] = "w"
+    weekly_path.write_text(json.dumps(weekly))
     output = tmp_path / "history"
     result = gh.generate_history(current_path, analysis, output, 1)
     assert result == output / "2024-01-03.json"

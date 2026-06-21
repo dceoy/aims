@@ -26,6 +26,14 @@ def _date(artifact: dict[str, Any]) -> str:
     return generated_at[:10]
 
 
+def _interval(artifact: dict[str, Any]) -> str:
+    interval = artifact.get("metadata", {}).get("config", {}).get("interval")
+    if interval not in {"d", "w", "m"}:
+        msg = "analysis artifact has no valid metadata.config.interval"
+        raise ValueError(msg)
+    return str(interval)
+
+
 def _by_symbol(artifact: dict[str, Any]) -> dict[str, dict[str, Any]]:
     instruments = artifact.get("instruments")
     if not isinstance(instruments, list):
@@ -52,6 +60,10 @@ def build_history(
         msg = "at least one analysis artifact is required"
         raise ValueError(msg)
     ordered = sorted(artifacts, key=_date)
+    intervals = {_interval(artifact) for artifact in ordered}
+    if len(intervals) != 1:
+        msg = "analysis artifacts must use the same interval"
+        raise ValueError(msg)
     dates = [_date(item) for item in ordered]
     if len(set(dates)) != len(dates):
         msg = "analysis dates must be unique"
@@ -118,14 +130,20 @@ def build_history(
 def generate_history(
     current_path: Path, analysis_dir: Path, output_dir: Path, top_k: int
 ) -> Path:
-    current_date = _date(_load(current_path))
+    current = _load(current_path)
+    current_date = _date(current)
+    current_interval = _interval(current)
     paths = sorted(
         path
         for path in analysis_dir.glob("*.json")
         if path.stem <= current_date and path.resolve() != current_path.resolve()
     )
-    artifacts = [_load(path) for path in paths]
-    artifacts.append(_load(current_path))
+    artifacts = [
+        artifact
+        for path in paths
+        if _interval(artifact := _load(path)) == current_interval
+    ]
+    artifacts.append(current)
     history = build_history(artifacts, top_k)
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / f"{current_date}.json"

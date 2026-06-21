@@ -188,7 +188,8 @@ versioned `data/history/YYYY-MM-DD.json` artifact. Version 1.0.0 records previou
 rank/score, deltas (positive rank delta means improvement), new and dropped top-5
 signals, consecutive reliable and top-5 available-report counts, and added/removed
 risk gates. Missing calendar dates are intentionally ignored. The format reference
-is `data/schema/history.schema.json`; numeric history remains separate from OKF.
+is `data/schema/history.schema.json`; candidates with a different configured bar
+interval are excluded, and numeric history remains separate from OKF.
 
 ### Output format
 

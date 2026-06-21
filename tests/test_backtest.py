@@ -67,6 +67,8 @@ def test_helpers_and_validation(modules: tuple[ModuleType, ModuleType]) -> None:
     for kwargs in ({"top_k": 0}, {"buckets": 0}, {"min_history": 0}, {"horizons": ()}):
         with pytest.raises(ValueError, match="positive"):
             backtest.run_backtest({}, **kwargs)
+    with pytest.raises(ValueError, match="unique"):
+        backtest.run_backtest({}, horizons=(1, 1))
 
 
 def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
@@ -171,10 +173,28 @@ def test_main_writes_artifact(
         ])
         == 0
     )
-    artifact = json.loads(next(output.glob("*.json")).read_text())
+    path = next(output.glob("*.json"))
+    content = path.read_text()
+    artifact = json.loads(content)
     assert artifact["scoring_version"] == ma.SCORING_VERSION
     assert artifact["config"]["forward_horizons"] == [1, 5]
     assert artifact["date_range"] == {"start": "2024-02-29", "end": "2024-03-09"}
+    assert (
+        backtest.main([
+            "--symbols",
+            "UP,DOWN",
+            "--data-dir",
+            str(prices),
+            "--output-dir",
+            str(output),
+            "--horizons",
+            "1,5",
+            "--top-k",
+            "1",
+        ])
+        == 0
+    )
+    assert path.read_text() == content
 
 
 def test_main_rejects_no_observations(

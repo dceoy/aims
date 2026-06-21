@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import json
 from collections import defaultdict
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Final
 
@@ -42,6 +41,9 @@ def run_backtest(
     """Score each available date without look-ahead and aggregate forward returns."""
     if top_k < 1 or buckets < 1 or min_history < 1 or not horizons:
         msg = "top-k, buckets, min-history, and horizons must be positive"
+        raise ValueError(msg)
+    if len(horizons) != len(set(horizons)):
+        msg = "forward horizons must be unique"
         raise ValueError(msg)
     dates = sorted({bar.timestamp for bars in data.values() for bar in bars})
     positions = {
@@ -184,7 +186,6 @@ def main(argv: list[str] | None = None) -> int:
     artifact = {
         "schema_version": "1.0.0",
         "scoring_version": SCORING_VERSION,
-        "generated_at": datetime.now(UTC).isoformat(),
         "config": {
             "symbols": list(symbols),
             "interval": args.interval,

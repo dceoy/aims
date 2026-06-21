@@ -67,7 +67,9 @@ def _market_regime(scores: list[float]) -> str:
     return "Neutral"
 
 
-def _build_front_matter(artifact: dict[str, Any], date_str: str) -> str:
+def _build_front_matter(
+    artifact: dict[str, Any], date_str: str, history: dict[str, Any] | None = None
+) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "1970-01-01T00:00:00+00:00")
     if not isinstance(generated_at, str):
@@ -87,7 +89,10 @@ def _build_front_matter(artifact: dict[str, Any], date_str: str) -> str:
     all_symbols = sorted(str(i.get("symbol", "")) for i in instruments)
     symbols_toml = ", ".join(f'"{_toml_escape(s)}"' for s in all_symbols)
 
-    source_file = f"data/analysis/{date_str}.json"
+    source_files = [f"data/analysis/{date_str}.json"]
+    if history is not None:
+        source_files.append(f"data/history/{date_str}.json")
+    sources_toml = ", ".join(f'"{_toml_escape(path)}"' for path in source_files)
 
     if reliable:
         top = max(reliable, key=lambda i: float(i.get("score", 0)))
@@ -107,7 +112,7 @@ def _build_front_matter(artifact: dict[str, Any], date_str: str) -> str:
         "draft = false",
         f'summary = "{_toml_escape(summary)}"',
         f"ticker_symbols = [{symbols_toml}]",
-        f'source_files = ["{_toml_escape(source_file)}"]',
+        f"source_files = [{sources_toml}]",
         f'market_regime = "{_toml_escape(regime)}"',
         f'data_source = "{_toml_escape(data_source)}"',
         f'scoring_version = "{_toml_escape(scoring_version)}"',
@@ -165,6 +170,48 @@ def _section_instruments_to_avoid(unreliable: list[dict[str, Any]]) -> str:
         gates_str = ", ".join(str(g) for g in gates)
         lines.append(f"- **{symbol}** — {gates_str}")
     return f"{header}\n\n{preamble}\n\n" + "\n".join(lines)
+
+
+def _section_signal_history(history: dict[str, Any] | None) -> str:
+    header = "## Signal History"
+    if history is None:
+        return f"{header}\n\n_No previous analysis artifact available._"
+    previous = history.get("previous_analysis_date")
+    if previous is None:
+        return f"{header}\n\n_No previous analysis artifact available._"
+    rows = history.get("instruments", [])
+    new_top = sorted(str(row["symbol"]) for row in rows if row.get("new_top_k"))
+    persistent = sorted(
+        (row for row in rows if int(row.get("consecutive_top_k_reports", 0)) >= 2),
+        key=lambda row: (-int(row["consecutive_top_k_reports"]), str(row["symbol"])),
+    )
+    transitions = sorted(
+        (
+            row
+            for row in rows
+            if row.get("risk_gates_added") or row.get("risk_gates_removed")
+        ),
+        key=lambda row: str(row["symbol"]),
+    )
+    lines = [f"Compared with the previous available report (**{previous}**)."]
+    lines.append(
+        f"- **New top-{history.get('top_k', 5)}:** {', '.join(new_top) or 'None'}"
+    )
+    persistent_text = ", ".join(
+        f"{row['symbol']} ({row['consecutive_top_k_reports']} reports)"
+        for row in persistent
+    )
+    lines.append(f"- **Persistent top signals:** {persistent_text or 'None'}")
+    dropped = history.get("dropped_from_top_k", [])
+    dropped_text = ", ".join(dropped) or "None"
+    lines.append(f"- **Dropped from top-{history.get('top_k', 5)}:** {dropped_text}")
+    for row in transitions:
+        added = ", ".join(row.get("risk_gates_added", [])) or "none"
+        removed = ", ".join(row.get("risk_gates_removed", [])) or "none"
+        lines.append(
+            f"- **{row['symbol']} risk gates:** added {added}; removed {removed}"
+        )
+    return f"{header}\n\n" + "\n".join(lines)
 
 
 def _format_markdown_table(
@@ -346,7 +393,9 @@ def _validate_for_report(artifact: dict[str, Any]) -> None:
         raise ValueError(msg)
 
 
-def generate_report(artifact: dict[str, Any]) -> str:
+def generate_report(
+    artifact: dict[str, Any], history: dict[str, Any] | None = None
+) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
     if not isinstance(generated_at, str) or not generated_at:
@@ -371,11 +420,12 @@ def generate_report(artifact: dict[str, Any]) -> str:
     n_reliable = len(reliable)
     total = len(instruments)
 
-    front_matter = _build_front_matter(artifact, date_str)
+    front_matter = _build_front_matter(artifact, date_str, history)
 
     sections = [
         _section_market_regime(regime, n_reliable, total),
         _section_top_opportunities(reliable),
+        _section_signal_history(history),
         _section_instruments_to_avoid(unreliable),
         _section_key_risks(instruments),
         _section_instrument_scores(instruments),
@@ -400,11 +450,16 @@ def report_filename(artifact: dict[str, Any]) -> str:
 def generate_and_save(
     artifact_path: Path,
     output_dir: Path = _DEFAULT_OUTPUT_DIR,
+    history_path: Path | None = None,
 ) -> Path:
     with artifact_path.open(encoding="utf-8") as fh:
         artifact: dict[str, Any] = json.load(fh)
     _validate_for_report(artifact)
-    content = generate_report(artifact)
+    history = None
+    if history_path is not None:
+        with history_path.open(encoding="utf-8") as fh:
+            history = json.load(fh)
+    content = generate_report(artifact, history)
     filename = report_filename(artifact)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / filename
@@ -421,6 +476,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         required=True,
         help="Path to analysis artifact JSON file",
     )
+    parser.add_argument("--history", type=Path, help="Path to score-history JSON")
     parser.add_argument(
         "--output",
         type=Path,
@@ -433,7 +489,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        generate_and_save(args.input, args.output)
+        generate_and_save(args.input, args.output, args.history)
     except FileNotFoundError:
         print(f"ERROR: file not found: {args.input}")
         return 1

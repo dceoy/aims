@@ -33,6 +33,18 @@ Validate a generated JSON artifact against the expected schema.
 
 Generate a Hugo Markdown report from a JSON analysis artifact and write it to `content/results/`.
 
+### `generate_history.py`
+
+Generate a versioned `data/history/YYYY-MM-DD.json` artifact by comparing the
+current analysis with prior available artifacts. It records score/rank deltas,
+top-k entry/dropout, consecutive reliable/top-k report counts, and risk-gate
+transitions. Consecutive counts follow available reports, so skipped dates do not
+break a streak.
+
+### `validate_history.py`
+
+Validate a generated score-history artifact before report publication.
+
 ### `notify_slack.py`
 
 Send a Slack notification (success or failure) via an incoming webhook. Reads `SLACK_WEBHOOK_URL` from the environment; exits silently if the variable is not set. Success notifications include a coverage summary when `metadata.coverage` is present.
@@ -70,6 +82,7 @@ uv run .agents/skills/market-analysis/scripts/validate_analysis.py \
 # Generate a Hugo Markdown report from the artifact
 uv run .agents/skills/market-analysis/scripts/generate_report.py \
     --input data/analysis/$(date +%Y-%m-%d).json \
+    --history data/history/$(date +%Y-%m-%d).json \
     --output content/results/
 
 # Send a Slack success notification
@@ -94,7 +107,9 @@ data/
 │   ├── AAPL.US_d.csv        # Daily OHLCV for AAPL.US
 │   └── MSFT.US_d.csv
 └── analysis/
-    └── YYYY-MM-DD.json      # Analysis artifact
+│   └── YYYY-MM-DD.json      # Analysis artifact
+└── history/
+    └── YYYY-MM-DD.json      # Versioned score-history artifact
 ```
 
 Each `data/prices/<SYMBOL>_<INTERVAL>.csv` has columns:

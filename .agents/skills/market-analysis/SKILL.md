@@ -1,3 +1,8 @@
+---
+name: market-analysis
+description: Fetch and validate OHLCV market data, score and rank instruments, generate structured analysis artifacts and Hugo reports, and send analysis workflow notifications.
+---
+
 # market-analysis
 
 Fetch OHLCV market data, score instruments, and generate structured analysis artifacts.

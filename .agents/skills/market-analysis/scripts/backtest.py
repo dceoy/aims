@@ -86,27 +86,21 @@ def run_backtest(
         previous = selected_symbols
         date_observed = False
         for horizon in horizons:
-            eligible = [
-                score
-                for score in scores
-                if positions[score.symbol][date] + horizon < len(data[score.symbol])
-            ]
-            if not eligible:
-                continue
-            date_observed = True
-            horizon_selected = eligible[:top_k]
             horizon_returns = []
-            for rank_index, score in enumerate(eligible):
-                bucket = min(buckets, rank_index * buckets // len(eligible) + 1)
+            for rank_index, score in enumerate(scores):
                 index = positions[score.symbol][date]
+                if index + horizon >= len(data[score.symbol]):
+                    continue
+                date_observed = True
+                bucket = min(buckets, rank_index * buckets // len(scores) + 1)
                 close = data[score.symbol][index].close
                 forward = data[score.symbol][index + horizon].close / close - 1.0
                 bucket_returns[horizon][bucket].append(forward)
-                if score in horizon_selected:
+                if score in selected:
                     top_returns[horizon].append(forward)
                     top_hits[horizon].append(forward > 0)
                     horizon_returns.append(forward)
-            if horizon == 1:
+            if horizon == 1 and horizon_returns:
                 daily_top_returns.append(sum(horizon_returns) / len(horizon_returns))
         observations += date_observed
 

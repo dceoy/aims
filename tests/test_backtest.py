@@ -108,6 +108,25 @@ def test_short_history_symbol_does_not_suppress_mature_symbols(
     assert unreliable["observations"] == 0
 
 
+def test_missing_forward_bar_does_not_promote_lower_rank(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    data = {
+        "TOP": _bars(ma, "TOP", 2.0, count=70),
+        "LOWER": _bars(ma, "LOWER", 1.0, count=75),
+    }
+    result = backtest.run_backtest(
+        data, horizons=(1,), top_k=1, buckets=2, min_history=60
+    )
+    top = result["metrics"]["1d"]["top_k"]
+    bucket_count = sum(
+        bucket["count"] for bucket in result["metrics"]["1d"]["score_buckets"].values()
+    )
+    assert top["count"] == 14
+    assert bucket_count == 25
+
+
 def test_main_writes_artifact(
     modules: tuple[ModuleType, ModuleType], tmp_path: Path
 ) -> None:

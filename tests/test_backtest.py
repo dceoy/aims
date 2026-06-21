@@ -127,6 +127,7 @@ def test_missing_forward_bar_does_not_promote_lower_rank(
     )
     assert top["count"] == 14
     assert bucket_count == 25
+    assert result["turnover"] == pytest.approx(1 / 13)
 
 
 def test_turnover_excludes_dates_without_forward_observations(

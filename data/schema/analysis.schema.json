@@ -42,6 +42,10 @@
     "explanation",
     "features"
   ],
+  "optional_instrument_keys": {
+    "canonical_id": "Canonical instrument identifier from canonical_instrument_mappings.csv, e.g. 'spx'. Present when generate --mapping is used.",
+    "display_name": "Human-readable instrument name from the mapping layer, e.g. 'S&P 500'. Present when generate --mapping is used."
+  },
   "score_range": [0.0, 100.0],
   "rank_minimum": 1
 }

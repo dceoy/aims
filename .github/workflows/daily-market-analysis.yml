@@ -34,6 +34,13 @@ on:
         required: false
         default: "1"
         type: string
+      provider:
+        description: "Market data provider"
+        required: false
+        default: stooq
+        type: choice
+        options:
+          - stooq
 permissions:
   contents: read
 jobs:
@@ -48,6 +55,7 @@ jobs:
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
       MIN_SUCCESS_RATIO: ${{ inputs.min_success_ratio || '0.8' }}
       MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '1' }}
+      PROVIDER: ${{ inputs.provider || 'stooq' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
@@ -100,12 +108,14 @@ jobs:
             --symbols "${SYMBOLS}" \
             --interval "$INTERVAL" \
             --analysis-date "${DATE}" \
+            --provider "$PROVIDER" \
             --output "${FETCH_STATUS}"
           IFS=',' read -ra SYMS <<< "${SYMBOLS}"
           for SYM in "${SYMS[@]}"; do
             uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
               fetch --symbol "$SYM" --start "$START" --end "$DATE" \
               --interval "$INTERVAL" \
+              --provider "$PROVIDER" \
               --fetch-status "${FETCH_STATUS}" \
               || echo "WARNING: fetch failed for $SYM; symbol will be marked missing in artifact"
           done
@@ -120,6 +130,7 @@ jobs:
             --symbols "${SYMBOLS}" \
             --interval "$INTERVAL" \
             --analysis-date "${DATE}" \
+            --provider "$PROVIDER" \
             --fetch-status "data/prices/fetch_status_${INTERVAL}.json" \
             --min-success-ratio "${MIN_SUCCESS_RATIO}" \
             --max-missing-symbols "${MAX_MISSING_SYMBOLS}" \

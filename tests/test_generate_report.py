@@ -406,8 +406,27 @@ def test_format_pct_zero(gr: ModuleType) -> None:
 
 def test_instrument_table_empty(gr: ModuleType) -> None:
     result = gr._section_instrument_scores([])
-    assert "| Rank | Symbol | Score | Reliable | Risk Gates | Explanation |" in result
-    assert "| ---: | ------ | ----: | :------: | ---------- | ----------- |" in result
+    assert (
+        "| Rank | Instrument | Score | Reliable | Risk Gates | Explanation |" in result
+    )
+    assert (
+        "| ---: | ---------- | ----: | :------: | ---------- | ----------- |" in result
+    )
+
+
+def test_instrument_label_symbol_only(gr: ModuleType) -> None:
+    label = gr._instrument_label({"symbol": "^SPX"})
+    assert label == "^SPX"
+
+
+def test_instrument_label_with_display_name(gr: ModuleType) -> None:
+    label = gr._instrument_label({"symbol": "^SPX", "display_name": "S&P 500"})
+    assert label == "S&P 500 / ^SPX"
+
+
+def test_instrument_label_display_name_same_as_symbol(gr: ModuleType) -> None:
+    label = gr._instrument_label({"symbol": "^SPX", "display_name": "^SPX"})
+    assert label == "^SPX"
 
 
 # ── _freshness_table edge cases ─────────────────────────────────────────────────

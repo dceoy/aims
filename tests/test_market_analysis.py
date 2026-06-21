@@ -1876,3 +1876,592 @@ def test_main_routes_init_fetch_status(ma: ModuleType, mocker: MockerFixture) ->
     )
     ma.main()
     assert called == ["init-fetch-status"]
+
+
+# ── Provider abstraction ──────────────────────────────────────────────────────
+
+
+def test_known_providers_includes_stooq_and_csv(ma: ModuleType) -> None:
+    assert "stooq" in ma.KNOWN_PROVIDERS
+    assert "csv" in ma.KNOWN_PROVIDERS
+
+
+def test_default_provider_is_stooq(ma: ModuleType) -> None:
+    assert ma._DEFAULT_PROVIDER == "stooq"
+
+
+def test_provider_metadata_stooq(ma: ModuleType) -> None:
+    meta = ma.get_provider_metadata("stooq")
+    assert meta.name == "stooq"
+    assert "d" in meta.supported_intervals
+    assert "w" in meta.supported_intervals
+    assert "m" in meta.supported_intervals
+
+
+def test_provider_metadata_csv(ma: ModuleType) -> None:
+    meta = ma.get_provider_metadata("csv")
+    assert meta.name == "csv"
+    assert "d" in meta.supported_intervals
+
+
+def test_provider_metadata_unknown_raises(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="unknown provider"):
+        ma.get_provider_metadata("bloomberg")
+
+
+def test_validate_provider_interval_stooq_d(ma: ModuleType) -> None:
+    ma.validate_provider_interval("stooq", "d")  # must not raise
+
+
+def test_validate_provider_interval_stooq_unsupported(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="does not support interval"):
+        ma.validate_provider_interval("stooq", "1h")
+
+
+def test_make_provider_stooq(ma: ModuleType) -> None:
+    assert isinstance(ma.make_provider("stooq"), ma.StooqProvider)
+
+
+def test_make_provider_csv(ma: ModuleType, tmp_path: Path) -> None:
+    assert isinstance(ma.make_provider("csv", tmp_path), ma.CsvFileProvider)
+
+
+def test_make_provider_unknown_raises(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="unknown provider"):
+        ma.make_provider("bloomberg")
+
+
+def test_cmd_fetch_unsupported_interval_fails(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    class Args:
+        symbol = "AAPL.US"
+        start = "2024-01-01"
+        end = "2024-01-31"
+        interval = "1h"
+        output = str(tmp_path)
+        no_validate = True
+        provider = "stooq"
+        fetch_status = None
+
+    assert ma._cmd_fetch(Args()) == 1
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_cmd_init_fetch_status_persists_provider(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    class Args:
+        symbols = "A,B"
+        interval = "d"
+        output = str(tmp_path / "fetch_status.json")
+        analysis_date = "2024-07-03"
+        provider = "stooq"
+
+    assert ma._cmd_init_fetch_status(Args()) == 0
+    status = ma.load_fetch_status(tmp_path / "fetch_status.json")
+    assert status["provider"] == "stooq"
+
+
+def test_validate_fetch_status_rejects_provider_mismatch(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="provider"):
+        ma.validate_fetch_status(
+            {"interval": "d", "provider": "stooq"},
+            interval="d",
+            provider="csv",
+        )
+
+
+def test_validate_fetch_status_no_provider_in_status_is_ok(ma: ModuleType) -> None:
+    # Status recorded without a provider key should not raise even when provider given
+    ma.validate_fetch_status(
+        {"interval": "d"},
+        interval="d",
+        provider="stooq",
+    )
+
+
+# ── Canonical instrument mappings ─────────────────────────────────────────────
+
+_MINI_MAPPING_CSV = """\
+canonical_id,display_name,asset_class,broker,broker_instrument_name,broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes
+spx,S&P 500,equity_index,TestBroker,US500,ES,stooq,^SPX,d,true,Test
+dji,Dow Jones,equity_index,TestBroker,US30,YM,stooq,^DJI,d,true,Test
+spx,S&P 500,equity_index,TestBroker,US500,ES,stooq,^SPX,w,true,Weekly
+"""
+
+
+def _write_mini_mapping(tmp_path: Path) -> Path:
+    p = tmp_path / "mappings.csv"
+    p.write_text(_MINI_MAPPING_CSV, encoding="utf-8")
+    return p
+
+
+def test_load_instrument_mappings(ma: ModuleType, tmp_path: Path) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+    rows = ma.load_instrument_mappings(mapping_path)
+    assert len(rows) == 3
+    assert rows[0].canonical_id == "spx"
+    assert rows[0].display_name == "S&P 500"
+    assert rows[0].provider_symbol == "^SPX"
+    assert rows[0].provider == "stooq"
+    assert rows[0].provider_interval == "d"
+
+
+def test_symbols_from_mappings_daily(ma: ModuleType, tmp_path: Path) -> None:
+    rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
+    syms = ma.symbols_from_mappings(rows, "stooq", "d")
+    assert "^SPX" in syms
+    assert "^DJI" in syms
+    # sorted by canonical_id: dji < spx
+    assert syms.index("^DJI") < syms.index("^SPX")
+
+
+def test_symbols_from_mappings_weekly(ma: ModuleType, tmp_path: Path) -> None:
+    rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
+    assert ma.symbols_from_mappings(rows, "stooq", "w") == ["^SPX"]
+
+
+def test_symbols_from_mappings_no_match_returns_empty(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
+    assert ma.symbols_from_mappings(rows, "csv", "d") == []
+
+
+def test_symbols_from_mappings_deduplicates(ma: ModuleType, tmp_path: Path) -> None:
+    dup_csv = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "spx,S&P 500,equity_index,BrokerA,US500,ES,stooq,^SPX,d,true,row1\n"
+        "spx,S&P 500,equity_index,BrokerB,US500,ES,stooq,^SPX,d,true,row2\n"
+    )
+    p = tmp_path / "dup.csv"
+    p.write_text(dup_csv, encoding="utf-8")
+    rows = ma.load_instrument_mappings(p)
+    syms = ma.symbols_from_mappings(rows, "stooq", "d")
+    assert syms.count("^SPX") == 1
+
+
+def test_instrument_display_map_basic(ma: ModuleType, tmp_path: Path) -> None:
+    rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
+    dmap = ma.instrument_display_map(rows, "stooq", "d")
+    assert "^SPX" in dmap
+    assert dmap["^SPX"]["canonical_id"] == "spx"
+    assert dmap["^SPX"]["display_name"] == "S&P 500"
+    assert "^DJI" in dmap
+
+
+def test_instrument_display_map_no_match(ma: ModuleType, tmp_path: Path) -> None:
+    rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
+    assert ma.instrument_display_map(rows, "csv", "d") == {}
+
+
+def test_instrument_display_map_deduplicates(ma: ModuleType, tmp_path: Path) -> None:
+    dup_csv = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "spx,S&P 500,equity_index,BrokerA,US500,ES,stooq,^SPX,d,true,row1\n"
+        "sp500alt,S&P Alt,equity_index,BrokerB,US500,ES,stooq,^SPX,d,true,row2\n"
+    )
+    p = tmp_path / "dup2.csv"
+    p.write_text(dup_csv, encoding="utf-8")
+    rows = ma.load_instrument_mappings(p)
+    dmap = ma.instrument_display_map(rows, "stooq", "d")
+    assert len(dmap) == 1
+    assert dmap["^SPX"]["canonical_id"] == "spx"
+
+
+def test_generate_artifact_with_instrument_metadata(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "^SPX", [float(100 + i) for i in range(70)])
+    data = {"^SPX": bars}
+    scores = ma.score_instruments(data)
+    config = {
+        "interval": "d",
+        "stale_days": 5,
+        "max_gap_days": 7,
+        "min_history": 60,
+        "coverage_policy": {"min_success_ratio": 0.8, "max_missing_symbols": 1},
+    }
+    meta = {"^SPX": {"canonical_id": "spx", "display_name": "S&P 500"}}
+    artifact = ma.generate_artifact(scores, data, config, instrument_metadata=meta)
+    inst = artifact["instruments"][0]
+    assert inst["canonical_id"] == "spx"
+    assert inst["display_name"] == "S&P 500"
+
+
+def test_generate_artifact_metadata_partial_fields(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "^SPX", [float(100 + i) for i in range(70)])
+    data = {"^SPX": bars}
+    scores = ma.score_instruments(data)
+    config = {
+        "interval": "d",
+        "stale_days": 5,
+        "max_gap_days": 7,
+        "min_history": 60,
+        "coverage_policy": {"min_success_ratio": 0.8, "max_missing_symbols": 1},
+    }
+    # canonical_id only (no display_name)
+    meta_id_only: dict[str, dict[str, str]] = {"^SPX": {"canonical_id": "spx"}}
+    art1 = ma.generate_artifact(scores, data, config, instrument_metadata=meta_id_only)
+    inst1 = art1["instruments"][0]
+    assert inst1["canonical_id"] == "spx"
+    assert "display_name" not in inst1
+
+    # display_name only (no canonical_id)
+    meta_dn_only: dict[str, dict[str, str]] = {"^SPX": {"display_name": "S&P 500"}}
+    art2 = ma.generate_artifact(scores, data, config, instrument_metadata=meta_dn_only)
+    inst2 = art2["instruments"][0]
+    assert "canonical_id" not in inst2
+    assert inst2["display_name"] == "S&P 500"
+
+
+def test_generate_artifact_metadata_for_missing_symbol(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "^SPX", [float(100 + i) for i in range(70)])
+    data = {"^SPX": bars}
+    scores = ma.score_instruments(data)
+    config = {
+        "interval": "d",
+        "stale_days": 5,
+        "max_gap_days": 7,
+        "min_history": 60,
+        "coverage_policy": {"min_success_ratio": 0.8, "max_missing_symbols": 1},
+    }
+    # Both keys present for missing symbol
+    meta = {
+        "^SPX": {"canonical_id": "spx", "display_name": "S&P 500"},
+        "^DJI": {"canonical_id": "dji", "display_name": "Dow Jones"},
+    }
+    artifact = ma.generate_artifact(
+        scores,
+        data,
+        config,
+        missing_symbols=["^DJI"],
+        instrument_metadata=meta,
+    )
+    missing_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^DJI")
+    assert missing_inst["canonical_id"] == "dji"
+    assert missing_inst["display_name"] == "Dow Jones"
+
+
+def test_generate_artifact_metadata_partial_for_missing_symbol(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "^SPX", [float(100 + i) for i in range(70)])
+    data = {"^SPX": bars}
+    scores = ma.score_instruments(data)
+    config = {
+        "interval": "d",
+        "stale_days": 5,
+        "max_gap_days": 7,
+        "min_history": 60,
+        "coverage_policy": {"min_success_ratio": 0.8, "max_missing_symbols": 1},
+    }
+    # canonical_id only for missing symbol — covers "display_name" absent branch
+    meta_id: dict[str, dict[str, str]] = {"^DJI": {"canonical_id": "dji"}}
+    art1 = ma.generate_artifact(
+        scores, data, config, missing_symbols=["^DJI"], instrument_metadata=meta_id
+    )
+    m1 = next(i for i in art1["instruments"] if i["symbol"] == "^DJI")
+    assert m1["canonical_id"] == "dji"
+    assert "display_name" not in m1
+
+    # display_name only for missing symbol — covers "canonical_id" absent branch
+    meta_dn: dict[str, dict[str, str]] = {"^DJI": {"display_name": "Dow Jones"}}
+    art2 = ma.generate_artifact(
+        scores, data, config, missing_symbols=["^DJI"], instrument_metadata=meta_dn
+    )
+    m2 = next(i for i in art2["instruments"] if i["symbol"] == "^DJI")
+    assert "canonical_id" not in m2
+    assert m2["display_name"] == "Dow Jones"
+
+
+def test_generate_artifact_metadata_symbol_not_in_meta(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars_spx = _make_bars(ma, "^SPX", [float(100 + i) for i in range(70)])
+    bars_dji = _make_bars(ma, "^DJI", [float(90 + i) for i in range(70)])
+    data = {"^SPX": bars_spx, "^DJI": bars_dji}
+    scores = ma.score_instruments(data)
+    config = {
+        "interval": "d",
+        "stale_days": 5,
+        "max_gap_days": 7,
+        "min_history": 60,
+        "coverage_policy": {"min_success_ratio": 0.8, "max_missing_symbols": 1},
+    }
+    # metadata only for ^SPX, not for ^DJI
+    meta = {"^SPX": {"canonical_id": "spx", "display_name": "S&P 500"}}
+    artifact = ma.generate_artifact(scores, data, config, instrument_metadata=meta)
+    spx_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^SPX")
+    dji_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^DJI")
+    assert spx_inst["canonical_id"] == "spx"
+    assert "canonical_id" not in dji_inst
+
+
+def test_canonical_mapping_contains_spx_dji_ndx(ma: ModuleType) -> None:
+    mapping_path = Path("data/mappings/canonical_instrument_mappings.csv")
+    rows = ma.load_instrument_mappings(mapping_path)
+    syms = ma.symbols_from_mappings(rows, "stooq", "d")
+    assert "^SPX" in syms
+    assert "^DJI" in syms
+    assert "^NDX" in syms
+
+
+# ── _resolve_symbols_for_generate ─────────────────────────────────────────────
+
+
+def test_resolve_symbols_both_symbols_and_mapping(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+
+    class Args:
+        symbols = "A"
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+
+    assert ma._resolve_symbols_for_generate(Args()) is None
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_resolve_symbols_mapping_not_found(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    class Args:
+        symbols = None
+        mapping = str(tmp_path / "missing.csv")
+        interval = "d"
+        provider = "stooq"
+
+    assert ma._resolve_symbols_for_generate(Args()) is None
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_resolve_symbols_mapping_load_error(
+    ma: ModuleType,
+    tmp_path: Path,
+    mocker: MockerFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+    mocker.patch.object(ma, "load_instrument_mappings", side_effect=OSError("io error"))
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+
+    assert ma._resolve_symbols_for_generate(Args()) is None
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_resolve_symbols_mapping_no_match_interval(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "m"
+        provider = "stooq"
+
+    assert ma._resolve_symbols_for_generate(Args()) is None
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_resolve_symbols_from_valid_mapping(ma: ModuleType, tmp_path: Path) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+
+    result = ma._resolve_symbols_for_generate(Args())
+    assert result is not None
+    assert "^SPX" in result
+    assert "^DJI" in result
+
+
+def test_resolve_symbols_explicit_list(ma: ModuleType) -> None:
+    class Args:
+        symbols = "A,B,C"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+
+    assert ma._resolve_symbols_for_generate(Args()) == ["A", "B", "C"]
+
+
+def test_resolve_symbols_neither_provided(
+    ma: ModuleType,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    class Args:
+        symbols = None
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+
+    assert ma._resolve_symbols_for_generate(Args()) is None
+    assert "ERROR" in capsys.readouterr().out
+
+
+# ── _cmd_generate with provider and mapping ───────────────────────────────────
+
+
+def test_cmd_generate_rejects_invalid_provider_interval(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "1h"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    assert ma._cmd_generate(Args()) == 1
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_cmd_generate_empty_resolved_symbols(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    # symbols=",,": all parts strip to empty so _resolve_symbols_for_generate returns []
+    class Args:
+        symbols = ",,"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    assert ma._cmd_generate(Args()) == 1
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_cmd_generate_mapping_mode(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    mapping_path = _write_mini_mapping(tmp_path)
+    for sym in ("^SPX", "^DJI"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    assert ma._cmd_generate(Args()) == 0
+    assert len(list((tmp_path / "analysis").glob("*.json"))) == 1
+
+
+def test_cmd_generate_mapping_includes_display_names(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    mapping_path = _write_mini_mapping(tmp_path)
+    for sym in ("^SPX", "^DJI"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-01"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-07-01.json").read_text())
+    spx_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^SPX")
+    assert spx_inst["canonical_id"] == "spx"
+    assert spx_inst["display_name"] == "S&P 500"
+
+
+def test_cmd_generate_mapping_display_meta_load_error(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    mapping_path = _write_mini_mapping(tmp_path)
+    for sym in ("^SPX", "^DJI"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+
+    call_count = [0]
+    original_fn = ma.load_instrument_mappings
+
+    def side_effect(path: Path) -> list:
+        call_count[0] += 1
+        if call_count[0] > 1:
+            msg = "simulated io error"
+            raise OSError(msg)
+        return original_fn(path)
+
+    mocker.patch.object(ma, "load_instrument_mappings", side_effect=side_effect)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    # display_meta falls back to None; generate still succeeds
+    assert ma._cmd_generate(Args()) == 0

@@ -12,6 +12,9 @@ Usage:
         score --symbols AAPL.US,MSFT.US
     uv run .agents/skills/market-analysis/scripts/market_analysis.py \
         generate --symbols AAPL.US,MSFT.US --output data/analysis/
+    uv run .agents/skills/market-analysis/scripts/market_analysis.py \
+        generate --mapping data/mappings/canonical_instrument_mappings.csv \
+        --provider stooq --output data/analysis/
 """
 
 from __future__ import annotations
@@ -44,6 +47,7 @@ from data_quality_policy import (
 _DEFAULT_PRICES_DIR: Final[Path] = Path("data/prices")
 _DEFAULT_ANALYSIS_DIR: Final[Path] = Path("data/analysis")
 _DEFAULT_INTERVAL: Final[str] = "d"
+_DEFAULT_PROVIDER: Final[str] = "stooq"
 _DAILY_POLICY = get_data_quality_policy(_DEFAULT_INTERVAL)
 _STALE_DAYS: Final[int] = _DAILY_POLICY.thresholds.stale_days
 _MIN_HISTORY: Final[int] = _DAILY_POLICY.thresholds.min_history
@@ -76,6 +80,191 @@ _OHLCV_FIELDS: Final[tuple[str, ...]] = (
     "source",
     "interval",
 )
+
+# ── Provider metadata ─────────────────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class ProviderMetadata:
+    """Descriptive metadata for a market data provider."""
+
+    name: str
+    supported_intervals: tuple[str, ...]
+    symbol_format_notes: str
+    timezone_notes: str
+    known_limitations: str
+
+
+STOOQ_METADATA: Final[ProviderMetadata] = ProviderMetadata(
+    name="stooq",
+    supported_intervals=("d", "w", "m"),
+    symbol_format_notes=(
+        "Stooq-specific convention: e.g. 'AAPL.US', '^SPX', '7203.JP'."
+        " Index symbols use the '^' prefix."
+    ),
+    timezone_notes=(
+        "Timestamps normalized to UTC midnight."
+        " Bar date reflects the exchange close date."
+    ),
+    known_limitations=(
+        "Daily, weekly, and monthly bars only — no intraday data."
+        " Data availability and history depth vary by symbol."
+        " No authentication required but subject to undocumented rate limits."
+        " Requires outbound network access."
+    ),
+)
+
+CSV_METADATA: Final[ProviderMetadata] = ProviderMetadata(
+    name="csv",
+    supported_intervals=("d", "w", "m"),
+    symbol_format_notes=(
+        "Symbol must match the file name written by save_ohlcv."
+        " Suitable for offline workflows and deterministic unit tests."
+    ),
+    timezone_notes="UTC assumed for naive timestamps loaded from CSV.",
+    known_limitations=(
+        "Offline only; reflects data as saved by another provider."
+        " No network fetch — cannot be used in the daily workflow."
+    ),
+)
+
+_PROVIDER_REGISTRY: Final[dict[str, ProviderMetadata]] = {
+    "stooq": STOOQ_METADATA,
+    "csv": CSV_METADATA,
+}
+
+KNOWN_PROVIDERS: Final[frozenset[str]] = frozenset(_PROVIDER_REGISTRY.keys())
+
+
+def get_provider_metadata(name: str) -> ProviderMetadata:
+    """Return metadata for *name*, raising ValueError for unknown providers."""
+    meta = _PROVIDER_REGISTRY.get(name)
+    if meta is None:
+        known = ", ".join(sorted(KNOWN_PROVIDERS))
+        msg = f"unknown provider {name!r}; known providers: {known}"
+        raise ValueError(msg)
+    return meta
+
+
+def validate_provider_interval(provider_name: str, interval: str) -> None:
+    """Raise ValueError when *provider_name* does not support *interval*."""
+    meta = get_provider_metadata(provider_name)
+    if interval not in meta.supported_intervals:
+        supported = ", ".join(sorted(meta.supported_intervals))
+        msg = (
+            f"provider {provider_name!r} does not support interval {interval!r};"
+            f" supported intervals: {supported}"
+        )
+        raise ValueError(msg)
+
+
+# ── Canonical instrument mapping ─────────────────────────────────────────────
+
+_MAPPING_REQUIRED_COLUMNS: Final[tuple[str, ...]] = (
+    "canonical_id",
+    "display_name",
+    "asset_class",
+    "broker",
+    "broker_instrument_name",
+    "broker_ticker_symbol",
+    "provider",
+    "provider_symbol",
+    "provider_interval",
+    "tradable",
+)
+
+_MAPPING_REQUIRED_NON_EMPTY: Final[frozenset[str]] = frozenset({
+    "canonical_id",
+    "display_name",
+    "provider",
+    "provider_symbol",
+    "provider_interval",
+})
+
+
+@dataclass(frozen=True)
+class InstrumentMappingRow:
+    """One row from canonical_instrument_mappings.csv."""
+
+    canonical_id: str
+    display_name: str
+    asset_class: str
+    broker: str
+    broker_instrument_name: str
+    broker_ticker_symbol: str
+    provider: str
+    provider_symbol: str
+    provider_interval: str
+    tradable: str
+    notes: str = ""
+
+
+def load_instrument_mappings(mapping_path: Path) -> list[InstrumentMappingRow]:
+    """Load and parse canonical_instrument_mappings.csv."""
+    with mapping_path.open(encoding="utf-8", newline="") as fh:
+        reader = csv.DictReader(fh)
+        return [
+            InstrumentMappingRow(
+                canonical_id=row.get("canonical_id", ""),
+                display_name=row.get("display_name", ""),
+                asset_class=row.get("asset_class", ""),
+                broker=row.get("broker", ""),
+                broker_instrument_name=row.get("broker_instrument_name", ""),
+                broker_ticker_symbol=row.get("broker_ticker_symbol", ""),
+                provider=row.get("provider", ""),
+                provider_symbol=row.get("provider_symbol", ""),
+                provider_interval=row.get("provider_interval", ""),
+                tradable=row.get("tradable", ""),
+                notes=row.get("notes", ""),
+            )
+            for row in reader
+        ]
+
+
+def symbols_from_mappings(
+    rows: list[InstrumentMappingRow],
+    provider: str,
+    interval: str,
+) -> list[str]:
+    """Return provider symbols for *provider*/*interval* from mapping rows.
+
+    Results are sorted by canonical_id for determinism.
+    """
+    matched = [
+        r for r in rows if r.provider == provider and r.provider_interval == interval
+    ]
+    matched.sort(key=lambda r: r.canonical_id)
+    seen: set[str] = set()
+    result: list[str] = []
+    for r in matched:
+        if r.provider_symbol not in seen:
+            seen.add(r.provider_symbol)
+            result.append(r.provider_symbol)
+    return result
+
+
+def instrument_display_map(
+    rows: list[InstrumentMappingRow],
+    provider: str,
+    interval: str,
+) -> dict[str, dict[str, str]]:
+    """Return {provider_symbol: {canonical_id, display_name}}.
+
+    Filters to rows matching *provider* and *interval*.
+    """
+    result: dict[str, dict[str, str]] = {}
+    for r in rows:
+        if (
+            r.provider == provider
+            and r.provider_interval == interval
+            and r.provider_symbol not in result
+        ):
+            result[r.provider_symbol] = {
+                "canonical_id": r.canonical_id,
+                "display_name": r.display_name,
+            }
+    return result
+
 
 # ── Data model ───────────────────────────────────────────────────────────────
 
@@ -204,6 +393,20 @@ class CsvFileProvider(MarketDataProvider):
         return [b for b in all_bars if start <= b.timestamp <= end]
 
 
+def make_provider(
+    name: str,
+    data_dir: Path = _DEFAULT_PRICES_DIR,
+) -> MarketDataProvider:
+    """Instantiate a provider by registry name."""
+    if name == "stooq":
+        return StooqProvider()
+    if name == "csv":
+        return CsvFileProvider(data_dir)
+    known = ", ".join(sorted(KNOWN_PROVIDERS))
+    msg = f"unknown provider {name!r}; known providers: {known}"
+    raise ValueError(msg)
+
+
 # ── Save / Load ───────────────────────────────────────────────────────────────
 
 
@@ -283,15 +486,18 @@ def init_fetch_status(
     *,
     interval: str,
     analysis_date: str | None = None,
+    provider: str | None = None,
 ) -> None:
     """Initialize a fetch-status file with all symbols marked pending."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
+    payload: dict[str, Any] = {
         "version": _FETCH_STATUS_VERSION,
         "interval": interval,
         "analysis_date": analysis_date,
         "symbols": {symbol: {"status": _FETCH_STATUS_PENDING} for symbol in symbols},
     }
+    if provider is not None:
+        payload["provider"] = provider
     with path.open("w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2)
 
@@ -334,6 +540,7 @@ def validate_fetch_status(
     *,
     interval: str,
     analysis_date: str | None = None,
+    provider: str | None = None,
 ) -> None:
     """Reject fetch-status metadata that does not match the current run."""
     status_interval = fetch_status.get("interval")
@@ -354,6 +561,14 @@ def validate_fetch_status(
             f" requested analysis_date {analysis_date!r}"
         )
         raise ValueError(msg)
+    if provider is not None:
+        status_provider = fetch_status.get("provider")
+        if status_provider is not None and status_provider != provider:
+            msg = (
+                f"fetch status provider {status_provider!r} does not match"
+                f" requested provider {provider!r}"
+            )
+            raise ValueError(msg)
 
 
 def resolve_symbols_from_fetch_status(
@@ -732,6 +947,7 @@ def generate_artifact(
     analysis_date: str | None = None,
     missing_symbols: list[str] | None = None,
     coverage: dict[str, Any] | None = None,
+    instrument_metadata: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
     generated_at = (
@@ -745,8 +961,9 @@ def generate_artifact(
     }
     for sym in sorted(missing_symbols or []):
         freshness[sym] = "n/a"
-    instruments: list[dict[str, Any]] = [
-        {
+
+    def _build_inst(s: InstrumentScore) -> dict[str, Any]:
+        entry: dict[str, Any] = {
             "symbol": s.symbol,
             "rank": s.rank,
             "score": s.score,
@@ -755,8 +972,15 @@ def generate_artifact(
             "explanation": s.explanation,
             "features": _features_to_dict(s.features),
         }
-        for s in scores
-    ]
+        if instrument_metadata and s.symbol in instrument_metadata:
+            meta = instrument_metadata[s.symbol]
+            if "canonical_id" in meta:
+                entry["canonical_id"] = meta["canonical_id"]
+            if "display_name" in meta:
+                entry["display_name"] = meta["display_name"]
+        return entry
+
+    instruments: list[dict[str, Any]] = [_build_inst(s) for s in scores]
     empty_feats = InstrumentFeatures(
         ret_1d=None,
         ret_5d=None,
@@ -771,7 +995,7 @@ def generate_artifact(
     )
     next_rank = max((s.rank for s in scores), default=0) + 1
     for sym in sorted(missing_symbols or []):
-        instruments.append({
+        entry: dict[str, Any] = {
             "symbol": sym,
             "rank": next_rank,
             "score": 0.0,
@@ -779,9 +1003,16 @@ def generate_artifact(
             "risk_gates": [RISK_GATE_MISSING_DATA],
             "explanation": f"Suppressed: {RISK_GATE_MISSING_DATA}",
             "features": _features_to_dict(empty_feats),
-        })
+        }
+        if instrument_metadata and sym in instrument_metadata:
+            meta = instrument_metadata[sym]
+            if "canonical_id" in meta:
+                entry["canonical_id"] = meta["canonical_id"]
+            if "display_name" in meta:
+                entry["display_name"] = meta["display_name"]
+        instruments.append(entry)
         next_rank += 1
-    metadata: dict[str, Any] = {
+    artifact_metadata: dict[str, Any] = {
         "generated_at": generated_at,
         "git_commit": _get_git_commit(),
         "data_source": data_source,
@@ -790,10 +1021,10 @@ def generate_artifact(
         "config": config,
     }
     if coverage is not None:
-        metadata["coverage"] = coverage
+        artifact_metadata["coverage"] = coverage
     return {
         "version": ARTIFACT_VERSION,
-        "metadata": metadata,
+        "metadata": artifact_metadata,
         "instruments": instruments,
     }
 
@@ -816,9 +1047,18 @@ def save_artifact(
 
 
 def _cmd_fetch(args: argparse.Namespace) -> int:
+    provider_name: str = (
+        getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
+    )
+    try:
+        validate_provider_interval(provider_name, args.interval)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return 1
+
     start = datetime.strptime(args.start, "%Y-%m-%d").replace(tzinfo=UTC)
     end = datetime.strptime(args.end, "%Y-%m-%d").replace(tzinfo=UTC)
-    provider = StooqProvider()
+    provider = make_provider(provider_name, Path(args.output))
     fetch_status_path: Path | None = (
         Path(args.fetch_status) if getattr(args, "fetch_status", None) else None
     )
@@ -913,21 +1153,83 @@ def _cmd_init_fetch_status(args: argparse.Namespace) -> int:
     if not symbols:
         print("ERROR: no symbols provided")
         return 1
+    provider_name: str | None = getattr(args, "provider", None) or None
     init_fetch_status(
         Path(args.output),
         symbols,
         interval=args.interval,
         analysis_date=getattr(args, "analysis_date", None) or None,
+        provider=provider_name,
     )
     print(f"fetch status initialized for {len(symbols)} symbol(s) at {args.output}")
     return 0
 
 
+def _resolve_symbols_for_generate(args: argparse.Namespace) -> list[str] | None:
+    """Return the symbol list for generate, or None on error (prints message)."""
+    symbols_arg: str | None = getattr(args, "symbols", None)
+    mapping_arg: str | None = getattr(args, "mapping", None)
+
+    if symbols_arg and mapping_arg:
+        print("ERROR: --symbols and --mapping are mutually exclusive")
+        return None
+
+    if mapping_arg:
+        provider_name: str = (
+            getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
+        )
+        mapping_path = Path(mapping_arg)
+        if not mapping_path.exists():
+            print(f"ERROR: mapping file not found: {mapping_path}")
+            return None
+        try:
+            rows = load_instrument_mappings(mapping_path)
+        except (OSError, csv.Error) as exc:
+            print(f"ERROR: failed to load mapping file: {exc}")
+            return None
+        syms = symbols_from_mappings(rows, provider_name, args.interval)
+        if not syms:
+            print(
+                f"ERROR: no symbols found in mapping for"
+                f" provider={provider_name!r} interval={args.interval!r}"
+            )
+            return None
+        return syms
+
+    if symbols_arg:
+        return [s.strip() for s in symbols_arg.split(",") if s.strip()]
+
+    print("ERROR: one of --symbols or --mapping is required")
+    return None
+
+
 def _cmd_generate(args: argparse.Namespace) -> int:
-    symbols = [s.strip() for s in args.symbols.split(",") if s.strip()]
+    provider_name: str = (
+        getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
+    )
+    try:
+        validate_provider_interval(provider_name, args.interval)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return 1
+
+    symbols = _resolve_symbols_for_generate(args)
+    if symbols is None:
+        return 1
     if not symbols:
         print("ERROR: no symbols provided")
         return 1
+
+    # Load mapping metadata for display names when mapping is provided
+    display_meta: dict[str, dict[str, str]] | None = None
+    mapping_arg: str | None = getattr(args, "mapping", None)
+    if mapping_arg:
+        mapping_path = Path(mapping_arg)
+        try:
+            rows = load_instrument_mappings(mapping_path)
+            display_meta = instrument_display_map(rows, provider_name, args.interval)
+        except (OSError, csv.Error):
+            display_meta = None
 
     coverage_policy = CoveragePolicy(
         min_success_ratio=args.min_success_ratio,
@@ -946,6 +1248,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
                 fetch_status,
                 interval=args.interval,
                 analysis_date=getattr(args, "analysis_date", None) or None,
+                provider=provider_name if fetch_status.get("provider") else None,
             )
         except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError) as exc:
             print(f"ERROR: invalid fetch status file: {exc}")
@@ -1012,6 +1315,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         analysis_date=analysis_date,
         missing_symbols=missing or None,
         coverage=coverage_metadata,
+        instrument_metadata=display_meta,
     )
     path = save_artifact(artifact, Path(args.output))
     print(f"artifact saved to {path}")
@@ -1029,13 +1333,23 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_fetch = sub.add_parser("fetch", help="Fetch OHLCV data from Stooq")
-    p_fetch.add_argument("--symbol", required=True, help="Stooq symbol, e.g. AAPL.US")
+    p_fetch = sub.add_parser(
+        "fetch", help="Fetch OHLCV data from a market data provider"
+    )
+    p_fetch.add_argument(
+        "--symbol", required=True, help="Provider symbol, e.g. AAPL.US"
+    )
     p_fetch.add_argument("--start", required=True, help="Start date YYYY-MM-DD")
     p_fetch.add_argument("--end", required=True, help="End date YYYY-MM-DD")
     p_fetch.add_argument("--interval", default=_DEFAULT_INTERVAL, help="d/w/m")
     p_fetch.add_argument("--output", default=str(_DEFAULT_PRICES_DIR))
     p_fetch.add_argument("--no-validate", action="store_true", dest="no_validate")
+    p_fetch.add_argument(
+        "--provider",
+        default=_DEFAULT_PROVIDER,
+        choices=sorted(KNOWN_PROVIDERS),
+        help=f"Market data provider (default: {_DEFAULT_PROVIDER})",
+    )
     p_fetch.add_argument(
         "--fetch-status",
         default=None,
@@ -1060,6 +1374,12 @@ def main(argv: list[str] | None = None) -> int:
         dest="analysis_date",
         help="Analysis date (YYYY-MM-DD) recorded in fetch status",
     )
+    p_init_status.add_argument(
+        "--provider",
+        default=_DEFAULT_PROVIDER,
+        choices=sorted(KNOWN_PROVIDERS),
+        help=f"Market data provider (default: {_DEFAULT_PROVIDER})",
+    )
 
     p_check = sub.add_parser("check", help="Check data quality of saved OHLCV")
     p_check.add_argument("--symbol", required=True)
@@ -1076,10 +1396,27 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     p_gen = sub.add_parser("generate", help="Generate JSON analysis artifact")
-    p_gen.add_argument("--symbols", required=True, help="Comma-separated list")
+    p_gen_src = p_gen.add_mutually_exclusive_group(required=True)
+    p_gen_src.add_argument(
+        "--symbols",
+        default=None,
+        help="Comma-separated provider symbol list (explicit mode)",
+    )
+    p_gen_src.add_argument(
+        "--mapping",
+        default=None,
+        metavar="PATH",
+        help="Path to canonical_instrument_mappings.csv (mapping-derived mode)",
+    )
     p_gen.add_argument("--interval", default=_DEFAULT_INTERVAL)
     p_gen.add_argument("--data-dir", default=str(_DEFAULT_PRICES_DIR), dest="data_dir")
     p_gen.add_argument("--output", default=str(_DEFAULT_ANALYSIS_DIR))
+    p_gen.add_argument(
+        "--provider",
+        default=_DEFAULT_PROVIDER,
+        choices=sorted(KNOWN_PROVIDERS),
+        help=f"Market data provider (default: {_DEFAULT_PROVIDER})",
+    )
     p_gen.add_argument(
         "--analysis-date",
         default=None,

@@ -35,6 +35,10 @@ addopts = [
   "--cov-fail-under=100",
 ]
 testpaths = ["tests"]
+pythonpath = [
+  ".agents/skills/market-analysis/scripts",
+  ".agents/skills/update-cfd-instruments/scripts",
+]
 
 [tool.coverage.run]
 branch = true
@@ -153,6 +157,7 @@ ignore = [
   "DOC201",   # Return docs omitted in favour of type annotations
   "DOC501",   # Raised exceptions documented inline
   "INP001",   # Not a package; scripts are standalone entrypoints
+  "PLR0911",  # Fail-fast functions have many early-return exit points
   "PLR0912",  # Feature/scoring functions can have many branches
   "PLR0914",  # Local variable count is dominated by feature columns
   "PLR0915",  # Main analysis scripts can have many statements

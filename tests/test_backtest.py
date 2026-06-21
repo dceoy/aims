@@ -83,6 +83,7 @@ def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
     assert result["max_drawdown"] == 0.0
     empty = backtest.run_backtest({}, horizons=(1,))
     assert empty["observations"] == 0
+    assert empty["date_range"] == {"start": None, "end": None}
     assert empty["metrics"]["1d"]["top_k"]["average_return"] is None
     no_daily = backtest.run_backtest(data, horizons=(5,), min_history=60)
     assert no_daily["max_drawdown"] is None
@@ -99,6 +100,7 @@ def test_short_history_symbol_does_not_suppress_mature_symbols(
     result = backtest.run_backtest(data, horizons=(1,), min_history=60)
     assert result["observations"] == 10
     assert result["metrics"]["1d"]["top_k"]["count"] == 10
+    assert result["date_range"]["end"] == "2024-03-09"
     gapped = _bars(ma, "GAPPED", 1.0, count=3)
     gapped = [
         replace(bar, timestamp=bar.timestamp + timedelta(days=10 * index))
@@ -153,7 +155,24 @@ def test_main_writes_artifact(
     artifact = json.loads(next(output.glob("*.json")).read_text())
     assert artifact["scoring_version"] == ma.SCORING_VERSION
     assert artifact["config"]["forward_horizons"] == [1, 5]
-    assert artifact["date_range"]["start"] == "2024-01-01"
+    assert artifact["date_range"] == {"start": "2024-02-29", "end": "2024-03-09"}
+
+
+def test_main_rejects_no_observations(
+    modules: tuple[ModuleType, ModuleType], tmp_path: Path
+) -> None:
+    ma, backtest = modules
+    prices = tmp_path / "prices"
+    ma.save_ohlcv(_bars(ma, "SHORT", 1.0, count=2), prices)
+    with pytest.raises(SystemExit):
+        backtest.main([
+            "--symbols",
+            "SHORT",
+            "--data-dir",
+            str(prices),
+            "--min-history",
+            "2",
+        ])
 
 
 def test_main_rejects_missing_inputs(

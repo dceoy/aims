@@ -57,6 +57,7 @@ def run_backtest(
     turnovers: list[float] = []
     previous: set[str] | None = None
     observations = 0
+    observed_dates: list[str] = []
 
     for date in dates:
         window = {
@@ -102,7 +103,9 @@ def run_backtest(
                     horizon_returns.append(forward)
             if horizon == 1 and horizon_returns:
                 daily_top_returns.append(sum(horizon_returns) / len(horizon_returns))
-        observations += date_observed
+        if date_observed:
+            observations += 1
+            observed_dates.append(date.date().isoformat())
 
     metrics = {}
     for horizon in horizons:
@@ -122,6 +125,10 @@ def run_backtest(
         }
     return {
         "observations": observations,
+        "date_range": {
+            "start": observed_dates[0] if observed_dates else None,
+            "end": observed_dates[-1] if observed_dates else None,
+        },
         "metrics": metrics,
         "turnover": _mean(turnovers),
         "max_drawdown": _drawdown(daily_top_returns),
@@ -167,13 +174,14 @@ def main(argv: list[str] | None = None) -> int:
         )
     except (FileNotFoundError, ValueError) as exc:
         parser.error(str(exc))
-    start = max(bars[0].timestamp for bars in data.values()).date().isoformat()
-    end = min(bars[-1].timestamp for bars in data.values()).date().isoformat()
+    start = result["date_range"]["start"]
+    end = result["date_range"]["end"]
+    if start is None or end is None:
+        parser.error("no backtest observations for the requested configuration")
     artifact = {
         "schema_version": "1.0.0",
         "scoring_version": SCORING_VERSION,
         "generated_at": datetime.now(UTC).isoformat(),
-        "date_range": {"start": start, "end": end},
         "config": {
             "symbols": list(symbols),
             "interval": args.interval,

@@ -12,6 +12,7 @@
   ],
   "notes": {
     "rank_delta": "Previous rank minus current rank; positive values indicate improvement.",
-    "consecutive_reports": "Counts consecutive available artifacts, not calendar days."
+    "consecutive_reports": "Counts consecutive available artifacts, not calendar days.",
+    "instrument_rows": "Rows require symbol, current/previous ranks and scores, deltas, reliability/top-k booleans, consecutive report counts, and added/removed risk-gate string arrays."
   }
 }

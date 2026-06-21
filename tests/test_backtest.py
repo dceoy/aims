@@ -129,6 +129,24 @@ def test_missing_forward_bar_does_not_promote_lower_rank(
     assert bucket_count == 25
 
 
+def test_turnover_excludes_dates_without_forward_observations(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    leader = _bars(ma, "LEADER", 1.0, count=65)
+    late_leader = _bars(ma, "LATE", 0.0, count=65)
+    late_leader[-1] = replace(
+        late_leader[-1], open=1_000.0, high=1_000.0, low=1_000.0, close=1_000.0
+    )
+    result = backtest.run_backtest(
+        {"LEADER": leader, "LATE": late_leader},
+        horizons=(1,),
+        top_k=1,
+        min_history=60,
+    )
+    assert result["turnover"] == 0.0
+
+
 def test_main_writes_artifact(
     modules: tuple[ModuleType, ModuleType], tmp_path: Path
 ) -> None:

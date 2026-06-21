@@ -78,13 +78,6 @@ def run_backtest(
             continue
         selected = scores[:top_k]
         selected_symbols = {s.symbol for s in selected}
-        if previous is not None:
-            turnovers.append(
-                1.0
-                - len(previous & selected_symbols)
-                / max(len(previous), len(selected_symbols))
-            )
-        previous = selected_symbols
         date_observed = False
         for horizon in horizons:
             horizon_returns = []
@@ -104,6 +97,13 @@ def run_backtest(
             if horizon == 1 and horizon_returns:
                 daily_top_returns.append(sum(horizon_returns) / len(horizon_returns))
         if date_observed:
+            if previous is not None:
+                turnovers.append(
+                    1.0
+                    - len(previous & selected_symbols)
+                    / max(len(previous), len(selected_symbols))
+                )
+            previous = selected_symbols
             observations += 1
             observed_dates.append(date.date().isoformat())
 

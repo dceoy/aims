@@ -284,6 +284,18 @@ A generated Markdown file has invalid front matter or content that causes Hugo t
 
 **Fix:** Run `hugo --gc --minify` locally with the failing content file, fix the generator, and regenerate.
 
+### Renovate dashboard lists stale dependencies
+
+The Renovate Dependency Dashboard is generated from `.github/renovate.json`.
+Renovate is limited to the dependency files and workflow files listed in
+`includePaths`, so removed workflow files should disappear after Renovate refreshes
+the dashboard.
+
+**Fix:** Open the **Dependency Dashboard** issue, check the `manual job` checkbox,
+and wait for Renovate to run again. If the dashboard still references a removed
+workflow or the old repository identity after the next run, close the dashboard
+issue so Renovate recreates it from the current repository metadata.
+
 ### Stale data warning
 
 Reports include a freshness table. Symbols with `n/a` in the freshness column had no data returned from Stooq. Symbols with old dates may be delisted or have restricted access.

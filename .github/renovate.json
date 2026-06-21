@@ -1,6 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "enabledManagers": ["github-actions", "gomod", "pep621"],
+  "includePaths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/daily-market-analysis.yml",
+    ".github/workflows/update-cfd-instruments.yml",
+    "go.mod",
+    "go.sum",
+    "pyproject.toml",
+    "uv.lock"
+  ],
   "minimumReleaseAge": "7 days",
   "packageRules": [
     {

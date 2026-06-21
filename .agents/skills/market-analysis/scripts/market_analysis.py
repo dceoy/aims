@@ -1050,6 +1050,13 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
     provider_name: str = (
         getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
     )
+    if provider_name == "csv":
+        print(
+            "ERROR: provider 'csv' is a read-only cached-data provider"
+            " and cannot be used with 'fetch'."
+            " Use '--provider stooq' to download data."
+        )
+        return 1
     try:
         validate_provider_interval(provider_name, args.interval)
     except ValueError as exc:

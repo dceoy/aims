@@ -155,9 +155,13 @@ def validate_mappings(
         canonical_provider_keys[canonical_id].add(provider_key)
 
         # Broker instrument reference check
-        if broker and broker_instrument_name and (
-            cfd_instruments
-            and (broker, broker_instrument_name) not in cfd_instruments
+        if (
+            broker
+            and broker_instrument_name
+            and (
+                cfd_instruments
+                and (broker, broker_instrument_name) not in cfd_instruments
+            )
         ):
             errors.append(
                 f"row {row_num}: broker instrument"

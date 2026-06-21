@@ -1950,6 +1950,25 @@ def test_cmd_fetch_unsupported_interval_fails(
     assert "ERROR" in capsys.readouterr().out
 
 
+def test_cmd_fetch_rejects_csv_provider(
+    ma: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    class Args:
+        symbol = "^SPX"
+        start = "2024-01-01"
+        end = "2024-12-31"
+        interval = "d"
+        output = str(tmp_path)
+        no_validate = True
+        provider = "csv"
+        fetch_status = None
+
+    assert ma._cmd_fetch(Args()) == 1
+    assert "ERROR" in capsys.readouterr().out
+
+
 def test_cmd_init_fetch_status_persists_provider(
     ma: ModuleType, tmp_path: Path
 ) -> None:

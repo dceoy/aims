@@ -633,8 +633,13 @@ def test_fmt_feature_numeric_none(gr: ModuleType) -> None:
 
 def test_section_symbol_details_no_reliable(gr: ModuleType) -> None:
     result = gr._section_symbol_details([
-        {"symbol": "BAD", "rank": 1, "score": 20.0, "is_reliable": False,
-         "features": {}},
+        {
+            "symbol": "BAD",
+            "rank": 1,
+            "score": 20.0,
+            "is_reliable": False,
+            "features": {},
+        },
     ])
     assert "No reliable instruments" in result
 

@@ -52,6 +52,38 @@ Data source: **stooq**
 | ^NDX   | 2023-12-28 |
 | ^SPX   | 2024-01-01 |
 
+## Symbol Details
+
+### ^SPX (score 72.5)
+
+| Feature    | Value |
+| ---------- | ----: |
+| ret_1d     | +1.2% |
+| ret_5d     | +3.1% |
+| ret_20d    | +5.3% |
+| ret_60d    | +8.9% |
+| ma20_dist  | +2.1% |
+| ma50_dist  | +1.8% |
+| vol_20d    | 12.7% |
+| mdd_60d    |  3.1% |
+| rsi_14     |  62.0 |
+| zscore_20d |   1.2 |
+
+### ^DJI (score 58.3)
+
+| Feature    | Value |
+| ---------- | ----: |
+| ret_1d     | +0.5% |
+| ret_5d     | +1.5% |
+| ret_20d    | +2.1% |
+| ret_60d    | +4.2% |
+| ma20_dist  | +0.8% |
+| ma50_dist  | +1.2% |
+| vol_20d    |  8.9% |
+| mdd_60d    |  1.8% |
+| rsi_14     |  55.0 |
+| zscore_20d |   0.7 |
+
 ## Methodology
 
 Instruments are scored and ranked cross-sectionally using the following features:

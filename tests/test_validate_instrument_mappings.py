@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,27 +10,12 @@ if TYPE_CHECKING:
 
     from pytest_mock import MockerFixture
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-    / "validate_instrument_mappings.py"
-)
+import aims.mappings as _aims_vim
 
 
 @pytest.fixture(scope="module")
 def vim() -> ModuleType:
-    spec = importlib.util.spec_from_file_location(
-        "validate_instrument_mappings", SCRIPT_PATH
-    )
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load validate_instrument_mappings.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_vim
 
 
 _HEADERS = (

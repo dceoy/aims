@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -11,14 +9,7 @@ import pytest
 if TYPE_CHECKING:
     from types import ModuleType
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-    / "generate_report.py"
-)
+import aims.reports as _aims_reports
 
 FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "analysis_2024-01-01.json"
 GOLDEN_PATH = (
@@ -28,13 +19,7 @@ GOLDEN_PATH = (
 
 @pytest.fixture(scope="module")
 def gr() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("generate_report", SCRIPT_PATH)
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load generate_report.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_reports
 
 
 @pytest.fixture(scope="module")
@@ -602,3 +587,191 @@ def test_generate_report_missing_data_gate(gr: ModuleType) -> None:
     result = gr.generate_report(artifact)
     assert "Missing data" in result
     assert "MISS" in result
+
+
+# ── _format_vol tests ───────────────────────────────────────────────────────────
+
+
+def test_format_vol_none(gr: ModuleType) -> None:
+    assert gr._format_vol(None) == "n/a"
+
+
+def test_format_vol_positive(gr: ModuleType) -> None:
+    assert gr._format_vol(0.127) == "12.7%"
+
+
+def test_format_vol_zero(gr: ModuleType) -> None:
+    assert gr._format_vol(0.0) == "0.0%"
+
+
+# ── _fmt_feature tests ──────────────────────────────────────────────────────────
+
+
+def test_fmt_feature_pct_keys(gr: ModuleType) -> None:
+    for key in ("ret_1d", "ret_5d", "ret_20d", "ret_60d", "ma20_dist", "ma50_dist"):
+        assert gr._fmt_feature(key, 0.05) == "+5.0%"
+        assert gr._fmt_feature(key, None) == "n/a"
+
+
+def test_fmt_feature_vol_keys(gr: ModuleType) -> None:
+    for key in ("vol_20d", "mdd_60d"):
+        assert gr._fmt_feature(key, 0.10) == "10.0%"
+        assert gr._fmt_feature(key, None) == "n/a"
+
+
+def test_fmt_feature_numeric_keys(gr: ModuleType) -> None:
+    assert gr._fmt_feature("rsi_14", 62.0) == "62.0"
+    assert gr._fmt_feature("zscore_20d", 1.2) == "1.2"
+
+
+def test_fmt_feature_numeric_none(gr: ModuleType) -> None:
+    assert gr._fmt_feature("rsi_14", None) == "n/a"
+
+
+# ── _section_symbol_details tests ──────────────────────────────────────────────
+
+
+def test_section_symbol_details_no_reliable(gr: ModuleType) -> None:
+    result = gr._section_symbol_details([
+        {"symbol": "BAD", "rank": 1, "score": 20.0, "is_reliable": False,
+         "features": {}},
+    ])
+    assert "No reliable instruments" in result
+
+
+def test_section_symbol_details_empty(gr: ModuleType) -> None:
+    result = gr._section_symbol_details([])
+    assert "No reliable instruments" in result
+
+
+def test_section_symbol_details_reliable(gr: ModuleType) -> None:
+    instruments = [
+        {
+            "symbol": "AAPL",
+            "rank": 1,
+            "score": 70.0,
+            "is_reliable": True,
+            "features": {
+                "ret_1d": 0.01,
+                "ret_5d": 0.02,
+                "ret_20d": 0.05,
+                "ret_60d": 0.10,
+                "ma20_dist": 0.02,
+                "ma50_dist": 0.01,
+                "vol_20d": 0.10,
+                "mdd_60d": 0.02,
+                "rsi_14": 60.0,
+                "zscore_20d": 1.0,
+            },
+        }
+    ]
+    result = gr._section_symbol_details(instruments)
+    assert "### AAPL (score 70.0)" in result
+    assert "ret_1d" in result
+    assert "+1.0%" in result
+    assert "10.0%" in result
+    assert "60.0" in result
+
+
+def test_section_symbol_details_sorted_by_rank(gr: ModuleType) -> None:
+    instruments = [
+        {
+            "symbol": "B",
+            "rank": 2,
+            "score": 60.0,
+            "is_reliable": True,
+            "features": {},
+        },
+        {
+            "symbol": "A",
+            "rank": 1,
+            "score": 70.0,
+            "is_reliable": True,
+            "features": {},
+        },
+    ]
+    result = gr._section_symbol_details(instruments)
+    assert result.index("### A") < result.index("### B")
+
+
+def test_section_symbol_details_null_features(gr: ModuleType) -> None:
+    instruments = [
+        {
+            "symbol": "X",
+            "rank": 1,
+            "score": 50.0,
+            "is_reliable": True,
+            "features": None,
+        }
+    ]
+    result = gr._section_symbol_details(instruments)
+    assert "n/a" in result
+
+
+# ── delta table in _section_signal_history tests ────────────────────────────────
+
+
+def test_section_signal_history_with_deltas(gr: ModuleType) -> None:
+    history = {
+        "previous_analysis_date": "2023-12-31",
+        "top_k": 3,
+        "instruments": [
+            {
+                "symbol": "^SPX",
+                "new_top_k": False,
+                "consecutive_top_k_reports": 1,
+                "risk_gates_added": [],
+                "risk_gates_removed": [],
+                "rank_delta": -1,
+                "score_delta": 3.5,
+            }
+        ],
+        "dropped_from_top_k": [],
+    }
+    result = gr._section_signal_history(history)
+    assert "^SPX" in result
+    assert "-1" in result
+    assert "+3.5" in result
+    assert "Rank" in result
+    assert "Score" in result
+
+
+def test_section_signal_history_no_deltas(gr: ModuleType) -> None:
+    history = {
+        "previous_analysis_date": "2023-12-31",
+        "top_k": 3,
+        "instruments": [
+            {
+                "symbol": "^SPX",
+                "new_top_k": False,
+                "consecutive_top_k_reports": 1,
+                "risk_gates_added": [],
+                "risk_gates_removed": [],
+            }
+        ],
+        "dropped_from_top_k": [],
+    }
+    result = gr._section_signal_history(history)
+    assert "Rank" not in result or "Rank Δ" not in result
+
+
+def test_section_signal_history_delta_none_rank(gr: ModuleType) -> None:
+    history = {
+        "previous_analysis_date": "2023-12-31",
+        "top_k": 3,
+        "instruments": [
+            {
+                "symbol": "^SPX",
+                "new_top_k": False,
+                "consecutive_top_k_reports": 1,
+                "risk_gates_added": [],
+                "risk_gates_removed": [],
+                "rank_delta": None,
+                "score_delta": 2.0,
+            }
+        ],
+        "dropped_from_top_k": [],
+    }
+    result = gr._section_signal_history(history)
+    assert "n/a" in result
+    assert "+2.0" in result

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
@@ -13,28 +11,14 @@ import pytest
 if TYPE_CHECKING:
     from types import ModuleType
 
-
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-    / "notify_slack.py"
-)
+import aims.notifications as _aims_ns
 
 FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "analysis_2024-01-01.json"
 
 
 @pytest.fixture(scope="module")
 def ns() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("notify_slack", SCRIPT_PATH)
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load notify_slack.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_ns
 
 
 @pytest.fixture(scope="module")

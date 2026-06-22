@@ -1,31 +1,20 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from types import ModuleType
 
-SCRIPT = (
-    Path(__file__).parents[1]
-    / ".agents/skills/market-analysis/scripts/generate_history.py"
-)
+import aims.history as _aims_history
 
 
 @pytest.fixture(scope="module")
 def gh() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("generate_history", SCRIPT)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_history
 
 
 def _artifact(date: str, rows: list[dict[str, Any]]) -> dict[str, Any]:

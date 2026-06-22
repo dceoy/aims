@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-import importlib.util
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -13,14 +12,8 @@ if TYPE_CHECKING:
 
     from pytest_mock import MockerFixture
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "update-cfd-instruments"
-    / "scripts"
-    / "validate_cfd_instruments.py"
-)
+import aims.validate_cfd_instruments as _aims_vcfd
+
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[1]
     / "data"
@@ -62,15 +55,7 @@ ALL_FIELDS = list(VALID_ROW.keys())
 
 @pytest.fixture(scope="module")
 def validator() -> ModuleType:
-    spec = importlib.util.spec_from_file_location(
-        "validate_cfd_instruments", SCRIPT_PATH
-    )
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load validate_cfd_instruments.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_vcfd
 
 
 def write_csv(

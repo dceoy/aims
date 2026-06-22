@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import math
 import sys
@@ -16,25 +15,12 @@ if TYPE_CHECKING:
 
     from pytest_mock import MockerFixture
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-    / "market_analysis.py"
-)
+import aims.market_analysis as _aims_ma
 
 
 @pytest.fixture(scope="module")
 def ma() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("market_analysis", SCRIPT_PATH)
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load market_analysis.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_ma
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -142,7 +128,7 @@ def test_stooq_provider_fetch_ohlcv(ma: ModuleType, mocker: MockerFixture) -> No
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     provider = ma.StooqProvider()
     start = datetime(2024, 1, 1, tzinfo=UTC)
     end = datetime(2024, 1, 31, tzinfo=UTC)
@@ -901,7 +887,7 @@ def test_cmd_fetch_success(
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -925,7 +911,7 @@ def test_cmd_fetch_success(
 def test_cmd_fetch_url_error(
     ma: ModuleType, mocker: MockerFixture, tmp_path: Path
 ) -> None:
-    mocker.patch("market_analysis.urlopen", side_effect=URLError("network error"))
+    mocker.patch("aims.market_analysis.urlopen", side_effect=URLError("network error"))
     mocker.patch.object(
         sys,
         "argv",
@@ -954,7 +940,7 @@ def test_cmd_fetch_no_data(
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -983,7 +969,7 @@ def test_cmd_fetch_no_validate_flag(
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -1016,7 +1002,7 @@ def test_cmd_fetch_reports_quality_issues(
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -1646,7 +1632,7 @@ def test_cmd_init_fetch_status(ma: ModuleType, tmp_path: Path) -> None:
 def test_cmd_fetch_records_failed_status(
     ma: ModuleType, mocker: MockerFixture, tmp_path: Path
 ) -> None:
-    mocker.patch("market_analysis.urlopen", side_effect=URLError("network error"))
+    mocker.patch("aims.market_analysis.urlopen", side_effect=URLError("network error"))
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["FAIL"], interval="d")
 
@@ -1672,7 +1658,7 @@ def test_cmd_fetch_records_success_status(
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["AAPL.US"], interval="d")
 
@@ -1698,7 +1684,7 @@ def test_cmd_fetch_records_empty_result_status(
     mock_resp.read.return_value = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["EMPTY"], interval="d")
 

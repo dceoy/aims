@@ -216,6 +216,8 @@ ignore = [
   "RUF001",  # Japanese fixture text must match source pages
   "RUF069",  # Exact float literals in test assertions are intentional
   "S101",    # Pytest uses assert introspection
+  "S404",    # subprocess import is intentional for entrypoint smoke tests
+  "S603",    # subprocess.run with list arg is safe
   "SLF001",  # Tests intentionally access private implementation members
 ]
 
@@ -230,6 +232,8 @@ max-public-methods = 40
 include = [
   "src/aims",
   "tools",
+  ".agents/skills/market-analysis/scripts",
+  ".agents/skills/update-cfd-instruments/scripts",
 ]
 exclude = ["build", ".venv", ".claude", "tests"]
 extraPaths = ["src"]

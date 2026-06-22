@@ -23,6 +23,13 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/dceoy/aims.git"
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aims"]
+
 [tool.uv]
 package = true
 
@@ -194,6 +201,7 @@ ignore = [
   "D103",     # Missing function docstring
   "DOC201",   # Missing return documentation
   "DOC501",   # Raised exception missing from docstring
+  "INP001",   # Not a package; scripts are thin CLI entrypoints
   "PLR0912",  # Too many branches
   "PLR0915",  # Too many statements
   "RUF001",   # Fullwidth Japanese source strings must match broker pages

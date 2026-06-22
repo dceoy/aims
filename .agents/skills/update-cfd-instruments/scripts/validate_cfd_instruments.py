@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
-from aims.validate_cfd_instruments import main
+from aims.validate_cfd_instruments import main, validate_csv
+
+__all__ = ["main", "validate_csv"]
 
 if __name__ == "__main__":
     main()

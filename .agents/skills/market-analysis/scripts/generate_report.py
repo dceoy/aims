@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import sys
 
-from aims.reports import main
+from aims.reports import generate_report, main, report_filename
+
+__all__ = ["generate_report", "main", "report_filename"]
 
 if __name__ == "__main__":
     sys.exit(main())

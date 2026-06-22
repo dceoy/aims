@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import sys
 
-from aims.history import main
+from aims.history import build_history, main
+
+__all__ = ["build_history", "main"]
 
 if __name__ == "__main__":
     sys.exit(main())

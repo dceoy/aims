@@ -1,7 +1,77 @@
 #!/usr/bin/env python3
-"""Generate and validate Hugo shadow content from AIMS OKF Markdown."""
+"""Backwards-compatible re-export of OKF Hugo adapter from aims.okf_hugo."""
 
-from aims.okf_hugo import main
+from __future__ import annotations
+
+from aims.okf_hugo import (
+    FRONT_MATTER,
+    HUGO_TOP_LEVEL_KEYS,
+    LINK,
+    RECOMMENDED_CONCEPT_FIELDS,
+    RESERVED_NAMES,
+    ROOT_INDEX_ALLOWED_FIELDS,
+    TAG,
+    OkfDocument,
+    OkfYamlLoader,
+    destination_for,
+    dump_yaml,
+    heading_title,
+    hugo_body,
+    hugo_metadata,
+    is_reserved,
+    iter_markdown,
+    load_documents,
+    main,
+    page_url_parts,
+    parse_args,
+    pending_link,
+    relative_hugo_link,
+    render_document,
+    resolve_internal_okf_target,
+    split_front_matter,
+    split_link_target,
+    validate_aims_policy,
+    validate_documents,
+    validate_links,
+    validate_reserved,
+    validate_reserved_or_concept,
+    write_documents,
+)
+
+__all__ = [
+    "FRONT_MATTER",
+    "HUGO_TOP_LEVEL_KEYS",
+    "LINK",
+    "RECOMMENDED_CONCEPT_FIELDS",
+    "RESERVED_NAMES",
+    "ROOT_INDEX_ALLOWED_FIELDS",
+    "TAG",
+    "OkfDocument",
+    "OkfYamlLoader",
+    "destination_for",
+    "dump_yaml",
+    "heading_title",
+    "hugo_body",
+    "hugo_metadata",
+    "is_reserved",
+    "iter_markdown",
+    "load_documents",
+    "main",
+    "page_url_parts",
+    "parse_args",
+    "pending_link",
+    "relative_hugo_link",
+    "render_document",
+    "resolve_internal_okf_target",
+    "split_front_matter",
+    "split_link_target",
+    "validate_aims_policy",
+    "validate_documents",
+    "validate_links",
+    "validate_reserved",
+    "validate_reserved_or_concept",
+    "write_documents",
+]
 
 if __name__ == "__main__":
     raise SystemExit(main())

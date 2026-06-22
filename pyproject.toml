@@ -24,7 +24,7 @@ classifiers = [
 Repository = "https://github.com/dceoy/aims.git"
 
 [tool.uv]
-package = false
+package = true
 
 [tool.pytest.ini_options]
 addopts = [

@@ -54,6 +54,12 @@ def _format_pct(value: float | None) -> str:
     return f"{sign}{value * 100:.1f}%"
 
 
+def _format_vol(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value * 100:.1f}%"
+
+
 def _market_regime(scores: list[float]) -> str:
     if not scores:
         return "Unavailable"
@@ -220,6 +226,32 @@ def _section_signal_history(history: dict[str, Any] | None) -> str:
         lines.append(
             f"- **{row['symbol']} risk gates:** added {added}; removed {removed}"
         )
+
+    delta_rows = [
+        row
+        for row in rows
+        if row.get("rank_delta") is not None or row.get("score_delta") is not None
+    ]
+    if delta_rows:
+        table_rows: list[list[str]] = []
+        for row in sorted(delta_rows, key=lambda r: str(r.get("symbol", ""))):
+            sym = str(row.get("symbol", ""))
+            rank_delta = row.get("rank_delta")
+            score_delta = row.get("score_delta")
+            rank_str = f"{rank_delta:+d}" if isinstance(rank_delta, int) else "n/a"
+            score_str = (
+                f"{score_delta:+.1f}"
+                if isinstance(score_delta, (int, float))
+                else "n/a"
+            )
+            table_rows.append([sym, rank_str, score_str])
+        delta_table = _format_markdown_table(
+            ["Symbol", "Rank Δ", "Score Δ"],
+            table_rows,
+            ["left", "right", "right"],
+        )
+        lines.extend(("", delta_table))
+
     return f"{header}\n\n" + "\n".join(lines)
 
 
@@ -354,6 +386,53 @@ def _section_data_freshness(
     return f"{header}\n\n" + "\n\n".join(parts)
 
 
+_FEATURE_KEYS: Final[tuple[str, ...]] = (
+    "ret_1d",
+    "ret_5d",
+    "ret_20d",
+    "ret_60d",
+    "ma20_dist",
+    "ma50_dist",
+    "vol_20d",
+    "mdd_60d",
+    "rsi_14",
+    "zscore_20d",
+)
+
+
+def _fmt_feature(key: str, value: float | None) -> str:
+    if key in {"ret_1d", "ret_5d", "ret_20d", "ret_60d", "ma20_dist", "ma50_dist"}:
+        return _format_pct(value)
+    if key in {"vol_20d", "mdd_60d"}:
+        return _format_vol(value)
+    if value is None:
+        return "n/a"
+    return f"{value:.1f}"
+
+
+def _section_symbol_details(instruments: list[dict[str, Any]]) -> str:
+    header = "## Symbol Details"
+    reliable = sorted(
+        [i for i in instruments if i.get("is_reliable")],
+        key=lambda i: int(i.get("rank", 0)),
+    )
+    if not reliable:
+        return f"{header}\n\n_No reliable instruments to display._"
+    subsections: list[str] = []
+    for inst in reliable:
+        label = _instrument_label(inst)
+        score = float(inst.get("score", 0))
+        features = inst.get("features") or {}
+        table_rows = [
+            [key, _fmt_feature(key, features.get(key))] for key in _FEATURE_KEYS
+        ]
+        table = _format_markdown_table(
+            ["Feature", "Value"], table_rows, ["left", "right"]
+        )
+        subsections.append(f"### {label} (score {score:.1f})\n\n{table}")
+    return f"{header}\n\n" + "\n\n".join(subsections)
+
+
 def _section_methodology(scoring_version: str, git_commit: str) -> str:
     header = "## Methodology"
     feature_list = (
@@ -439,6 +518,7 @@ def generate_report(
         _section_key_risks(instruments),
         _section_instrument_scores(instruments),
         _section_data_freshness(data_source, freshness),
+        _section_symbol_details(instruments),
         _section_methodology(scoring_version, git_commit),
         _section_disclaimer(),
     ]

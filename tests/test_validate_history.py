@@ -1,31 +1,20 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from types import ModuleType
 
-SCRIPTS = Path(__file__).parents[1] / ".agents/skills/market-analysis/scripts"
+import aims.validate_history as _aims_vh
 
 
 @pytest.fixture(scope="module")
 def vh() -> ModuleType:
-    sys.path.insert(0, str(SCRIPTS))
-    spec = importlib.util.spec_from_file_location(
-        "validate_history", SCRIPTS / "validate_history.py"
-    )
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_vh
 
 
 def _valid() -> dict[str, object]:

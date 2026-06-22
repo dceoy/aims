@@ -42,16 +42,16 @@ Examples: `^SPX` (S&P 500), `^DJI` (Dow Jones), `^NDX` (NASDAQ 100), `^NKX` (Nik
 
 ### Provider registry
 
-AIMS routes market-data fetches through a provider registry defined in `market_analysis.py`. Registered providers:
+AIMS routes market-data fetches through a provider registry defined in `src/aims/market_analysis.py`. Registered providers:
 
-| Provider | Supported intervals | Notes                                    |
-| -------- | ------------------- | ---------------------------------------- |
-| `stooq`  | `d`, `w`, `m`       | Free CSV download; default provider      |
-| `csv`    | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir  |
+| Provider | Supported intervals | Notes                                   |
+| -------- | ------------------- | --------------------------------------- |
+| `stooq`  | `d`, `w`, `m`       | Free CSV download; default provider     |
+| `csv`    | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir |
 
 Pass `--provider <name>` to `init-fetch-status`, `fetch`, or `generate`. The default is `stooq`.
 
-**Adding a future provider:** Subclass `MarketDataProvider` in `market_analysis.py`, register it in `_PROVIDER_REGISTRY` with a `ProviderMetadata` entry listing its supported intervals and any known limitations, and mirror the entry in `validate_instrument_mappings.py`'s `_KNOWN_PROVIDERS` and `_PROVIDER_INTERVALS`. Update the `provider` input choices in `.github/workflows/daily-market-analysis.yml`. Add the new provider to the test suite to maintain 100% coverage.
+**Adding a future provider:** Subclass `MarketDataProvider` in `src/aims/market_analysis.py`, register it in `_PROVIDER_REGISTRY` with a `ProviderMetadata` entry listing its supported intervals and any known limitations, and mirror the entry in `src/aims/mappings.py`'s `_KNOWN_PROVIDERS` and `_PROVIDER_INTERVALS`. Update the `provider` input choices in `.github/workflows/daily-market-analysis.yml`. Add the new provider to the test suite to maintain 100% coverage.
 
 ### CFD instrument master
 
@@ -76,19 +76,19 @@ The master is validated against `data/schema/cfd_instruments.schema.json` after 
 
 `data/mappings/canonical_instrument_mappings.csv` links broker CFD products and provider symbols to a stable canonical identifier and display name shown in reports.
 
-| Column                   | Required | Description                                                       |
-| ------------------------ | -------- | ----------------------------------------------------------------- |
-| `canonical_id`           | Yes      | Stable lowercase identifier, e.g. `spx`                          |
-| `display_name`           | Yes      | Human-readable name shown in reports, e.g. `S&P 500`             |
-| `asset_class`            | Yes      | `equity_index`, `commodity`, etc.                                 |
-| `broker`                 | No       | Broker name; leave blank if no broker link is needed              |
-| `broker_instrument_name` | No       | Broker CFD product name (used for CFD reference validation)       |
-| `broker_ticker_symbol`   | No       | Broker's own ticker symbol                                        |
-| `provider`               | Yes      | Data provider: `stooq` or `csv`                                  |
-| `provider_symbol`        | Yes      | Provider symbol, e.g. `^SPX`                                     |
-| `provider_interval`      | Yes      | Bar interval: `d`, `w`, or `m`                                   |
-| `tradable`               | Yes      | `true` if the instrument is currently tradable at the broker      |
-| `notes`                  | No       | Free-form notes                                                   |
+| Column                   | Required | Description                                                  |
+| ------------------------ | -------- | ------------------------------------------------------------ |
+| `canonical_id`           | Yes      | Stable lowercase identifier, e.g. `spx`                      |
+| `display_name`           | Yes      | Human-readable name shown in reports, e.g. `S&P 500`         |
+| `asset_class`            | Yes      | `equity_index`, `commodity`, etc.                            |
+| `broker`                 | No       | Broker name; leave blank if no broker link is needed         |
+| `broker_instrument_name` | No       | Broker CFD product name (used for CFD reference validation)  |
+| `broker_ticker_symbol`   | No       | Broker's own ticker symbol                                   |
+| `provider`               | Yes      | Data provider: `stooq` or `csv`                              |
+| `provider_symbol`        | Yes      | Provider symbol, e.g. `^SPX`                                 |
+| `provider_interval`      | Yes      | Bar interval: `d`, `w`, or `m`                               |
+| `tradable`               | Yes      | `true` if the instrument is currently tradable at the broker |
+| `notes`                  | No       | Free-form notes                                              |
 
 Multiple rows may share a `canonical_id` — one per (provider, interval, broker) combination. A `(provider, provider_symbol, provider_interval)` triple must map to exactly one `canonical_id`.
 
@@ -103,6 +103,7 @@ uv run .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
 Exits 0 when clean; exits 1 on hard errors (missing columns, unknown provider, unsupported interval, duplicate key). Warnings are printed for tradable CFD entries in `cfd_instruments.csv` that have no mapping row — these are informational and do not block the run.
 
 **Adding a new instrument:**
+
 1. Add one or more rows to `canonical_instrument_mappings.csv` — one per provider/interval combination to analyze, plus one per broker CFD pairing.
 2. Run the validator above to confirm no errors.
 3. Run `uv run pytest` to confirm 100% coverage still holds.
@@ -170,7 +171,7 @@ Instruments that fail quality checks are included in output but marked `is_relia
 | `high_volatility`      | 20-day annualised volatility > 100%                           |
 | `missing_data`         | No price history returned for the symbol                      |
 
-Interval-specific freshness and missing-bar thresholds are defined in `data_quality_policy.py` and recorded in each artifact under `metadata.config`:
+Interval-specific freshness and missing-bar thresholds are defined in `src/aims/policy.py` and recorded in each artifact under `metadata.config`:
 
 | Interval | `stale_days` | `max_gap_days` | `min_history` |
 | -------- | ------------ | -------------- | ------------- |
@@ -210,7 +211,7 @@ The market regime label is derived from the median composite score of reliable i
 
 ### Scoring version
 
-`SCORING_VERSION = "1.0.0"` in `market_analysis.py`. Increment this when the feature set or scoring logic changes in a way that makes old and new scores incomparable.
+`SCORING_VERSION = "1.0.0"` in `src/aims/market_analysis.py`. Increment this when the feature set or scoring logic changes in a way that makes old and new scores incomparable.
 
 ### Assumptions and limitations
 
@@ -355,7 +356,7 @@ Stooq may be temporarily unavailable or the symbol may be invalid. Per-symbol fe
 ERROR: instrument[0] missing required key: 'symbol'
 ```
 
-The generated JSON does not match the expected schema. This usually means a bug in `market_analysis.py`.
+The generated JSON does not match the expected schema. This usually means a bug in `src/aims/market_analysis.py`.
 
 **Fix:** Run the generate step locally, then run `validate_analysis.py` with `--input` to reproduce the error.
 
@@ -377,6 +378,7 @@ WARNING: CFD instrument ('TestBroker', 'US30') has no canonical mapping entry
 ```
 
 Run `validate_instrument_mappings.py` locally to see all errors before committing. Common causes:
+
 - **Unknown provider:** only `stooq` and `csv` are registered. Add the provider to `_PROVIDER_REGISTRY` before using it in a mapping.
 - **Broker/instrument not found in cfd_instruments.csv:** the CFD product has not been fetched yet. Run `update-cfd-instruments` first, or leave the broker columns blank to skip the reference check.
 - **Duplicate provider mapping:** two different `canonical_id` values claim the same `(provider, provider_symbol, provider_interval)` triple. Each provider symbol/interval combination must map to exactly one canonical instrument.
@@ -388,7 +390,7 @@ Reports include a freshness table. Symbols with `n/a` in the freshness column ha
 
 ### 100% test coverage requirement
 
-All new Python scripts in `.agents/skills/market-analysis/scripts/` are included in the pytest coverage check. If you add new code paths, add corresponding tests.
+All implementation modules under `src/aims/` are included in the pytest coverage check. If you add new code paths to `src/aims/`, add corresponding tests.
 
 ---
 

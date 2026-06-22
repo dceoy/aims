@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -5,7 +7,7 @@ from typing import Any
 import pytest
 import yaml
 
-from tools import okf_hugo_adapter
+import aims.okf_hugo as okf_hugo_adapter
 
 
 def write_concept(path: Path, body: str = "# Concept\n") -> None:
@@ -255,3 +257,164 @@ def test_check_rejects_internal_links_that_escape_okf_bundle(
     assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
     captured = capsys.readouterr().err
     assert "unsafe internal link '../../outside.md' escapes OKF bundle" in captured
+
+
+def test_okf_hugo_adapter_tool_help_exits_successfully() -> None:
+    result = subprocess.run(
+        [sys.executable, "tools/okf_hugo_adapter.py", "--help"],
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0
+
+
+def test_split_front_matter_null_yaml_yields_empty_metadata(tmp_path: Path) -> None:
+    f = tmp_path / "null.md"
+    f.write_text("---\n\n---\nbody text\n", encoding="utf-8")
+    metadata, body, has_fm = okf_hugo_adapter.split_front_matter(f)
+    assert metadata == {}
+    assert "body text" in body
+    assert has_fm is True
+
+
+def test_split_front_matter_non_dict_raises(tmp_path: Path) -> None:
+    f = tmp_path / "list.md"
+    f.write_text("---\n- item1\n- item2\n---\nbody\n", encoding="utf-8")
+    with pytest.raises(TypeError, match="front matter must be a YAML mapping"):
+        okf_hugo_adapter.split_front_matter(f)
+
+
+def test_load_documents_captures_yaml_error(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    src.mkdir()
+    (src / "bad.md").write_text("---\n{invalid:\n---\nbody\n", encoding="utf-8")
+    docs, errors = okf_hugo_adapter.load_documents(src, tmp_path / "dst")
+    assert docs == []
+    assert any("YAML front matter does not parse" in e for e in errors)
+
+
+def test_load_documents_captures_type_error(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    src.mkdir()
+    (src / "bad.md").write_text("---\n- item\n---\nbody\n", encoding="utf-8")
+    docs, errors = okf_hugo_adapter.load_documents(src, tmp_path / "dst")
+    assert docs == []
+    assert any("front matter must be a YAML mapping" in e for e in errors)
+
+
+def test_split_link_target_with_anchor() -> None:
+    path_part, suffix = okf_hugo_adapter.split_link_target("./bar.md#section")
+    assert path_part == "./bar.md"
+    assert suffix == "#section"
+
+
+def test_hugo_body_preserves_pending_links(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    write_concept(src / "concepts" / "foo.md", "# Foo\n[Pending](./bar.md#pending)\n")
+    docs, _ = okf_hugo_adapter.load_documents(src, dst)
+    body = okf_hugo_adapter.hugo_body(docs[0], src, dst)
+    assert "./bar.md#pending" in body
+
+
+def test_write_documents_clean_removes_dst(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    write_concept(src / "concepts" / "c.md")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+    stale = dst / "stale.md"
+    stale.write_text("stale", encoding="utf-8")
+    assert stale.exists()
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--clean"]) == 0
+    assert not stale.exists()
+
+
+def test_validate_documents_reports_missing_bundle_index(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    write_concept(src / "concepts" / "c.md")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
+    assert "bundle index is missing" in capsys.readouterr().err
+
+
+def test_validate_concept_without_front_matter(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    (src / "concepts").mkdir()
+    (src / "concepts" / "c.md").write_text("# No front matter\n", encoding="utf-8")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
+    assert "concept requires YAML front matter" in capsys.readouterr().err
+
+
+def test_validate_reserved_log_with_front_matter(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    logs = src / "logs"
+    logs.mkdir()
+    (logs / "log.md").write_text("---\ntitle: Bad\n---\n# Log\n", encoding="utf-8")
+    write_concept(src / "concepts" / "c.md")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
+    assert (
+        "reserved log.md must not have concept front matter" in capsys.readouterr().err
+    )
+
+
+def test_validate_aims_policy_empty_tags(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    (src / "concepts").mkdir()
+    (src / "concepts" / "c.md").write_text(
+        "---\n"
+        "title: C\n"
+        "description: Desc\n"
+        "type: concept\n"
+        "tags: []\n"
+        "timestamp: 2026-01-01T00:00:00Z\n"
+        "---\n"
+        "# C\n",
+        encoding="utf-8",
+    )
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 1
+    assert "tags should be a non-empty list" in capsys.readouterr().err
+
+
+def test_validate_links_skips_external_and_mailto(tmp_path: Path) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    (src / "index.md").write_text("# Knowledge\n", encoding="utf-8")
+    write_concept(
+        src / "concepts" / "c.md",
+        "# C\n[Ext](https://example.com)\n[Mail](mailto:foo@bar.com)\n",
+    )
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 0
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst), "--check"]) == 0
+
+
+def test_main_parse_errors_in_write_mode(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    src = tmp_path / "okf"
+    dst = tmp_path / "dst"
+    src.mkdir()
+    (src / "bad.md").write_text("---\n{invalid:\n---\nbody\n", encoding="utf-8")
+    assert okf_hugo_adapter.main(["--src", str(src), "--dst", str(dst)]) == 1
+    assert "YAML front matter does not parse" in capsys.readouterr().err

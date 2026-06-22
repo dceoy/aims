@@ -1,40 +1,23 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-import sys
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from types import ModuleType
 
-SCRIPTS = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-)
+import aims.backtest as _aims_bt
+import aims.market_analysis as _aims_ma
 
 
 @pytest.fixture(scope="module")
 def modules() -> tuple[ModuleType, ModuleType]:
-    sys.path.insert(0, str(SCRIPTS))
-    loaded = []
-    for name in ("market_analysis", "backtest"):
-        spec = importlib.util.spec_from_file_location(name, SCRIPTS / f"{name}.py")
-        assert spec is not None
-        assert spec.loader is not None
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[name] = module
-        spec.loader.exec_module(module)
-        loaded.append(module)
-    return loaded[0], loaded[1]
+    return _aims_ma, _aims_bt
 
 
 def _bars(ma: ModuleType, symbol: str, slope: float, count: int = 70) -> list[object]:

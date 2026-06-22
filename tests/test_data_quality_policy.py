@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
-import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,25 +7,12 @@ import pytest
 if TYPE_CHECKING:
     from types import ModuleType
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-    / "data_quality_policy.py"
-)
+import aims.policy as _aims_policy
 
 
 @pytest.fixture(scope="module")
 def policy() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("data_quality_policy", SCRIPT_PATH)
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load data_quality_policy.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_policy
 
 
 def test_daily_thresholds(policy: ModuleType) -> None:

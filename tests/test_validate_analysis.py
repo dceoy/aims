@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -13,25 +12,12 @@ if TYPE_CHECKING:
 
     from pytest_mock import MockerFixture
 
-SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / ".agents"
-    / "skills"
-    / "market-analysis"
-    / "scripts"
-    / "validate_analysis.py"
-)
+import aims.validate_analysis as _aims_va
 
 
 @pytest.fixture(scope="module")
 def va() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("validate_analysis", SCRIPT_PATH)
-    if spec is None or spec.loader is None:
-        pytest.fail("Failed to load validate_analysis.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _aims_va
 
 
 VALID_INSTRUMENT: dict[str, Any] = {

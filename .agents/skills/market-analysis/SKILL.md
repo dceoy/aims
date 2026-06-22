@@ -51,7 +51,7 @@ Send a Slack notification (success or failure) via an incoming webhook. Reads `S
 
 ### `data_quality_policy.py`
 
-Single source of truth for interval-specific freshness and missing-bar thresholds (`d` / `w` / `m`) and workflow coverage fail gates.
+Compatibility shim — re-exports all public symbols from `src/aims/policy.py`. The implementation source of truth is `aims.policy`.
 
 ## Usage
 
@@ -186,7 +186,7 @@ Instruments failing quality checks are included in output but marked
 | `high_volatility`      | 20-day annualized volatility > 100%                           |
 | `missing_data`         | No price history available for the symbol                     |
 
-Interval thresholds and coverage policy defaults are defined in `data_quality_policy.py`. The `generate` command exits with a non-zero status when coverage gates fail, preventing publication and success Slack notifications while still writing an artifact for local inspection when some symbols loaded successfully.
+Interval thresholds and coverage policy defaults are defined in `src/aims/policy.py`. The `generate` command exits with a non-zero status when coverage gates fail, preventing publication and success Slack notifications while still writing an artifact for local inspection when some symbols loaded successfully.
 
 In the daily workflow, coverage is derived from `data/prices/fetch_status_<interval>.json`, which records per-symbol fetch outcomes for the current run. Pass this file to `generate --fetch-status` so pre-existing price CSVs cannot mask fetch failures. `generate` rejects fetch-status files whose `interval` or `analysis_date` conflict with the current run.
 

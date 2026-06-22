@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository combines Python automation scripts with a Hugo static site. Core scripts live under `.agents/skills/`, especially `market-analysis/scripts/` and `update-cfd-instruments/scripts/`. Tests and fixtures are in `tests/`, with golden report output in `tests/golden/`. Data files and JSON schemas are in `data/` and `data/schema/`. Hugo content, archetypes, and configuration live in `content/`, `archetypes/`, and `config/_default/`; the generated site is written to the ignored `site/` directory.
+This repository combines a Python package, automation scripts, and a Hugo static site. Reusable implementation logic lives in `src/aims/` (the `aims` package). Agent skill scripts under `.agents/skills/`, especially `market-analysis/scripts/` and `update-cfd-instruments/scripts/`, are thin CLI wrappers that delegate to `src/aims/`. Tests and fixtures are in `tests/`, with golden report output in `tests/golden/`. Data files and JSON schemas are in `data/` and `data/schema/`. Hugo content, archetypes, and configuration live in `content/`, `archetypes/`, and `config/_default/`; the generated site is written to the ignored `site/` directory.
 
 ## Build, Test, and Development Commands
 
@@ -10,7 +10,7 @@ This repository combines Python automation scripts with a Hugo static site. Core
 - `uv run pytest`: run the Python test suite with branch coverage.
 - `uv run ruff format .`: format Python files.
 - `uv run ruff check --fix .`: lint and apply safe Ruff fixes.
-- `uv run pyright .`: run strict type checks for skill scripts and `tools/`.
+- `uv run pyright .`: run strict type checks for `src/aims/`, agent skill scripts, and `tools/`.
 - `hugo --gc --minify`: build the static site (requires Go for Hugo Modules).
 - `hugo server --buildDrafts`: preview the site locally, including draft posts.
 - `.agents/skills/local-qa/scripts/qa.sh`: run the full local QA workflow used by contributors.
@@ -21,7 +21,7 @@ Python targets 3.11 through 3.13. Ruff enforces 88-character lines, Google-style
 
 ## Testing Guidelines
 
-Pytest is configured in `pyproject.toml` and requires 100% branch coverage for the script directories under `.agents/skills/`. Add or update fixtures in `tests/fixtures/` and golden output in `tests/golden/` when changing report generation or parser behavior. Validate CFD data with:
+Pytest is configured in `pyproject.toml` and requires 100% branch coverage for all modules under `src/aims/`. Add or update fixtures in `tests/fixtures/` and golden output in `tests/golden/` when changing report generation or parser behavior. Validate CFD data with:
 
 ```bash
 uv run python .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py --input data/cfd_instruments.csv --schema data/schema/cfd_instruments.schema.json

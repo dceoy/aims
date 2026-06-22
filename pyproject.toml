@@ -23,22 +23,25 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/dceoy/aims.git"
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aims"]
+
 [tool.uv]
-package = false
+package = true
 
 [tool.pytest.ini_options]
 addopts = [
-  "--cov=.agents/skills/update-cfd-instruments/scripts",
-  "--cov=.agents/skills/market-analysis/scripts",
+  "--cov=src/aims",
   "--cov-branch",
   "--cov-report=term-missing",
   "--cov-fail-under=100",
 ]
 testpaths = ["tests"]
-pythonpath = [
-  ".agents/skills/market-analysis/scripts",
-  ".agents/skills/update-cfd-instruments/scripts",
-]
+pythonpath = ["src"]
 
 [tool.coverage.run]
 branch = true
@@ -147,6 +150,28 @@ ignore = [
   "T201",
 ]
 "tools/__init__.py" = ["D104"]
+"src/aims/*.py" = [
+  "C901",     # Scoring/feature functions have inherent complexity
+  "D100",     # Module docstrings are in the module-level string
+  "D101",     # Class docstrings suppressed for brevity
+  "D102",     # Method docstrings suppressed for brevity
+  "D103",     # Function docstrings suppressed for brevity
+  "D107",     # __init__ docstrings suppressed for brevity
+  "DOC201",   # Return docs omitted in favour of type annotations
+  "DOC501",   # Raised exceptions documented inline
+  "INP001",   # Package __init__.py is covered by D104; scripts use this too
+  "PLR0911",  # Fail-fast functions have many early-return exit points
+  "PLR0912",  # Feature/scoring functions can have many branches
+  "PLR0914",  # Local variable count is dominated by feature columns
+  "PLR0915",  # Main analysis scripts can have many statements
+  "PLR2004",  # Magic values are intrinsic to financial formulae
+  "RUF001",   # Fullwidth Japanese source strings must match broker pages
+  "S310",     # urllib fetch is intentional for Stooq data download
+  "S404",     # subprocess import is intentional for git commit lookup
+  "S603",     # subprocess.run with list arg is safe
+  "S607",     # git partial path is intentional
+  "T201",     # CLI status output via print is intentional
+]
 ".agents/skills/market-analysis/scripts/*.py" = [
   "C901",     # Scoring/feature functions have inherent complexity
   "D100",     # Module docstrings are in the module-level string
@@ -176,6 +201,7 @@ ignore = [
   "D103",     # Missing function docstring
   "DOC201",   # Missing return documentation
   "DOC501",   # Raised exception missing from docstring
+  "INP001",   # Not a package; scripts are thin CLI entrypoints
   "PLR0912",  # Too many branches
   "PLR0915",  # Too many statements
   "RUF001",   # Fullwidth Japanese source strings must match broker pages
@@ -190,6 +216,8 @@ ignore = [
   "RUF001",  # Japanese fixture text must match source pages
   "RUF069",  # Exact float literals in test assertions are intentional
   "S101",    # Pytest uses assert introspection
+  "S404",    # subprocess import is intentional for entrypoint smoke tests
+  "S603",    # subprocess.run with list arg is safe
   "SLF001",  # Tests intentionally access private implementation members
 ]
 
@@ -202,11 +230,13 @@ max-public-methods = 40
 
 [tool.pyright]
 include = [
-  ".agents/skills/update-cfd-instruments/scripts",
-  ".agents/skills/market-analysis/scripts",
+  "src/aims",
   "tools",
+  ".agents/skills/market-analysis/scripts",
+  ".agents/skills/update-cfd-instruments/scripts",
 ]
 exclude = ["build", ".venv", ".claude", "tests"]
+extraPaths = ["src"]
 venvPath = "."
 venv = ".venv"
 typeCheckingMode = "strict"

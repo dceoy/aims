@@ -27,7 +27,7 @@ import subprocess
 import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Final
 from urllib.error import URLError
@@ -450,9 +450,10 @@ class YahooFinanceProvider(MarketDataProvider):
         df = yf.download(
             symbol,
             start=start.date().isoformat(),
-            end=end.date().isoformat(),
+            end=(end + timedelta(days=1)).date().isoformat(),
             interval=yf_interval,
             auto_adjust=True,
+            multi_level_index=False,
             progress=False,
         )
         return self._parse_dataframe(df, symbol, interval)

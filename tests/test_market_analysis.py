@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.error import URLError
 
+import pandas as pd
 import pytest
 
 if TYPE_CHECKING:
@@ -1955,11 +1956,7 @@ def test_make_provider_yfinance(ma: ModuleType) -> None:
 # ── YahooFinanceProvider ──────────────────────────────────────────────────────
 
 
-def test_yfinance_provider_fetch_ohlcv(
-    ma: ModuleType, mocker: MockerFixture
-) -> None:
-    import pandas as pd
-
+def test_yfinance_provider_fetch_ohlcv(ma: ModuleType, mocker: MockerFixture) -> None:
     df = pd.DataFrame(
         {
             "Open": [100.0],
@@ -1984,8 +1981,6 @@ def test_yfinance_provider_fetch_ohlcv(
 def test_yfinance_provider_empty_dataframe(
     ma: ModuleType, mocker: MockerFixture
 ) -> None:
-    import pandas as pd
-
     df = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
     df.index = pd.to_datetime([])
     mocker.patch("aims.market_analysis.yf.download", return_value=df)
@@ -2004,11 +1999,7 @@ def test_yfinance_provider_unsupported_interval(ma: ModuleType) -> None:
         provider.fetch_ohlcv("^GSPC", start, end, interval="1h")
 
 
-def test_yfinance_provider_nan_values(
-    ma: ModuleType, mocker: MockerFixture
-) -> None:
-    import pandas as pd
-
+def test_yfinance_provider_nan_values(ma: ModuleType, mocker: MockerFixture) -> None:
     df = pd.DataFrame(
         {
             "Open": [float("nan")],

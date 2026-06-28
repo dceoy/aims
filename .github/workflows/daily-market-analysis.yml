@@ -37,9 +37,10 @@ on:
       provider:
         description: "Market data provider"
         required: false
-        default: stooq
+        default: yfinance
         type: choice
         options:
+          - yfinance
           - stooq
 permissions:
   contents: read
@@ -55,7 +56,7 @@ jobs:
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
       MIN_SUCCESS_RATIO: ${{ inputs.min_success_ratio || '0.8' }}
       MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '1' }}
-      PROVIDER: ${{ inputs.provider || 'stooq' }}
+      PROVIDER: ${{ inputs.provider || 'yfinance' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
@@ -81,15 +82,16 @@ jobs:
       - name: Load symbols
         id: symbols
         run: |
-          if [ -f data/stooq_symbols.txt ]; then
-            SYMBOLS=$(grep -v '^[[:space:]]*#' data/stooq_symbols.txt \
+          SYMBOLS_FILE="data/${PROVIDER}_symbols.txt"
+          if [ -f "$SYMBOLS_FILE" ]; then
+            SYMBOLS=$(grep -v '^[[:space:]]*#' "$SYMBOLS_FILE" \
               | grep -v '^[[:space:]]*$' | tr '\n' ',' | sed 's/,$//')
           else
             SYMBOLS=""
           fi
           echo "symbols=$SYMBOLS" >> "$GITHUB_OUTPUT"
           if [ -z "$SYMBOLS" ]; then
-            echo "WARNING: data/stooq_symbols.txt is empty or missing; skipping fetch."
+            echo "WARNING: ${SYMBOLS_FILE} is empty or missing; skipping fetch."
           fi
       - name: Fetch market data
         if: steps.symbols.outputs.symbols != ''

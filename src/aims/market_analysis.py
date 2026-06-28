@@ -22,6 +22,7 @@ import argparse
 import csv
 import io
 import json
+import math
 import subprocess
 import sys
 from abc import ABC, abstractmethod
@@ -31,6 +32,8 @@ from pathlib import Path
 from typing import Any, Final
 from urllib.error import URLError
 from urllib.request import urlopen
+
+import yfinance as yf
 
 from aims.policy import (
     DEFAULT_COVERAGE_POLICY,
@@ -46,7 +49,7 @@ from aims.policy import (
 _DEFAULT_PRICES_DIR: Final[Path] = Path("data/prices")
 _DEFAULT_ANALYSIS_DIR: Final[Path] = Path("data/analysis")
 _DEFAULT_INTERVAL: Final[str] = "d"
-_DEFAULT_PROVIDER: Final[str] = "stooq"
+_DEFAULT_PROVIDER: Final[str] = "yfinance"
 _DAILY_POLICY = get_data_quality_policy(_DEFAULT_INTERVAL)
 _STALE_DAYS: Final[int] = _DAILY_POLICY.thresholds.stale_days
 _MIN_HISTORY: Final[int] = _DAILY_POLICY.thresholds.min_history
@@ -127,9 +130,28 @@ CSV_METADATA: Final[ProviderMetadata] = ProviderMetadata(
     ),
 )
 
+YFINANCE_METADATA: Final[ProviderMetadata] = ProviderMetadata(
+    name="yfinance",
+    supported_intervals=("d", "w", "m"),
+    symbol_format_notes=(
+        "Yahoo Finance symbol format: e.g. 'AAPL', '^GSPC', '^N225'."
+        " Index symbols use the '^' prefix."
+    ),
+    timezone_notes=(
+        "Timestamps normalized to UTC midnight."
+        " Bar date reflects the exchange close date."
+    ),
+    known_limitations=(
+        "Daily, weekly, and monthly bars only — no intraday data."
+        " Data availability and history depth vary by symbol."
+        " Requires outbound network access."
+    ),
+)
+
 _PROVIDER_REGISTRY: Final[dict[str, ProviderMetadata]] = {
     "stooq": STOOQ_METADATA,
     "csv": CSV_METADATA,
+    "yfinance": YFINANCE_METADATA,
 }
 
 KNOWN_PROVIDERS: Final[frozenset[str]] = frozenset(_PROVIDER_REGISTRY.keys())
@@ -300,6 +322,15 @@ class DataQualityReport:
 # ── Providers ─────────────────────────────────────────────────────────────────
 
 
+def _safe_float(val: object) -> float:
+    """Return float(*val*) or 0.0 for None, NaN, and non-numeric values."""
+    try:
+        f = float(val)  # type: ignore[arg-type]
+        return 0.0 if math.isnan(f) else f
+    except (ValueError, TypeError):
+        return 0.0
+
+
 class MarketDataProvider(ABC):
     """Abstract base class for OHLCV market data providers."""
 
@@ -392,6 +423,64 @@ class CsvFileProvider(MarketDataProvider):
         return [b for b in all_bars if start <= b.timestamp <= end]
 
 
+class YahooFinanceProvider(MarketDataProvider):
+    """Provider backed by Yahoo Finance via the yfinance library.
+
+    Limitations:
+        - Daily / weekly / monthly bars only (no intraday).
+        - Symbol format is Yahoo Finance specific: e.g. 'AAPL', '^GSPC', '^N225'.
+        - Requires outbound network access — not suitable for unit tests.
+          Use CsvFileProvider for deterministic testing.
+    """
+
+    _INTERVAL_MAP: Final[dict[str, str]] = {"d": "1d", "w": "1wk", "m": "1mo"}
+    _SOURCE: Final[str] = "yfinance"
+
+    def fetch_ohlcv(
+        self,
+        symbol: str,
+        start: datetime,
+        end: datetime,
+        interval: str = _DEFAULT_INTERVAL,
+    ) -> list[OhlcvBar]:
+        yf_interval = self._INTERVAL_MAP.get(interval)
+        if yf_interval is None:
+            msg = f"unsupported interval {interval!r} for yfinance provider"
+            raise ValueError(msg)
+        df = yf.download(
+            symbol,
+            start=start.date().isoformat(),
+            end=end.date().isoformat(),
+            interval=yf_interval,
+            auto_adjust=True,
+            progress=False,
+        )
+        return self._parse_dataframe(df, symbol, interval)
+
+    def _parse_dataframe(
+        self,
+        df: Any,
+        symbol: str,
+        interval: str,
+    ) -> list[OhlcvBar]:
+        bars: list[OhlcvBar] = []
+        for ts, row in df.iterrows():
+            bars.append(
+                OhlcvBar(
+                    symbol=symbol,
+                    timestamp=datetime(ts.year, ts.month, ts.day, tzinfo=UTC),
+                    open=_safe_float(row.get("Open", 0)),
+                    high=_safe_float(row.get("High", 0)),
+                    low=_safe_float(row.get("Low", 0)),
+                    close=_safe_float(row.get("Close", 0)),
+                    volume=_safe_float(row.get("Volume", 0)),
+                    source=self._SOURCE,
+                    interval=interval,
+                )
+            )
+        return sorted(bars, key=lambda b: b.timestamp)
+
+
 def make_provider(
     name: str,
     data_dir: Path = _DEFAULT_PRICES_DIR,
@@ -399,6 +488,8 @@ def make_provider(
     """Instantiate a provider by registry name."""
     if name == "stooq":
         return StooqProvider()
+    if name == "yfinance":
+        return YahooFinanceProvider()
     if name == "csv":
         return CsvFileProvider(data_dir)
     known = ", ".join(sorted(KNOWN_PROVIDERS))

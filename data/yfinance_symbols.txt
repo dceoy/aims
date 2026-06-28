@@ -1,0 +1,14 @@
+# Yahoo Finance symbols for daily market analysis
+# One symbol per line; blank lines and lines starting with # are ignored.
+# Yahoo Finance symbol format reference: https://finance.yahoo.com/
+#
+# Common index symbols:
+#   US:  ^GSPC (S&P 500), ^DJI (Dow Jones), ^NDX (NASDAQ 100)
+#   JP:  ^N225 (Nikkei 225)
+#   EU:  ^GDAXI (DAX)
+#
+^GSPC
+^DJI
+^NDX
+^N225
+^GDAXI

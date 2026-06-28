@@ -38,11 +38,12 @@ _REQUIRED_NON_EMPTY: Final[frozenset[str]] = frozenset({
     "provider_interval",
 })
 
-_KNOWN_PROVIDERS: Final[frozenset[str]] = frozenset({"stooq", "csv"})
+_KNOWN_PROVIDERS: Final[frozenset[str]] = frozenset({"stooq", "csv", "yfinance"})
 
 _PROVIDER_INTERVALS: Final[dict[str, frozenset[str]]] = {
     "stooq": frozenset({"d", "w", "m"}),
     "csv": frozenset({"d", "w", "m"}),
+    "yfinance": frozenset({"d", "w", "m"}),
 }
 
 

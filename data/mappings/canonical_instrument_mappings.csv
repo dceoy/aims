@@ -14,3 +14,18 @@ nkx,Nikkei 225,equity_index,GMOクリック証券,日本225,NK,stooq,^NKX,m,true
 dax,DAX,equity_index,GMOクリック証券,ドイツ40,FDAX,stooq,^DAX,d,true,GMO CFD tracks DAX futures (FDAX/EUREX); Stooq ^DAX is the cash index
 dax,DAX,equity_index,楽天証券,ドイツ40,FDAX,stooq,^DAX,w,true,Rakuten CFD tracks DAX futures; weekly interval mapping
 dax,DAX,equity_index,GMOクリック証券,ドイツ40,FDAX,stooq,^DAX,m,true,Monthly interval mapping for DAX
+spx,S&P 500,equity_index,GMOクリック証券,米国S500,ES,yfinance,^GSPC,d,true,Yahoo Finance ^GSPC is the S&P 500 cash index
+spx,S&P 500,equity_index,楽天証券,米国500,ES,yfinance,^GSPC,w,true,Yahoo Finance ^GSPC weekly interval mapping
+spx,S&P 500,equity_index,GMOクリック証券,米国S500,ES,yfinance,^GSPC,m,true,Yahoo Finance ^GSPC monthly interval mapping
+dji,Dow Jones Industrial Average,equity_index,GMOクリック証券,米国30,YM,yfinance,^DJI,d,true,Yahoo Finance ^DJI is the Dow Jones cash index
+dji,Dow Jones Industrial Average,equity_index,楽天証券,米国30,YM,yfinance,^DJI,w,true,Yahoo Finance ^DJI weekly interval mapping
+dji,Dow Jones Industrial Average,equity_index,GMOクリック証券,米国30,YM,yfinance,^DJI,m,true,Yahoo Finance ^DJI monthly interval mapping
+ndx,NASDAQ 100,equity_index,GMOクリック証券,米国NQ100,NQ,yfinance,^NDX,d,true,Yahoo Finance ^NDX is the NASDAQ 100 cash index
+ndx,NASDAQ 100,equity_index,楽天証券,米国NQ100,NQ,yfinance,^NDX,w,true,Yahoo Finance ^NDX weekly interval mapping
+ndx,NASDAQ 100,equity_index,GMOクリック証券,米国NQ100,NQ,yfinance,^NDX,m,true,Yahoo Finance ^NDX monthly interval mapping
+nkx,Nikkei 225,equity_index,GMOクリック証券,日本225,NK,yfinance,^N225,d,true,Yahoo Finance ^N225 is the Nikkei 225 cash index
+nkx,Nikkei 225,equity_index,楽天証券,日本225,NKD,yfinance,^N225,w,true,Yahoo Finance ^N225 weekly interval mapping
+nkx,Nikkei 225,equity_index,GMOクリック証券,日本225,NK,yfinance,^N225,m,true,Yahoo Finance ^N225 monthly interval mapping
+dax,DAX,equity_index,GMOクリック証券,ドイツ40,FDAX,yfinance,^GDAXI,d,true,Yahoo Finance ^GDAXI is the DAX cash index
+dax,DAX,equity_index,楽天証券,ドイツ40,FDAX,yfinance,^GDAXI,w,true,Yahoo Finance ^GDAXI weekly interval mapping
+dax,DAX,equity_index,GMOクリック証券,ドイツ40,FDAX,yfinance,^GDAXI,m,true,Yahoo Finance ^GDAXI monthly interval mapping

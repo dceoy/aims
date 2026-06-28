@@ -902,6 +902,8 @@ def test_cmd_fetch_success(
             "2024-01-31",
             "--output",
             str(tmp_path),
+            "--provider",
+            "stooq",
         ],
     )
     result = ma.main()
@@ -926,6 +928,8 @@ def test_cmd_fetch_url_error(
             "2024-01-31",
             "--output",
             str(tmp_path),
+            "--provider",
+            "stooq",
         ],
     )
     result = ma.main()
@@ -955,6 +959,8 @@ def test_cmd_fetch_no_data(
             "2024-01-31",
             "--output",
             str(tmp_path),
+            "--provider",
+            "stooq",
         ],
     )
     result = ma.main()
@@ -985,6 +991,8 @@ def test_cmd_fetch_no_validate_flag(
             "--output",
             str(tmp_path),
             "--no-validate",
+            "--provider",
+            "stooq",
         ],
     )
     result = ma.main()
@@ -1017,6 +1025,8 @@ def test_cmd_fetch_reports_quality_issues(
             "2020-01-31",
             "--output",
             str(tmp_path),
+            "--provider",
+            "stooq",
         ],
     )
     result = ma.main()
@@ -1644,6 +1654,7 @@ def test_cmd_fetch_records_failed_status(
         output = str(tmp_path)
         no_validate = True
         fetch_status = str(status_path)
+        provider = "stooq"
 
     assert ma._cmd_fetch(Args()) == 1
     status = ma.load_fetch_status(status_path)
@@ -1670,6 +1681,7 @@ def test_cmd_fetch_records_success_status(
         output = str(tmp_path)
         no_validate = True
         fetch_status = str(status_path)
+        provider = "stooq"
 
     assert ma._cmd_fetch(Args()) == 0
     status = ma.load_fetch_status(status_path)
@@ -1696,6 +1708,7 @@ def test_cmd_fetch_records_empty_result_status(
         output = str(tmp_path)
         no_validate = True
         fetch_status = str(status_path)
+        provider = "stooq"
 
     assert ma._cmd_fetch(Args()) == 1
     status = ma.load_fetch_status(status_path)
@@ -1870,10 +1883,11 @@ def test_main_routes_init_fetch_status(ma: ModuleType, mocker: MockerFixture) ->
 def test_known_providers_includes_stooq_and_csv(ma: ModuleType) -> None:
     assert "stooq" in ma.KNOWN_PROVIDERS
     assert "csv" in ma.KNOWN_PROVIDERS
+    assert "yfinance" in ma.KNOWN_PROVIDERS
 
 
-def test_default_provider_is_stooq(ma: ModuleType) -> None:
-    assert ma._DEFAULT_PROVIDER == "stooq"
+def test_default_provider_is_yfinance(ma: ModuleType) -> None:
+    assert ma._DEFAULT_PROVIDER == "yfinance"
 
 
 def test_provider_metadata_stooq(ma: ModuleType) -> None:
@@ -1915,6 +1929,121 @@ def test_make_provider_csv(ma: ModuleType, tmp_path: Path) -> None:
 def test_make_provider_unknown_raises(ma: ModuleType) -> None:
     with pytest.raises(ValueError, match="unknown provider"):
         ma.make_provider("bloomberg")
+
+
+def test_provider_metadata_yfinance(ma: ModuleType) -> None:
+    meta = ma.get_provider_metadata("yfinance")
+    assert meta.name == "yfinance"
+    assert "d" in meta.supported_intervals
+    assert "w" in meta.supported_intervals
+    assert "m" in meta.supported_intervals
+
+
+def test_validate_provider_interval_yfinance_d(ma: ModuleType) -> None:
+    ma.validate_provider_interval("yfinance", "d")  # must not raise
+
+
+def test_validate_provider_interval_yfinance_unsupported(ma: ModuleType) -> None:
+    with pytest.raises(ValueError, match="does not support interval"):
+        ma.validate_provider_interval("yfinance", "1h")
+
+
+def test_make_provider_yfinance(ma: ModuleType) -> None:
+    assert isinstance(ma.make_provider("yfinance"), ma.YahooFinanceProvider)
+
+
+# ── YahooFinanceProvider ──────────────────────────────────────────────────────
+
+
+def test_yfinance_provider_fetch_ohlcv(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    import pandas as pd
+
+    df = pd.DataFrame(
+        {
+            "Open": [100.0],
+            "High": [110.0],
+            "Low": [90.0],
+            "Close": [105.0],
+            "Volume": [1000.0],
+        },
+        index=pd.to_datetime(["2024-01-02"]),
+    )
+    mocker.patch("aims.market_analysis.yf.download", return_value=df)
+    provider = ma.YahooFinanceProvider()
+    start = datetime(2024, 1, 1, tzinfo=UTC)
+    end = datetime(2024, 1, 31, tzinfo=UTC)
+    bars = provider.fetch_ohlcv("^GSPC", start, end)
+    assert len(bars) == 1
+    assert bars[0].close == 105.0
+    assert bars[0].source == "yfinance"
+    assert bars[0].timestamp == datetime(2024, 1, 2, tzinfo=UTC)
+
+
+def test_yfinance_provider_empty_dataframe(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    import pandas as pd
+
+    df = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+    df.index = pd.to_datetime([])
+    mocker.patch("aims.market_analysis.yf.download", return_value=df)
+    provider = ma.YahooFinanceProvider()
+    start = datetime(2024, 1, 1, tzinfo=UTC)
+    end = datetime(2024, 1, 31, tzinfo=UTC)
+    bars = provider.fetch_ohlcv("^GSPC", start, end)
+    assert bars == []
+
+
+def test_yfinance_provider_unsupported_interval(ma: ModuleType) -> None:
+    provider = ma.YahooFinanceProvider()
+    start = datetime(2024, 1, 1, tzinfo=UTC)
+    end = datetime(2024, 1, 31, tzinfo=UTC)
+    with pytest.raises(ValueError, match="unsupported interval"):
+        provider.fetch_ohlcv("^GSPC", start, end, interval="1h")
+
+
+def test_yfinance_provider_nan_values(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    import pandas as pd
+
+    df = pd.DataFrame(
+        {
+            "Open": [float("nan")],
+            "High": [110.0],
+            "Low": [90.0],
+            "Close": [105.0],
+            "Volume": [1000.0],
+        },
+        index=pd.to_datetime(["2024-01-02"]),
+    )
+    mocker.patch("aims.market_analysis.yf.download", return_value=df)
+    provider = ma.YahooFinanceProvider()
+    start = datetime(2024, 1, 1, tzinfo=UTC)
+    end = datetime(2024, 1, 31, tzinfo=UTC)
+    bars = provider.fetch_ohlcv("^GSPC", start, end)
+    assert bars[0].open == 0.0
+
+
+# ── _safe_float ───────────────────────────────────────────────────────────────
+
+
+def test_safe_float_normal_value(ma: ModuleType) -> None:
+    assert ma._safe_float(42.5) == 42.5
+
+
+def test_safe_float_nan(ma: ModuleType) -> None:
+    assert ma._safe_float(float("nan")) == 0.0
+
+
+def test_safe_float_none(ma: ModuleType) -> None:
+    assert ma._safe_float(None) == 0.0
+
+
+def test_safe_float_non_numeric(ma: ModuleType) -> None:
+    assert ma._safe_float("not a number") == 0.0
 
 
 def test_cmd_fetch_unsupported_interval_fails(

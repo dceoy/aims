@@ -331,10 +331,11 @@ The `daily-market-analysis.yml` workflow uses:
 | `contents: read`       | Workflow-level default | Checkout                                    |
 
 The `ci.yml` workflow adds:
-| Permission | Scope | Reason |
-| ---------- | ----- | ------ |
+
+| Permission        | Scope                         | Reason                          |
+| ----------------- | ----------------------------- | ------------------------------- |
 | `id-token: write` | `hugo-deploy-to-gh-pages` job | OIDC token for Pages deployment |
-| `pages: write` | `hugo-deploy-to-gh-pages` job | Deploy to GitHub Pages |
+| `pages: write`    | `hugo-deploy-to-gh-pages` job | Deploy to GitHub Pages          |
 
 ---
 

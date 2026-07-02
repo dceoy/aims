@@ -169,10 +169,8 @@ def validate_mappings(
             for row in reader:
                 b = row.get("broker", "").strip()
                 n = row.get("broker_instrument_name", "").strip()
-                t = row.get("tradable", "").strip().lower()
                 if b and n:
                     mapped_broker_instruments.add((b, n))
-                _ = t
         unmapped = cfd_instruments - mapped_broker_instruments
         for broker, name in sorted(unmapped):
             warnings.append(

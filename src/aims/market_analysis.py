@@ -886,13 +886,15 @@ def _collect_risk_gates(
     gates: list[str] = []
     for issue in report.issues:
         if "stale" in issue:
-            gates.append(RISK_GATE_STALE)
+            gate = RISK_GATE_STALE
         elif "insufficient" in issue:
-            gates.append(RISK_GATE_INSUFFICIENT)
+            gate = RISK_GATE_INSUFFICIENT
         elif "missing" in issue or "gap" in issue:
-            gates.append(RISK_GATE_MISSING_BARS)
+            gate = RISK_GATE_MISSING_BARS
         else:
-            gates.append(RISK_GATE_MALFORMED)
+            gate = RISK_GATE_MALFORMED
+        if gate not in gates:
+            gates.append(gate)
     if features.vol_20d is not None and features.vol_20d > _HIGH_VOL_THRESHOLD:
         gates.append(RISK_GATE_HIGH_VOL)
     return gates

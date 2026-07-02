@@ -89,7 +89,6 @@ def _build_front_matter(
     reliable_scores = [float(i["score"]) for i in reliable if "score" in i]
     regime = _market_regime(reliable_scores)
     n_reliable = len(reliable)
-    total = len(instruments)
 
     all_symbols = sorted(str(i.get("symbol", "")) for i in instruments)
     symbols_toml = ", ".join(f'"{_toml_escape(s)}"' for s in all_symbols)
@@ -124,7 +123,6 @@ def _build_front_matter(
         f'git_commit = "{_toml_escape(git_commit)}"',
         "+++",
     ]
-    _ = total  # referenced in body, not front matter
     return "\n".join(lines)
 
 

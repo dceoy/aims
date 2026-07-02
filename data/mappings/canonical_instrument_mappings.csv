@@ -78,6 +78,6 @@ jpm,JPMorgan Chase & Co.,equity,楽天証券,JPモルガン・チェース,JPM,y
 unh,UnitedHealth Group Inc.,equity,GMOクリック証券,ユナイテッドヘルス・グループ （NYSE）,UNH,yfinance,UNH,d,true,GMO CFD tracks UnitedHealth Group common stock; Yahoo Finance UNH is the underlying equity
 xom,Exxon Mobil Corporation,equity,GMOクリック証券,エクソン・モービル （NYSE）,XOM,yfinance,XOM,d,true,GMO CFD tracks Exxon Mobil common stock; Yahoo Finance XOM is the underlying equity
 xom,Exxon Mobil Corporation,equity,楽天証券,エクソンモービル,XOM,yfinance,XOM,d,true,Rakuten CFD tracks Exxon Mobil common stock
-toyota,Toyota Motor Corporation,equity,,,,yfinance,7203.T,d,true,No CFD broker mapping available; Yahoo Finance 7203.T is the Tokyo Stock Exchange listing
-sony,Sony Group Corporation,equity,,,,yfinance,6758.T,d,true,No CFD broker mapping available; Yahoo Finance 6758.T is the Tokyo Stock Exchange listing
-mufg,Mitsubishi UFJ Financial Group Inc.,equity,,,,yfinance,8306.T,d,true,No CFD broker mapping available; Yahoo Finance 8306.T is the Tokyo Stock Exchange listing
+toyota,Toyota Motor Corporation,equity,,,,yfinance,7203.T,d,false,No broker CFD offering; not tradable at any mapped broker; Yahoo Finance 7203.T is the Tokyo Stock Exchange listing
+sony,Sony Group Corporation,equity,,,,yfinance,6758.T,d,false,No broker CFD offering; not tradable at any mapped broker; Yahoo Finance 6758.T is the Tokyo Stock Exchange listing
+mufg,Mitsubishi UFJ Financial Group Inc.,equity,,,,yfinance,8306.T,d,false,No broker CFD offering; not tradable at any mapped broker; Yahoo Finance 8306.T is the Tokyo Stock Exchange listing

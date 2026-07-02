@@ -19,6 +19,8 @@ Authoritative market and instrument data sources used by AIMS and the boundaries
 
 AIMS fetches daily OHLCV history from Yahoo Finance (`yfinance` library, default provider) with Stooq registered as a fallback/alternative provider. The daily workflow derives its symbol universe from `data/mappings/canonical_instrument_mappings.csv` for the configured provider and interval — there is no separate provider symbol list file.
 
+Individual stocks are configured the same way as equity indices and commodities: as rows in `canonical_instrument_mappings.csv` with `asset_class=equity`. Adding a stock row with `provider=yfinance` and `provider_interval=d` is sufficient for the daily workflow to fetch and score it — no separate stock symbol list exists.
+
 The CFD instrument master is a separate data source maintained in `data/cfd_instruments.csv`. It is refreshed by the weekly updater workflow and validated before the daily market analysis workflow runs.
 
 ## Source-of-truth boundary

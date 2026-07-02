@@ -59,3 +59,25 @@ soybean,Soybeans,commodity,GMOクリック証券,大豆,ZS,yfinance,ZS=F,d,true,
 soybean,Soybeans,commodity,楽天証券,大豆,ZS,yfinance,ZS=F,d,true,Rakuten CFD tracks soybean futures (ZS/CBOT)
 wheat,Wheat,commodity,GMOクリック証券,小麦,ZW,yfinance,ZW=F,d,true,GMO CFD tracks wheat futures (ZW/CME)
 wheat,Wheat,commodity,楽天証券,小麦,ZW,yfinance,ZW=F,d,true,Rakuten CFD tracks wheat futures (ZW/CBOT)
+aapl,Apple Inc.,equity,GMOクリック証券,Apple （NASDAQ）,AAPL,yfinance,AAPL,d,true,GMO CFD tracks Apple common stock; Yahoo Finance AAPL is the underlying equity
+aapl,Apple Inc.,equity,楽天証券,アップル,AAPL,yfinance,AAPL,d,true,Rakuten CFD tracks Apple common stock
+msft,Microsoft Corporation,equity,GMOクリック証券,マイクロソフト （NASDAQ）,MSFT,yfinance,MSFT,d,true,GMO CFD tracks Microsoft common stock; Yahoo Finance MSFT is the underlying equity
+msft,Microsoft Corporation,equity,楽天証券,マイクロソフト,MSFT,yfinance,MSFT,d,true,Rakuten CFD tracks Microsoft common stock
+nvda,NVIDIA Corporation,equity,GMOクリック証券,NVIDIA （NASDAQ）,NVDA,yfinance,NVDA,d,true,GMO CFD tracks NVIDIA common stock; Yahoo Finance NVDA is the underlying equity
+nvda,NVIDIA Corporation,equity,楽天証券,エヌビディア,NVDA,yfinance,NVDA,d,true,Rakuten CFD tracks NVIDIA common stock
+amzn,Amazon.com Inc.,equity,GMOクリック証券,Amazon （NASDAQ）,AMZN,yfinance,AMZN,d,true,GMO CFD tracks Amazon common stock; Yahoo Finance AMZN is the underlying equity
+amzn,Amazon.com Inc.,equity,楽天証券,アマゾン・ドット・コム,AMZN,yfinance,AMZN,d,true,Rakuten CFD tracks Amazon common stock
+googl,Alphabet Inc. Class A,equity,GMOクリック証券,Alphabet（旧Google） （NASDAQ）,GOOGL,yfinance,GOOGL,d,true,GMO CFD tracks Alphabet Class A common stock; Yahoo Finance GOOGL is the underlying equity
+googl,Alphabet Inc. Class A,equity,楽天証券,アルファベット クラスA,GOOGL,yfinance,GOOGL,d,true,Rakuten CFD tracks Alphabet Class A common stock
+meta,Meta Platforms Inc.,equity,GMOクリック証券,Meta Platforms(旧Facebook) （NASDAQ）,META,yfinance,META,d,true,GMO CFD tracks Meta Platforms common stock; Yahoo Finance META is the underlying equity
+meta,Meta Platforms Inc.,equity,楽天証券,メタ・プラットフォームズ,META,yfinance,META,d,true,Rakuten CFD tracks Meta Platforms common stock
+tsla,Tesla Inc.,equity,GMOクリック証券,テスラ （NASDAQ）,TSLA,yfinance,TSLA,d,true,GMO CFD tracks Tesla common stock; Yahoo Finance TSLA is the underlying equity
+tsla,Tesla Inc.,equity,楽天証券,テスラ,TSLA,yfinance,TSLA,d,true,Rakuten CFD tracks Tesla common stock
+jpm,JPMorgan Chase & Co.,equity,GMOクリック証券,JPモルガン・チェース （NYSE）,JPM,yfinance,JPM,d,true,GMO CFD tracks JPMorgan Chase common stock; Yahoo Finance JPM is the underlying equity
+jpm,JPMorgan Chase & Co.,equity,楽天証券,JPモルガン・チェース,JPM,yfinance,JPM,d,true,Rakuten CFD tracks JPMorgan Chase common stock
+unh,UnitedHealth Group Inc.,equity,GMOクリック証券,ユナイテッドヘルス・グループ （NYSE）,UNH,yfinance,UNH,d,true,GMO CFD tracks UnitedHealth Group common stock; Yahoo Finance UNH is the underlying equity
+xom,Exxon Mobil Corporation,equity,GMOクリック証券,エクソン・モービル （NYSE）,XOM,yfinance,XOM,d,true,GMO CFD tracks Exxon Mobil common stock; Yahoo Finance XOM is the underlying equity
+xom,Exxon Mobil Corporation,equity,楽天証券,エクソンモービル,XOM,yfinance,XOM,d,true,Rakuten CFD tracks Exxon Mobil common stock
+toyota,Toyota Motor Corporation,equity,,,,yfinance,7203.T,d,false,No broker CFD offering; not tradable at any mapped broker; Yahoo Finance 7203.T is the Tokyo Stock Exchange listing
+sony,Sony Group Corporation,equity,,,,yfinance,6758.T,d,false,No broker CFD offering; not tradable at any mapped broker; Yahoo Finance 6758.T is the Tokyo Stock Exchange listing
+mufg,Mitsubishi UFJ Financial Group Inc.,equity,,,,yfinance,8306.T,d,false,No broker CFD offering; not tradable at any mapped broker; Yahoo Finance 8306.T is the Tokyo Stock Exchange listing

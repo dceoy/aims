@@ -2190,6 +2190,24 @@ def test_symbols_from_mappings_deduplicates(ma: ModuleType, tmp_path: Path) -> N
     assert syms.count("^SPX") == 1
 
 
+def test_symbols_from_mappings_includes_brokerless_tradable_false(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    """Brokerless provider-only rows with tradable=false must still be returned."""
+    csv_text = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "spx,S&P 500,equity_index,TestBroker,US500,ES,yfinance,^GSPC,d,true,Backed\n"
+        "toyota,Toyota Motor,equity,,,,yfinance,7203.T,d,false,No broker CFD offering\n"
+    )
+    p = tmp_path / "mixed.csv"
+    p.write_text(csv_text, encoding="utf-8")
+    rows = ma.load_instrument_mappings(p)
+    syms = ma.symbols_from_mappings(rows, "yfinance", "d")
+    assert "^GSPC" in syms, "broker-backed tradable=true row must be included"
+    assert "7203.T" in syms, "brokerless tradable=false row must still be included"
+
+
 def test_instrument_display_map_basic(ma: ModuleType, tmp_path: Path) -> None:
     rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
     dmap = ma.instrument_display_map(rows, "stooq", "d")
@@ -2387,6 +2405,53 @@ def test_canonical_mapping_contains_spx_dji_ndx(ma: ModuleType) -> None:
     assert "^SPX" in syms
     assert "^DJI" in syms
     assert "^NDX" in syms
+
+
+def test_canonical_mapping_yfinance_daily_includes_indices_and_stocks(
+    ma: ModuleType,
+) -> None:
+    mapping_path = Path("data/mappings/canonical_instrument_mappings.csv")
+    rows = ma.load_instrument_mappings(mapping_path)
+    syms = ma.symbols_from_mappings(rows, "yfinance", "d")
+
+    assert "^GSPC" in syms
+    assert "^DJI" in syms
+    assert "AAPL" in syms
+    assert "MSFT" in syms
+    assert "NVDA" in syms
+
+    dmap = ma.instrument_display_map(rows, "yfinance", "d")
+    assert dmap["AAPL"]["asset_class"] == "equity"
+
+
+def test_canonical_mapping_brokerless_japanese_stocks_tradable_false_in_universe(
+    ma: ModuleType,
+) -> None:
+    # tradable=false must not exclude rows from symbols_from_mappings
+    mapping_path = Path("data/mappings/canonical_instrument_mappings.csv")
+    rows = ma.load_instrument_mappings(mapping_path)
+
+    brokerless = {
+        r.provider_symbol: r
+        for r in rows
+        if r.canonical_id in {"toyota", "sony", "mufg"}
+    }
+    for sym, row in brokerless.items():
+        assert row.broker == "", f"{sym}: expected blank broker, got {row.broker!r}"
+        assert row.tradable == "false", (
+            f"{sym}: expected tradable=false, got {row.tradable!r}"
+        )
+
+    syms = ma.symbols_from_mappings(rows, "yfinance", "d")
+    assert "7203.T" in syms, (
+        "toyota must remain in yfinance/d universe despite tradable=false"
+    )
+    assert "6758.T" in syms, (
+        "sony must remain in yfinance/d universe despite tradable=false"
+    )
+    assert "8306.T" in syms, (
+        "mufg must remain in yfinance/d universe despite tradable=false"
+    )
 
 
 # ── _resolve_symbols_for_generate ─────────────────────────────────────────────

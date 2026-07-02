@@ -202,7 +202,7 @@ The market regime label is derived from breadth: the share of reliable instrumen
 | Label       | Share above MA20                       |
 | ----------- | -------------------------------------- |
 | Bullish     | ≥ 65%                                  |
-| Neutral     | 35% – 65%                              |
+| Neutral     | > 35% and < 65%                        |
 | Bearish     | ≤ 35%                                  |
 | Unavailable | No reliable instruments with MA20 data |
 

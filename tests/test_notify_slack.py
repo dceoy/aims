@@ -27,28 +27,32 @@ def fixture_artifact() -> dict[str, Any]:
         return json.load(fh)
 
 
-# ── _market_regime tests ────────────────────────────────────────────────────────
+# ── market_regime integration ───────────────────────────────────────────────────
 
 
-def test_notify_market_regime_bullish(ns: ModuleType) -> None:
-    assert ns._market_regime([65.0, 75.0]) == "Bullish"
-
-
-def test_notify_market_regime_neutral(ns: ModuleType) -> None:
-    assert ns._market_regime([50.0]) == "Neutral"
-
-
-def test_notify_market_regime_bearish(ns: ModuleType) -> None:
-    assert ns._market_regime([30.0]) == "Bearish"
-
-
-def test_notify_market_regime_empty(ns: ModuleType) -> None:
-    assert ns._market_regime([]) == "Unavailable"
-
-
-# Even-length median
-def test_notify_market_regime_even_neutral(ns: ModuleType) -> None:
-    assert ns._market_regime([30.0, 70.0]) == "Neutral"
+def test_notify_uses_shared_market_regime(ns: ModuleType) -> None:
+    # Regime comes from aims.reports.market_regime (MA20 breadth), so a
+    # broadly declining universe is labelled Bearish in the payload.
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {
+            "generated_at": "2024-01-01T00:00:00+00:00",
+            "config": {},
+        },
+        "instruments": [
+            {
+                "symbol": sym,
+                "rank": rank,
+                "score": 50.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "features": {"ma20_dist": -0.02},
+            }
+            for rank, sym in enumerate(["^SPX", "^NDX", "^DJI"], start=1)
+        ],
+    }
+    payload = ns.build_success_payload(artifact)
+    assert "Bearish" in payload["text"]
 
 
 # ── build_success_payload tests ─────────────────────────────────────────────────
@@ -261,8 +265,17 @@ def test_build_success_payload_neutral_emoji(ns: ModuleType) -> None:
                 "is_reliable": True,
                 "risk_gates": [],
                 "explanation": "Neutral",
-                "features": {},
-            }
+                "features": {"ma20_dist": 0.01},
+            },
+            {
+                "symbol": "MSFT",
+                "rank": 2,
+                "score": 45.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "explanation": "Neutral",
+                "features": {"ma20_dist": -0.01},
+            },
         ],
     }
     payload = ns.build_success_payload(artifact, "https://example.com/")
@@ -288,7 +301,7 @@ def test_build_success_payload_bearish_emoji(ns: ModuleType) -> None:
                 "is_reliable": True,
                 "risk_gates": [],
                 "explanation": "Bearish",
-                "features": {},
+                "features": {"ma20_dist": -0.05},
             }
         ],
     }

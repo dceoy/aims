@@ -78,6 +78,25 @@ def test_generate_report_history_without_previous(
     assert "No previous analysis artifact" in result
 
 
+def test_generate_report_history_universe_change(
+    gr: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    history = {
+        "previous_analysis_date": "2023-12-30",
+        "top_k": 5,
+        "universe_size": 20,
+        "previous_universe_size": 5,
+        "instruments": [],
+        "dropped_from_top_k": [],
+    }
+    result = gr.generate_report(fixture_artifact, history)
+    assert "**Universe change:** 5 → 20 instruments" in result
+    assert "not directly comparable" in result
+    history["previous_universe_size"] = 20
+    result = gr.generate_report(fixture_artifact, history)
+    assert "Universe change" not in result
+
+
 def test_instrument_scores_grouped_by_asset_class(gr: ModuleType) -> None:
     artifact: dict[str, Any] = {
         "version": "1.0.0",
@@ -368,54 +387,60 @@ def test_main_bad_json(gr: ModuleType, tmp_path: Path) -> None:
     assert result == 1
 
 
-# ── _market_regime tests ────────────────────────────────────────────────────────
+# ── market_regime tests ─────────────────────────────────────────────────────────
+
+
+def _reliable_inst(ma20_dist: float | None) -> dict[str, Any]:
+    return {"is_reliable": True, "features": {"ma20_dist": ma20_dist}}
 
 
 def test_market_regime_bullish(gr: ModuleType) -> None:
-    assert gr._market_regime([65.0, 70.0, 80.0]) == "Bullish"
+    insts = [_reliable_inst(0.02), _reliable_inst(0.01), _reliable_inst(0.03)]
+    assert gr.market_regime(insts) == "Bullish"
 
 
 def test_market_regime_neutral(gr: ModuleType) -> None:
-    assert gr._market_regime([50.0, 55.0, 60.0]) == "Neutral"
+    insts = [_reliable_inst(0.02), _reliable_inst(-0.01)]
+    assert gr.market_regime(insts) == "Neutral"
 
 
 def test_market_regime_bearish(gr: ModuleType) -> None:
-    assert gr._market_regime([20.0, 30.0, 40.0]) == "Bearish"
+    insts = [_reliable_inst(-0.02), _reliable_inst(-0.01), _reliable_inst(-0.03)]
+    assert gr.market_regime(insts) == "Bearish"
 
 
 def test_market_regime_empty(gr: ModuleType) -> None:
-    assert gr._market_regime([]) == "Unavailable"
+    assert gr.market_regime([]) == "Unavailable"
 
 
-def test_market_regime_single_bullish(gr: ModuleType) -> None:
-    assert gr._market_regime([66.0]) == "Bullish"
+def test_market_regime_no_ma20_data(gr: ModuleType) -> None:
+    assert gr.market_regime([_reliable_inst(None)]) == "Unavailable"
 
 
-def test_market_regime_single_bearish(gr: ModuleType) -> None:
-    assert gr._market_regime([39.0]) == "Bearish"
+def test_market_regime_missing_features(gr: ModuleType) -> None:
+    assert gr.market_regime([{"is_reliable": True, "features": None}]) == "Unavailable"
 
 
-def test_market_regime_boundary_neutral_low(gr: ModuleType) -> None:
-    # exactly 40.0 is Bearish (<=40.0)
-    assert gr._market_regime([40.0]) == "Bearish"
+def test_market_regime_ignores_none_ma20(gr: ModuleType) -> None:
+    # None values are excluded from the breadth denominator.
+    assert gr.market_regime([_reliable_inst(None), _reliable_inst(0.01)]) == "Bullish"
 
 
-def test_market_regime_boundary_neutral_high(gr: ModuleType) -> None:
-    # exactly 65.0 is Bullish (>=65.0)
-    assert gr._market_regime([65.0]) == "Bullish"
+def test_market_regime_boundary_bullish(gr: ModuleType) -> None:
+    # exactly 65% above MA20 is Bullish (>=0.65)
+    insts = [_reliable_inst(0.01)] * 13 + [_reliable_inst(-0.01)] * 7
+    assert gr.market_regime(insts) == "Bullish"
 
 
-# Even-length median
-def test_market_regime_even_neutral(gr: ModuleType) -> None:
-    assert gr._market_regime([30.0, 70.0]) == "Neutral"  # (30+70)/2=50
+def test_market_regime_boundary_bearish(gr: ModuleType) -> None:
+    # exactly 35% above MA20 is Bearish (<=0.35)
+    insts = [_reliable_inst(0.01)] * 7 + [_reliable_inst(-0.01)] * 13
+    assert gr.market_regime(insts) == "Bearish"
 
 
-def test_market_regime_even_bullish(gr: ModuleType) -> None:
-    assert gr._market_regime([64.0, 68.0]) == "Bullish"  # (64+68)/2=66
-
-
-def test_market_regime_even_bearish(gr: ModuleType) -> None:
-    assert gr._market_regime([32.0, 48.0]) == "Bearish"  # (32+48)/2=40
+def test_market_regime_zero_ma20_dist_not_above(gr: ModuleType) -> None:
+    # sitting exactly on the MA20 does not count as above it
+    assert gr.market_regime([_reliable_inst(0.0)]) == "Bearish"
 
 
 # ── _format_pct tests ───────────────────────────────────────────────────────────

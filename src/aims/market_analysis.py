@@ -964,7 +964,7 @@ def score_instruments(
             )
         )
 
-    scores.sort(key=lambda s: (not s.is_reliable, -s.score))
+    scores.sort(key=lambda s: (not s.is_reliable, -s.score, s.symbol))
     for rank, s in enumerate(scores, start=1):
         s.rank = rank
 

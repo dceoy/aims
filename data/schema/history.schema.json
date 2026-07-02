@@ -13,6 +13,7 @@
   "notes": {
     "rank_delta": "Previous rank minus current rank; positive values indicate improvement.",
     "consecutive_reports": "Counts consecutive available artifacts, not calendar days.",
-    "instrument_rows": "Rows require symbol, current/previous ranks and scores, deltas, reliability/top-k booleans, consecutive report counts, and added/removed risk-gate string arrays."
+    "instrument_rows": "Rows require symbol, current/previous ranks and scores, deltas, reliability/top-k booleans, consecutive report counts, and added/removed risk-gate string arrays.",
+    "universe_size": "Optional non-negative integers universe_size and previous_universe_size record instrument counts of the current and previous artifacts; percentile-based scores are not comparable across universe-size changes. Absent in artifacts generated before these keys were added."
   }
 }

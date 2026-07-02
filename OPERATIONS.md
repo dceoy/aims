@@ -197,14 +197,14 @@ Override coverage gates locally or in manual workflow runs via `market_analysis.
 
 ### Market regime
 
-The market regime label is derived from the median composite score of reliable instruments:
+The market regime label is derived from breadth: the share of reliable instruments whose latest close is above their 20-day moving average. Percentile-based composite scores are relative by construction — their median stays near 50 for any universe of meaningful size regardless of market direction — so breadth is used as an absolute directional measure instead. Reliable instruments without MA20 data are excluded from the ratio.
 
-| Label       | Median score            |
-| ----------- | ----------------------- |
-| Bullish     | ≥ 65                    |
-| Neutral     | 40 – 64                 |
-| Bearish     | ≤ 40                    |
-| Unavailable | No reliable instruments |
+| Label       | Share above MA20                       |
+| ----------- | -------------------------------------- |
+| Bullish     | ≥ 65%                                  |
+| Neutral     | 35% – 65%                              |
+| Bearish     | ≤ 35%                                  |
+| Unavailable | No reliable instruments with MA20 data |
 
 ### Scoring version
 

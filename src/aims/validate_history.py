@@ -99,6 +99,13 @@ def validate(history: dict[str, Any]) -> list[str]:
     top_k = history.get("top_k")
     if not isinstance(top_k, int) or isinstance(top_k, bool) or top_k < 1:
         errors.append("top_k must be a positive integer")
+    # Optional keys: absent in history artifacts generated before their addition.
+    for field in ("universe_size", "previous_universe_size"):
+        value = history.get(field)
+        if value is not None and (
+            not isinstance(value, int) or isinstance(value, bool) or value < 0
+        ):
+            errors.append(f"{field} must be a non-negative integer or null")
     instruments = history.get("instruments")
     if not isinstance(instruments, list):
         errors.append("instruments must be an array")

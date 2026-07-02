@@ -59,15 +59,39 @@ def _format_vol(value: float | None) -> str:
     return f"{value * 100:.1f}%"
 
 
-def _market_regime(scores: list[float]) -> str:
-    if not scores:
+_BULLISH_BREADTH: Final[float] = 0.65
+_BEARISH_BREADTH: Final[float] = 0.35
+
+
+def _regime_breadth(reliable: list[dict[str, Any]]) -> tuple[int, int]:
+    """Return (above_ma20, with_ma20_data) counts for reliable instruments."""
+    above = 0
+    valid = 0
+    for inst in reliable:
+        features = inst.get("features") or {}
+        dist = features.get("ma20_dist")
+        if isinstance(dist, (int, float)):
+            valid += 1
+            if dist > 0:
+                above += 1
+    return above, valid
+
+
+def market_regime(reliable: list[dict[str, Any]]) -> str:
+    """Label the market regime from MA20 breadth of reliable instruments.
+
+    Percentile-based composite scores are relative by construction, so their
+    median stays near 50 regardless of market direction. Breadth — the share
+    of reliable instruments trading above their 20-day moving average — is an
+    absolute measure that distinguishes broad rallies from broad declines.
+    """
+    above, valid = _regime_breadth(reliable)
+    if not valid:
         return "Unavailable"
-    s = sorted(scores)
-    n = len(s)
-    median = s[n // 2] if n % 2 == 1 else (s[n // 2 - 1] + s[n // 2]) / 2
-    if median >= 65.0:
+    breadth = above / valid
+    if breadth >= _BULLISH_BREADTH:
         return "Bullish"
-    if median <= 40.0:
+    if breadth <= _BEARISH_BREADTH:
         return "Bearish"
     return "Neutral"
 
@@ -86,8 +110,7 @@ def _build_front_matter(
 
     instruments = artifact.get("instruments", [])
     reliable = [i for i in instruments if i.get("is_reliable")]
-    reliable_scores = [float(i["score"]) for i in reliable if "score" in i]
-    regime = _market_regime(reliable_scores)
+    regime = market_regime(reliable)
     n_reliable = len(reliable)
 
     all_symbols = sorted(str(i.get("symbol", "")) for i in instruments)
@@ -128,12 +151,14 @@ def _build_front_matter(
 
 def _section_market_regime(
     regime: str,
-    n_reliable: int,
+    above: int,
+    valid: int,
     total: int,
 ) -> str:
     return (
-        f"## Market Regime\n\n**{regime}** — based on cross-sectional momentum"
-        f" scores of {n_reliable} reliable instrument(s) out of {total} total."
+        f"## Market Regime\n\n**{regime}** — {above} of {valid} reliable"
+        f" instrument(s) with MA20 data trade above their 20-day moving"
+        f" average ({total} instruments in universe)."
     )
 
 
@@ -206,6 +231,18 @@ def _section_signal_history(history: dict[str, Any] | None) -> str:
         key=lambda row: str(row["symbol"]),
     )
     lines = [f"Compared with the previous available report (**{previous}**)."]
+    current_size = history.get("universe_size")
+    previous_size = history.get("previous_universe_size")
+    if (
+        isinstance(current_size, int)
+        and isinstance(previous_size, int)
+        and current_size != previous_size
+    ):
+        lines.append(
+            f"- **Universe change:** {previous_size} → {current_size} instruments;"
+            " percentile-based scores and deltas are not directly comparable"
+            " across this change."
+        )
     lines.append(
         f"- **New top-{history.get('top_k', 5)}:** {', '.join(new_top) or 'None'}"
     )
@@ -516,15 +553,14 @@ def generate_report(
     instruments = artifact.get("instruments", [])
     reliable = [i for i in instruments if i.get("is_reliable")]
     unreliable = [i for i in instruments if not i.get("is_reliable")]
-    reliable_scores = [float(i["score"]) for i in reliable if "score" in i]
-    regime = _market_regime(reliable_scores)
-    n_reliable = len(reliable)
+    regime = market_regime(reliable)
+    above, valid = _regime_breadth(reliable)
     total = len(instruments)
 
     front_matter = _build_front_matter(artifact, date_str, history)
 
     sections = [
-        _section_market_regime(regime, n_reliable, total),
+        _section_market_regime(regime, above, valid, total),
         _section_top_opportunities(reliable),
         _section_signal_history(history),
         _section_instruments_to_avoid(unreliable),

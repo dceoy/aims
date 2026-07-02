@@ -13,7 +13,7 @@ git_commit = "abc1234"
 
 ## Market Regime
 
-**Bullish** — based on cross-sectional momentum scores of 2 reliable instrument(s) out of 3 total.
+**Bullish** — 2 of 2 reliable instrument(s) with MA20 data trade above their 20-day moving average (3 instruments in universe).
 
 ## Top Opportunities
 

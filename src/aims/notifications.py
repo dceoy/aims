@@ -25,20 +25,9 @@ import urllib.error
 import urllib.request
 from typing import Any, Final
 
+from aims.reports import market_regime
+
 _TIMEOUT: Final[int] = 15
-
-
-def _market_regime(scores: list[float]) -> str:
-    if not scores:
-        return "Unavailable"
-    s = sorted(scores)
-    n = len(s)
-    median = s[n // 2] if n % 2 == 1 else (s[n // 2 - 1] + s[n // 2]) / 2
-    if median >= 65.0:
-        return "Bullish"
-    if median <= 40.0:
-        return "Bearish"
-    return "Neutral"
 
 
 def build_success_payload(
@@ -55,8 +44,7 @@ def build_success_payload(
 
     instruments = artifact.get("instruments", [])
     reliable = [i for i in instruments if i.get("is_reliable")]
-    reliable_scores = [float(i["score"]) for i in reliable if "score" in i]
-    regime = _market_regime(reliable_scores)
+    regime = market_regime(reliable)
 
     top3 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:3]
     signals = ", ".join(

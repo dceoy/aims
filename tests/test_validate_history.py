@@ -54,6 +54,18 @@ def test_validate_valid_and_null_previous(vh: ModuleType) -> None:
     assert vh.validate(artifact) == []
 
 
+def test_validate_universe_sizes(vh: ModuleType) -> None:
+    artifact = _valid()
+    artifact["universe_size"] = 20
+    artifact["previous_universe_size"] = None
+    assert vh.validate(artifact) == []
+    artifact["universe_size"] = -1
+    artifact["previous_universe_size"] = True
+    errors = vh.validate(artifact)
+    assert "universe_size must be a non-negative integer or null" in errors
+    assert "previous_universe_size must be a non-negative integer or null" in errors
+
+
 def test_validate_errors(vh: ModuleType) -> None:
     errors = vh.validate({
         "version": "2",

@@ -677,6 +677,18 @@ def test_score_multiple_instruments(ma: ModuleType) -> None:
     assert symbols[0] == "UP"
 
 
+def test_score_tied_instruments_ranked_by_symbol(ma: ModuleType) -> None:
+    # Identical price series produce identical scores; ranks must not depend
+    # on the input ordering of the symbols.
+    closes = [float(100 + i) for i in range(80)]
+    bars_b = _make_bars(ma, "B", closes)
+    bars_a = _make_bars(ma, "A", closes)
+    ref = bars_a[-1].timestamp + timedelta(days=1)
+    results = ma.score_instruments({"B": bars_b, "A": bars_a}, reference_time=ref)
+    assert results[0].score == results[1].score
+    assert [r.symbol for r in results] == ["A", "B"]
+
+
 def test_score_risk_gate_stale(ma: ModuleType) -> None:
     bars = _make_bars(ma, "X", [100.0] * 70)
     ref = bars[-1].timestamp + timedelta(days=30)

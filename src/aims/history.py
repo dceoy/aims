@@ -121,6 +121,8 @@ def build_history(
         "analysis_date": dates[-1],
         "previous_analysis_date": dates[-2] if previous else None,
         "top_k": top_k,
+        "universe_size": len(current_items),
+        "previous_universe_size": len(previous_items) if previous else None,
         "instruments": rows,
         "dropped_from_top_k": dropped,
     }

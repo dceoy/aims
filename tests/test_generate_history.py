@@ -42,6 +42,8 @@ def test_first_artifact(gh: ModuleType) -> None:
     assert result["instruments"][0]["previous_rank"] is None
     assert result["instruments"][0]["new_top_k"] is False
     assert result["instruments"][0]["consecutive_reliable_reports"] == 1
+    assert result["universe_size"] == 1
+    assert result["previous_universe_size"] is None
 
 
 def test_changes_persistence_and_missing_date(gh: ModuleType) -> None:
@@ -65,6 +67,8 @@ def test_changes_persistence_and_missing_date(gh: ModuleType) -> None:
     result = gh.build_history([current, old], 2)
     rows = {row["symbol"]: row for row in result["instruments"]}
     assert result["previous_analysis_date"] == "2024-01-01"
+    assert result["universe_size"] == 4
+    assert result["previous_universe_size"] == 3
     assert rows["B"]["rank_delta"] == 1
     assert rows["B"]["score_delta"] == 15
     assert rows["B"]["consecutive_top_k_reports"] == 2

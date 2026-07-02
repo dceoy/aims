@@ -269,9 +269,10 @@ def instrument_display_map(
     provider: str,
     interval: str,
 ) -> dict[str, dict[str, str]]:
-    """Return {provider_symbol: {canonical_id, display_name}}.
+    """Return {provider_symbol: {canonical_id, display_name, asset_class}}.
 
-    Filters to rows matching *provider* and *interval*.
+    Filters to rows matching *provider* and *interval*. ``asset_class`` is
+    omitted from an entry when the mapping row leaves it blank.
     """
     result: dict[str, dict[str, str]] = {}
     for r in rows:
@@ -280,10 +281,13 @@ def instrument_display_map(
             and r.provider_interval == interval
             and r.provider_symbol not in result
         ):
-            result[r.provider_symbol] = {
+            entry = {
                 "canonical_id": r.canonical_id,
                 "display_name": r.display_name,
             }
+            if r.asset_class:
+                entry["asset_class"] = r.asset_class
+            result[r.provider_symbol] = entry
     return result
 
 
@@ -1053,6 +1057,14 @@ def generate_artifact(
     for sym in sorted(missing_symbols or []):
         freshness[sym] = "n/a"
 
+    def _apply_instrument_metadata(entry: dict[str, Any], symbol: str) -> None:
+        if not instrument_metadata or symbol not in instrument_metadata:
+            return
+        meta = instrument_metadata[symbol]
+        for key in ("canonical_id", "display_name", "asset_class"):
+            if key in meta:
+                entry[key] = meta[key]
+
     def _build_inst(s: InstrumentScore) -> dict[str, Any]:
         entry: dict[str, Any] = {
             "symbol": s.symbol,
@@ -1063,12 +1075,7 @@ def generate_artifact(
             "explanation": s.explanation,
             "features": _features_to_dict(s.features),
         }
-        if instrument_metadata and s.symbol in instrument_metadata:
-            meta = instrument_metadata[s.symbol]
-            if "canonical_id" in meta:
-                entry["canonical_id"] = meta["canonical_id"]
-            if "display_name" in meta:
-                entry["display_name"] = meta["display_name"]
+        _apply_instrument_metadata(entry, s.symbol)
         return entry
 
     instruments: list[dict[str, Any]] = [_build_inst(s) for s in scores]
@@ -1095,12 +1102,7 @@ def generate_artifact(
             "explanation": f"Suppressed: {RISK_GATE_MISSING_DATA}",
             "features": _features_to_dict(empty_feats),
         }
-        if instrument_metadata and sym in instrument_metadata:
-            meta = instrument_metadata[sym]
-            if "canonical_id" in meta:
-                entry["canonical_id"] = meta["canonical_id"]
-            if "display_name" in meta:
-                entry["display_name"] = meta["display_name"]
+        _apply_instrument_metadata(entry, sym)
         instruments.append(entry)
         next_rank += 1
     artifact_metadata: dict[str, Any] = {

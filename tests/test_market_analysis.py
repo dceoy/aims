@@ -2176,12 +2176,28 @@ def test_instrument_display_map_basic(ma: ModuleType, tmp_path: Path) -> None:
     assert "^SPX" in dmap
     assert dmap["^SPX"]["canonical_id"] == "spx"
     assert dmap["^SPX"]["display_name"] == "S&P 500"
+    assert dmap["^SPX"]["asset_class"] == "equity_index"
     assert "^DJI" in dmap
 
 
 def test_instrument_display_map_no_match(ma: ModuleType, tmp_path: Path) -> None:
     rows = ma.load_instrument_mappings(_write_mini_mapping(tmp_path))
     assert ma.instrument_display_map(rows, "csv", "d") == {}
+
+
+def test_instrument_display_map_omits_empty_asset_class(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    csv_text = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "spx,S&P 500,,TestBroker,US500,ES,stooq,^SPX,d,true,Test\n"
+    )
+    p = tmp_path / "no_asset_class.csv"
+    p.write_text(csv_text, encoding="utf-8")
+    rows = ma.load_instrument_mappings(p)
+    dmap = ma.instrument_display_map(rows, "stooq", "d")
+    assert "asset_class" not in dmap["^SPX"]
 
 
 def test_instrument_display_map_deduplicates(ma: ModuleType, tmp_path: Path) -> None:
@@ -2213,11 +2229,18 @@ def test_generate_artifact_with_instrument_metadata(
         "min_history": 60,
         "coverage_policy": {"min_success_ratio": 0.8, "max_missing_symbols": 1},
     }
-    meta = {"^SPX": {"canonical_id": "spx", "display_name": "S&P 500"}}
+    meta = {
+        "^SPX": {
+            "canonical_id": "spx",
+            "display_name": "S&P 500",
+            "asset_class": "equity_index",
+        }
+    }
     artifact = ma.generate_artifact(scores, data, config, instrument_metadata=meta)
     inst = artifact["instruments"][0]
     assert inst["canonical_id"] == "spx"
     assert inst["display_name"] == "S&P 500"
+    assert inst["asset_class"] == "equity_index"
 
 
 def test_generate_artifact_metadata_partial_fields(
@@ -2553,6 +2576,7 @@ def test_cmd_generate_mapping_includes_display_names(
     spx_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^SPX")
     assert spx_inst["canonical_id"] == "spx"
     assert spx_inst["display_name"] == "S&P 500"
+    assert spx_inst["asset_class"] == "equity_index"
 
 
 def test_cmd_generate_mapping_display_meta_load_error(

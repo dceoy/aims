@@ -30,9 +30,9 @@ on:
         default: "0.8"
         type: string
       max_missing_symbols:
-        description: "Maximum allowed missing symbols (default 1)"
+        description: "Maximum allowed missing symbols (default 4)"
         required: false
-        default: "1"
+        default: "4"
         type: string
       provider:
         description: "Market data provider"
@@ -55,7 +55,7 @@ jobs:
       INTERVAL: ${{ inputs.interval || 'd' }}
       DRY_RUN: ${{ inputs.dry_run || 'false' }}
       MIN_SUCCESS_RATIO: ${{ inputs.min_success_ratio || '0.8' }}
-      MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '1' }}
+      MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '4' }}
       PROVIDER: ${{ inputs.provider || 'yfinance' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
@@ -81,17 +81,19 @@ jobs:
           fi
       - name: Load symbols
         id: symbols
+        env:
+          MAPPING_FILE: data/mappings/canonical_instrument_mappings.csv
         run: |
-          SYMBOLS_FILE="data/${PROVIDER}_symbols.txt"
-          if [ -f "$SYMBOLS_FILE" ]; then
-            SYMBOLS=$(grep -v '^[[:space:]]*#' "$SYMBOLS_FILE" \
-              | grep -v '^[[:space:]]*$' | tr '\n' ',' | sed 's/,$//')
-          else
-            SYMBOLS=""
-          fi
+          SYMBOLS=$(uv run python -c "
+          from pathlib import Path
+          from aims.market_analysis import load_instrument_mappings, symbols_from_mappings
+          rows = load_instrument_mappings(Path('${MAPPING_FILE}'))
+          print(','.join(symbols_from_mappings(rows, '${PROVIDER}', '${INTERVAL}')))
+          ")
           echo "symbols=$SYMBOLS" >> "$GITHUB_OUTPUT"
           if [ -z "$SYMBOLS" ]; then
-            echo "WARNING: ${SYMBOLS_FILE} is empty or missing; skipping fetch."
+            echo "WARNING: no symbols found in ${MAPPING_FILE} for" \
+              "provider=${PROVIDER} interval=${INTERVAL}; skipping fetch."
           fi
       - name: Fetch market data
         if: steps.symbols.outputs.symbols != ''
@@ -125,11 +127,10 @@ jobs:
         if: steps.symbols.outputs.symbols != ''
         env:
           DATE: ${{ steps.date.outputs.date }}
-          SYMBOLS: ${{ steps.symbols.outputs.symbols }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
             generate \
-            --symbols "${SYMBOLS}" \
+            --mapping data/mappings/canonical_instrument_mappings.csv \
             --interval "$INTERVAL" \
             --analysis-date "${DATE}" \
             --provider "$PROVIDER" \
@@ -196,6 +197,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
             echo "pr_url=" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
           else
             git commit -m "feat(analysis): daily market analysis ${DATE}"
             git push --force-with-lease -u origin "$BRANCH"
@@ -203,16 +205,31 @@ jobs:
             if [ -n "$PR_NUMBER" ]; then
               echo "PR #$PR_NUMBER already exists for $BRANCH; branch updated."
               PR_URL=$(gh pr view "$PR_NUMBER" --json url --jq '.url')
-              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
             else
               PR_URL=$(gh pr create \
                 --title "feat(analysis): daily market analysis ${DATE}" \
                 --body "Automated daily market analysis for ${DATE}." \
                 --base main \
                 --head "$BRANCH")
-              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+              PR_NUMBER="$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')"
             fi
+            echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           fi
+      - name: Enable auto-merge for analysis pull request
+        if: steps.pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+        run: |
+          # Merges automatically once required status checks (lint, type check,
+          # tests, Hugo build) pass. If branch protection requires review, the
+          # PR waits for that review instead of merging — no gate is bypassed.
+          # Requires "Allow auto-merge" enabled in repository settings; if it
+          # is not enabled, this warns and the PR falls back to manual merge.
+          gh pr merge "$PR_NUMBER" --auto --squash --delete-branch \
+            || echo "WARNING: could not enable auto-merge for PR #$PR_NUMBER;" \
+              "enable 'Allow auto-merge' in repository settings or merge manually."
       - name: Notify Slack (success)
         if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true' && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
         env:

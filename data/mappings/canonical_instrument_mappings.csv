@@ -29,3 +29,33 @@ nkx,Nikkei 225,equity_index,GMOクリック証券,日本225,NK,yfinance,^N225,m,
 dax,DAX,equity_index,GMOクリック証券,ドイツ40,FDAX,yfinance,^GDAXI,d,true,Yahoo Finance ^GDAXI is the DAX cash index
 dax,DAX,equity_index,楽天証券,ドイツ40,FDAX,yfinance,^GDAXI,w,true,Yahoo Finance ^GDAXI weekly interval mapping
 dax,DAX,equity_index,GMOクリック証券,ドイツ40,FDAX,yfinance,^GDAXI,m,true,Yahoo Finance ^GDAXI monthly interval mapping
+rut,Russell 2000,equity_index,GMOクリック証券,米国RS2000,RTY,yfinance,^RUT,d,true,GMO CFD tracks Russell 2000 futures (RTY/CME); Yahoo Finance ^RUT is the cash index
+rut,Russell 2000,equity_index,楽天証券,米国2000,RTY,yfinance,^RUT,d,true,Rakuten CFD tracks Russell 2000 futures (RTY/CME)
+ftse,FTSE 100,equity_index,GMOクリック証券,イギリス100,Z,yfinance,^FTSE,d,true,GMO CFD tracks FTSE 100 futures (Z/ICE); Yahoo Finance ^FTSE is the cash index
+ftse,FTSE 100,equity_index,楽天証券,英国100,Z,yfinance,^FTSE,d,true,Rakuten CFD tracks FTSE 100 futures (Z/ICE)
+cac,CAC 40,equity_index,GMOクリック証券,フランス40,FCE,yfinance,^FCHI,d,true,GMO CFD tracks CAC 40 futures (FCE/EURONEXT); Yahoo Finance ^FCHI is the cash index
+cac,CAC 40,equity_index,楽天証券,フランス40,FCE,yfinance,^FCHI,d,true,Rakuten CFD tracks CAC 40 futures (FCE/EURONEXT)
+hsi,Hang Seng,equity_index,GMOクリック証券,香港H,HSI,yfinance,^HSI,d,true,GMO CFD tracks Hang Seng futures (HSI/HKEX); Yahoo Finance ^HSI is the cash index
+hsi,Hang Seng,equity_index,楽天証券,香港HS50,HSI,yfinance,^HSI,d,true,Rakuten CFD tracks Hang Seng futures (HSI/HKFE)
+stoxx50,Euro Stoxx 50,equity_index,GMOクリック証券,ユーロ50,FESX,yfinance,^STOXX50E,d,true,GMO CFD tracks Euro Stoxx 50 futures (FESX/EUREX); Yahoo Finance ^STOXX50E is the cash index
+stoxx50,Euro Stoxx 50,equity_index,楽天証券,ユーロ50,FESX,yfinance,^STOXX50E,d,true,Rakuten CFD tracks Euro Stoxx 50 futures (FESX/EUREX)
+gold,Gold,commodity,GMOクリック証券,金スポット,XAU,yfinance,GC=F,d,true,GMO CFD tracks gold spot; Yahoo Finance GC=F is COMEX gold futures used as proxy
+gold,Gold,commodity,楽天証券,金,GC,yfinance,GC=F,d,true,Rakuten CFD tracks COMEX gold futures (GC)
+silver,Silver,commodity,GMOクリック証券,銀スポット,XAG,yfinance,SI=F,d,true,GMO CFD tracks silver spot; Yahoo Finance SI=F is COMEX silver futures used as proxy
+silver,Silver,commodity,楽天証券,銀,SI,yfinance,SI=F,d,true,Rakuten CFD tracks COMEX silver futures (SI)
+platinum,Platinum,commodity,GMOクリック証券,プラチナスポット,XPT,yfinance,PL=F,d,true,GMO CFD tracks platinum spot; Yahoo Finance PL=F is NYMEX platinum futures used as proxy
+platinum,Platinum,commodity,楽天証券,プラチナ,PL,yfinance,PL=F,d,true,Rakuten CFD tracks NYMEX platinum futures (PL)
+copper,Copper,commodity,GMOクリック証券,銅先物,HG,yfinance,HG=F,d,true,GMO CFD tracks COMEX copper futures (HG/CME)
+copper,Copper,commodity,楽天証券,銅,HG,yfinance,HG=F,d,true,Rakuten CFD tracks COMEX copper futures (HG)
+wti_crude,WTI Crude Oil,commodity,GMOクリック証券,WTI原油,CL,yfinance,CL=F,d,true,GMO CFD tracks WTI crude futures (CL/CME)
+wti_crude,WTI Crude Oil,commodity,楽天証券,WTI原油,CL,yfinance,CL=F,d,true,Rakuten CFD tracks WTI crude futures (CL/NYMEX)
+brent_crude,Brent Crude Oil,commodity,GMOクリック証券,北海原油,BRN,yfinance,BZ=F,d,true,GMO CFD tracks Brent crude futures (BRN/ICE); Yahoo Finance BZ=F is the ICE Brent proxy
+brent_crude,Brent Crude Oil,commodity,楽天証券,北海原油,BRN,yfinance,BZ=F,d,true,Rakuten CFD tracks Brent crude futures (BRN/ICE)
+natural_gas,Natural Gas,commodity,GMOクリック証券,天然ガス,NG,yfinance,NG=F,d,true,GMO CFD tracks natural gas futures (NG/CME)
+natural_gas,Natural Gas,commodity,楽天証券,天然ガス,NG,yfinance,NG=F,d,true,Rakuten CFD tracks natural gas futures (NG/NYMEX)
+corn,Corn,commodity,GMOクリック証券,コーン,ZC,yfinance,ZC=F,d,true,GMO CFD tracks corn futures (ZC/CME)
+corn,Corn,commodity,楽天証券,コーン,ZC,yfinance,ZC=F,d,true,Rakuten CFD tracks corn futures (ZC/CBOT)
+soybean,Soybeans,commodity,GMOクリック証券,大豆,ZS,yfinance,ZS=F,d,true,GMO CFD tracks soybean futures (ZS/CME)
+soybean,Soybeans,commodity,楽天証券,大豆,ZS,yfinance,ZS=F,d,true,Rakuten CFD tracks soybean futures (ZS/CBOT)
+wheat,Wheat,commodity,GMOクリック証券,小麦,ZW,yfinance,ZW=F,d,true,GMO CFD tracks wheat futures (ZW/CME)
+wheat,Wheat,commodity,楽天証券,小麦,ZW,yfinance,ZW=F,d,true,Rakuten CFD tracks wheat futures (ZW/CBOT)

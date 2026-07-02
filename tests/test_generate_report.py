@@ -78,6 +78,57 @@ def test_generate_report_history_without_previous(
     assert "No previous analysis artifact" in result
 
 
+def test_instrument_scores_grouped_by_asset_class(gr: ModuleType) -> None:
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {
+            "generated_at": "2024-06-01T00:00:00+00:00",
+            "git_commit": "deadbeef",
+            "data_source": "yfinance",
+            "data_freshness": {},
+            "scoring_version": "1.0.0",
+            "config": {},
+        },
+        "instruments": [
+            {
+                "symbol": "^GSPC",
+                "rank": 1,
+                "score": 70.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "explanation": "e",
+                "features": {},
+                "asset_class": "equity_index",
+            },
+            {
+                "symbol": "GC=F",
+                "rank": 2,
+                "score": 60.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "explanation": "e",
+                "features": {},
+                "asset_class": "commodity",
+            },
+            {
+                "symbol": "UNKNOWN",
+                "rank": 3,
+                "score": 50.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "explanation": "e",
+                "features": {},
+            },
+        ],
+    }
+    result = gr.generate_report(artifact)
+    assert "### Equity Index" in result
+    assert "### Commodity" in result
+    assert "### Other" in result
+    assert result.index("### Commodity") < result.index("### Equity Index")
+    assert result.index("### Equity Index") < result.index("### Other")
+
+
 # ── Edge-case artifact tests ────────────────────────────────────────────────────
 
 

@@ -318,8 +318,7 @@ def _section_key_risks(instruments: list[dict[str, Any]]) -> str:
     return f"{header}\n\n" + "\n".join(lines)
 
 
-def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
-    header = "## Instrument Scores"
+def _instrument_scores_table(instruments: list[dict[str, Any]]) -> str:
     table_headers = [
         "Rank",
         "Instrument",
@@ -353,8 +352,25 @@ def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
             gates_str,
             explanation,
         ])
-    table = _format_markdown_table(table_headers, rows, alignments)
-    return f"{header}\n\n{table}"
+    return _format_markdown_table(table_headers, rows, alignments)
+
+
+def _asset_class_label(asset_class: str) -> str:
+    return asset_class.replace("_", " ").title()
+
+
+def _section_instrument_scores(instruments: list[dict[str, Any]]) -> str:
+    header = "## Instrument Scores"
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for inst in instruments:
+        groups.setdefault(str(inst.get("asset_class") or ""), []).append(inst)
+    if len(groups) <= 1:
+        return f"{header}\n\n{_instrument_scores_table(instruments)}"
+    parts = [header]
+    for asset_class in sorted(groups, key=lambda k: (not k, k)):
+        label = _asset_class_label(asset_class) if asset_class else "Other"
+        parts.extend((f"### {label}", _instrument_scores_table(groups[asset_class])))
+    return "\n\n".join(parts)
 
 
 def _section_data_freshness(

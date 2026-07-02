@@ -22,34 +22,32 @@ This document covers data sources, scoring methodology, report generation, the p
 
 ## 1. Data sources
 
-### Stooq (primary market data)
+### Yahoo Finance (primary market data)
 
-AIMS fetches daily OHLCV (open/high/low/close/volume) price history from [Stooq](https://stooq.com) using its free CSV download API.
+AIMS fetches daily OHLCV (open/high/low/close/volume) price history from Yahoo Finance via the `yfinance` library. [Stooq](https://stooq.com) is registered as a fallback/alternative provider using its free CSV download API.
 
-**Symbol format:** Stooq uses its own symbol convention.
-Examples: `^SPX` (S&P 500), `^DJI` (Dow Jones), `^NDX` (NASDAQ 100), `^NKX` (Nikkei 225), `^DAX` (DAX).
+**Symbol format:** Yahoo Finance uses its own symbol convention.
+Examples: `^GSPC` (S&P 500), `^DJI` (Dow Jones), `^NDX` (NASDAQ 100), `^N225` (Nikkei 225), `^GDAXI` (DAX), `GC=F` (Gold futures).
 
 **Limitations:**
 
 - Daily, weekly, and monthly bars only — no intraday data.
 - Symbol availability and history depth vary; some symbols return no data.
-- No authentication required, but subject to undocumented rate limits.
 - Network access is required; fetches that fail are logged as `WARNING` and skipped.
 
-**Terms of use:** Data obtained from Stooq is subject to Stooq's own terms. AIMS does not redistribute raw Stooq data — it stores derived analysis artifacts only. Verify Stooq's terms before commercial or redistribution use.
-
-**Configured symbols:** `data/stooq_symbols.txt` — one Stooq symbol per line; lines starting with `#` are comments. Edit this file to add or remove instruments from the daily run when using `--symbols` mode.
+**Configured symbols:** The daily workflow derives its symbol list from `data/mappings/canonical_instrument_mappings.csv` (see [Canonical instrument mappings](#canonical-instrument-mappings)) for the configured `--provider`/`--interval`, so the mapping file is the single source of truth for the automated universe. Add or remove instruments by editing the mapping file rather than a separate symbol list.
 
 ### Provider registry
 
 AIMS routes market-data fetches through a provider registry defined in `src/aims/market_analysis.py`. Registered providers:
 
-| Provider | Supported intervals | Notes                                   |
-| -------- | ------------------- | --------------------------------------- |
-| `stooq`  | `d`, `w`, `m`       | Free CSV download; default provider     |
-| `csv`    | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir |
+| Provider   | Supported intervals | Notes                                       |
+| ---------- | -------------------- | -------------------------------------------- |
+| `yfinance` | `d`, `w`, `m`       | Yahoo Finance via the `yfinance` library; default provider |
+| `stooq`    | `d`, `w`, `m`       | Free CSV download; registered fallback/alternative provider |
+| `csv`      | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir     |
 
-Pass `--provider <name>` to `init-fetch-status`, `fetch`, or `generate`. The default is `stooq`.
+Pass `--provider <name>` to `init-fetch-status`, `fetch`, or `generate`. The default is `yfinance`.
 
 **Adding a future provider:** Subclass `MarketDataProvider` in `src/aims/market_analysis.py`, register it in `_PROVIDER_REGISTRY` with a `ProviderMetadata` entry listing its supported intervals and any known limitations, and mirror the entry in `src/aims/mappings.py`'s `_KNOWN_PROVIDERS` and `_PROVIDER_INTERVALS`. Update the `provider` input choices in `.github/workflows/daily-market-analysis.yml`. Add the new provider to the test suite to maintain 100% coverage.
 
@@ -104,10 +102,9 @@ Exits 0 when clean; exits 1 on hard errors (missing columns, unknown provider, u
 
 **Adding a new instrument:**
 
-1. Add one or more rows to `canonical_instrument_mappings.csv` — one per provider/interval combination to analyze, plus one per broker CFD pairing.
+1. Add one or more rows to `canonical_instrument_mappings.csv` — one per provider/interval combination to analyze, plus one per broker CFD pairing. A row with `provider=yfinance` and `provider_interval=d` is picked up automatically by the daily workflow, which derives its symbol list from this file.
 2. Run the validator above to confirm no errors.
 3. Run `uv run pytest` to confirm 100% coverage still holds.
-4. Optionally add the provider symbol to `data/stooq_symbols.txt` to include it in `--symbols` mode.
 
 **Connecting new CFD entries to canonical mappings:** After `update-cfd-instruments` adds new rows to `data/cfd_instruments.csv`, the mapping validator warns about tradable CFD entries with no mapping row. Add the corresponding canonical mapping rows to clear those warnings.
 
@@ -278,32 +275,42 @@ Pipeline order:
 
 1. Validate CFD instrument master
 2. Set analysis date (default: today UTC)
-3. Load symbols from `data/stooq_symbols.txt`
-4. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from Stooq (1-year lookback), recording per-symbol outcomes in fetch status
-5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`) using `--fetch-status`; fail if coverage gates are violated
+3. Load symbols from `data/mappings/canonical_instrument_mappings.csv` for the configured `--provider`/`--interval` (the mapping file is the single source of truth; there is no separate `data/*_symbols.txt` file to keep in sync)
+4. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from the configured provider (1-year lookback), recording per-symbol outcomes in fetch status
+5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`) using `--mapping` and `--fetch-status`; fail if coverage gates are violated. Each instrument entry is enriched with `canonical_id`, `display_name`, and `asset_class` from the mapping.
 6. Validate artifact
 7. Generate score history (`data/history/YYYY-MM-DD.json`)
-8. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`)
+8. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`), grouped by asset class when the artifact carries more than one
 9. Build Hugo site (validation only — catches template or content errors before commit)
-10. Create a pull-request branch `generated/analysis-YYYY-MM-DD` with both artifacts and the report
+10. Create (or update) a pull-request branch `generated/analysis-YYYY-MM-DD` with both artifacts and the report, then enable GitHub auto-merge (squash, delete branch on merge) on that PR
 11. A Slack notification summarizes new/persistent signals and risk-gate changes and links to the analysis PR.
+
+### Auto-merge and CI approval
+
+Step 10 calls `gh pr merge --auto --squash --delete-branch`, which merges the PR automatically once its required status checks pass — it does not bypass branch protection or required reviews. This requires **"Allow auto-merge"** to be enabled in **Settings → General → Pull Requests**; if it is not enabled, the step logs a warning and the PR falls back to manual merge exactly as before.
+
+**Known gotcha — PRs stuck in `action_required`:** pull-request-triggered `ci.yml` runs on `generated/analysis-*` branches can be gated with conclusion `action_required` and zero jobs executed, even though the PR was opened by `github-actions[bot]` pushing to a branch in the same repository (not a fork). When this happens, `gh pr merge --auto` waits indefinitely because the required checks never run. A repository maintainer must approve the pending workflow run (Actions tab → the run → **Approve and run**) or re-run it; only an authorized human/maintainer token can do this, the workflow's own `GITHUB_TOKEN` cannot self-approve. If this recurs daily, check **Settings → Actions → General** for an approval requirement (e.g. "Require approval for all outside collaborators") that is being applied to `github-actions[bot]`-authored pull requests, and relax it only if the operational risk is acceptable.
 
 ### Manual dispatch
 
 The workflow supports `workflow_dispatch` with optional inputs:
 
-| Input                 | Default   | Description                                                   |
-| --------------------- | --------- | ------------------------------------------------------------- |
-| `analysis_date`       | Today UTC | Override the analysis date (YYYY-MM-DD)                       |
-| `interval`            | `d`       | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)  |
-| `dry_run`             | `false`   | When `true`, skips PR creation and Slack success notification |
-| `min_success_ratio`   | `0.8`     | Minimum symbol fetch success ratio for coverage gate          |
-| `max_missing_symbols` | `1`       | Maximum allowed missing symbols for coverage gate             |
-| `provider`            | `stooq`   | Market data provider: `stooq`                                 |
+| Input                 | Default    | Description                                                                |
+| --------------------- | ---------- | --------------------------------------------------------------------------- |
+| `analysis_date`       | Today UTC  | Override the analysis date (YYYY-MM-DD)                                   |
+| `interval`            | `d`        | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)              |
+| `dry_run`             | `false`    | When `true`, skips PR creation, auto-merge, and Slack success notification |
+| `min_success_ratio`   | `0.8`      | Minimum symbol fetch success ratio for coverage gate                      |
+| `max_missing_symbols` | `4`        | Maximum allowed missing symbols for coverage gate (scaled for the ~20-instrument mapped universe) |
+| `provider`            | `yfinance` | Market data provider: `yfinance` or `stooq`                               |
 
 ### Deployment gate
 
 GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), which runs only after Python linting, type checking, and tests all pass. The daily analysis workflow commits only content files (JSON and Markdown), not Python source, so existing tests remain stable.
+
+### Rollback
+
+If a published report or artifact needs to be removed, see [Delete a published report](#delete-a-published-report) in Manual recovery. Reverting a bad *code* change (as opposed to a bad daily *report*) is a normal `git revert` on `main`, gated by the same CI checks as any other change.
 
 ---
 
@@ -347,9 +354,9 @@ The `ci.yml` workflow adds:
 ERROR: fetch failed for ^SPX
 ```
 
-Stooq may be temporarily unavailable or the symbol may be invalid. Per-symbol fetch failures are non-fatal — a `WARNING` is logged and the fetch loop continues. The symbol is passed to the `generate` step which marks it as `missing_data` in the artifact and report when coverage policy still passes. The workflow fails before publishing when coverage gates detect a systemic data-source failure (too many missing symbols or success ratio below threshold). It also fails when no symbols at all can be fetched.
+The data provider may be temporarily unavailable or the symbol may be invalid. Per-symbol fetch failures are non-fatal — a `WARNING` is logged and the fetch loop continues. The symbol is passed to the `generate` step which marks it as `missing_data` in the artifact and report when coverage policy still passes. The workflow fails before publishing when coverage gates detect a systemic data-source failure (too many missing symbols or success ratio below threshold). It also fails when no symbols at all can be fetched.
 
-**Fix:** Check `data/stooq_symbols.txt` for typos. Verify the symbol at https://stooq.com. Remove permanently unavailable symbols to keep the analysis clean. Re-run the workflow after the data source recovers.
+**Fix:** Check `data/mappings/canonical_instrument_mappings.csv` for typos in `provider_symbol`. Verify the symbol on the provider's site (e.g. https://finance.yahoo.com or https://stooq.com). Remove permanently unavailable rows to keep the analysis clean. Re-run the workflow after the data source recovers.
 
 ### Artifact validation failure
 
@@ -404,7 +411,7 @@ Trigger it from **Actions → Daily market analysis → Run workflow** with the 
 ### Recover from a coverage gate failure
 
 1. Inspect the failed GitHub Actions run log for `ERROR: coverage gate failed` messages and the saved artifact (if generated locally).
-2. Verify Stooq availability and symbol validity in `data/stooq_symbols.txt`.
+2. Verify data-provider availability and symbol validity in `data/mappings/canonical_instrument_mappings.csv`.
 3. Re-run the workflow manually once the data source has recovered.
 4. For temporary outages affecting multiple symbols, wait for recovery rather than lowering coverage thresholds in automation.
 

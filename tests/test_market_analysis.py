@@ -2389,6 +2389,23 @@ def test_canonical_mapping_contains_spx_dji_ndx(ma: ModuleType) -> None:
     assert "^NDX" in syms
 
 
+def test_canonical_mapping_yfinance_daily_includes_indices_and_stocks(
+    ma: ModuleType,
+) -> None:
+    mapping_path = Path("data/mappings/canonical_instrument_mappings.csv")
+    rows = ma.load_instrument_mappings(mapping_path)
+    syms = ma.symbols_from_mappings(rows, "yfinance", "d")
+
+    assert "^GSPC" in syms
+    assert "^DJI" in syms
+    assert "AAPL" in syms
+    assert "MSFT" in syms
+    assert "NVDA" in syms
+
+    dmap = ma.instrument_display_map(rows, "yfinance", "d")
+    assert dmap["AAPL"]["asset_class"] == "equity"
+
+
 # ── _resolve_symbols_for_generate ─────────────────────────────────────────────
 
 

@@ -78,7 +78,7 @@ The master is validated against `data/schema/cfd_instruments.schema.json` after 
 | ------------------------ | -------- | ------------------------------------------------------------ |
 | `canonical_id`           | Yes      | Stable lowercase identifier, e.g. `spx`                      |
 | `display_name`           | Yes      | Human-readable name shown in reports, e.g. `S&P 500`         |
-| `asset_class`            | Yes      | `equity_index`, `commodity`, etc.                            |
+| `asset_class`            | Yes      | `equity_index`, `equity`, `commodity`, etc.                  |
 | `broker`                 | No       | Broker name; leave blank if no broker link is needed         |
 | `broker_instrument_name` | No       | Broker CFD product name (used for CFD reference validation)  |
 | `broker_ticker_symbol`   | No       | Broker's own ticker symbol                                   |
@@ -105,6 +105,8 @@ Exits 0 when clean; exits 1 on hard errors (missing columns, unknown provider, u
 1. Add one or more rows to `canonical_instrument_mappings.csv` — one per provider/interval combination to analyze, plus one per broker CFD pairing. A row with `provider=yfinance` and `provider_interval=d` is picked up automatically by the daily workflow, which derives its symbol list from this file.
 2. Run the validator above to confirm no errors.
 3. Run `uv run pytest` to confirm 100% coverage still holds.
+
+**Individual stocks:** Individual stocks are configured the same way as indices and commodities — through rows in `canonical_instrument_mappings.csv` with `asset_class=equity`. There is no separate stock symbol list; the daily workflow's `yfinance`/`d` universe automatically includes any stock row added to this file (e.g. `AAPL`, `MSFT`, `NVDA`). A `broker`/`broker_instrument_name` pairing is optional — leave those columns blank for stocks with no CFD broker backing (e.g. Japanese large caps not offered as CFDs by GMO Click Securities or Rakuten Securities).
 
 **Connecting new CFD entries to canonical mappings:** After `update-cfd-instruments` adds new rows to `data/cfd_instruments.csv`, the mapping validator warns about tradable CFD entries with no mapping row. Add the corresponding canonical mapping rows to clear those warnings.
 

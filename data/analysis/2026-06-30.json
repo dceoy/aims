@@ -1,0 +1,136 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "generated_at": "2026-06-30T00:00:00+00:00",
+    "git_commit": "55dedd9",
+    "data_source": "yfinance",
+    "data_freshness": {
+      "^GSPC": "2026-06-29",
+      "^DJI": "2026-06-29",
+      "^NDX": "2026-06-29",
+      "^N225": "2026-06-30",
+      "^GDAXI": "2026-06-29"
+    },
+    "scoring_version": "1.0.0",
+    "config": {
+      "interval": "d",
+      "stale_days": 5,
+      "max_gap_days": 7,
+      "min_history": 60,
+      "coverage_policy": {
+        "min_success_ratio": 0.8,
+        "max_missing_symbols": 1
+      }
+    },
+    "coverage": {
+      "attempted_count": 5,
+      "fetched_count": 5,
+      "missing_symbols": [],
+      "success_ratio": 1.0,
+      "passed": true,
+      "violations": []
+    }
+  },
+  "instruments": [
+    {
+      "symbol": "^DJI",
+      "rank": 1,
+      "score": 62.0,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +2.3%; above MA20 by 1.6%; RSI14=66",
+      "features": {
+        "ret_1d": 0.005910792269201437,
+        "ret_5d": 0.009089203316339,
+        "ret_20d": 0.02254011118842092,
+        "ret_60d": 0.12062516793085454,
+        "ma20_dist": 0.016151374365933224,
+        "ma50_dist": 0.03607219678513876,
+        "vol_20d": 0.14429795975571108,
+        "mdd_60d": 0.031867473685693794,
+        "rsi_14": 65.52473627721025,
+        "zscore_20d": 1.5106552528542634
+      }
+    },
+    {
+      "symbol": "^N225",
+      "rank": 2,
+      "score": 62.0,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +5.2%; above MA20 by 2.5%; RSI14=66",
+      "features": {
+        "ret_1d": 0.010985144037540584,
+        "ret_5d": 0.0063455224516346664,
+        "ret_20d": 0.052401649593542876,
+        "ret_60d": 0.30687839918100557,
+        "ma20_dist": 0.025280545627900743,
+        "ma50_dist": 0.0878657487830635,
+        "vol_20d": 0.3936058277716788,
+        "mdd_60d": 0.06399699936257013,
+        "rsi_14": 66.42690936588757,
+        "zscore_20d": 0.6752173864176447
+      }
+    },
+    {
+      "symbol": "^NDX",
+      "rank": 3,
+      "score": 38.0,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -1.8%; above MA20 by 0.1%; RSI14=53",
+      "features": {
+        "ret_1d": 0.02254640780025463,
+        "ret_5d": -0.018859413278859427,
+        "ret_20d": -0.01840979877902882,
+        "ret_60d": 0.23958218394753383,
+        "ma20_dist": 0.0007698675141009006,
+        "ma50_dist": 0.028494825223562142,
+        "vol_20d": 0.3184930752217799,
+        "mdd_60d": 0.07020639974183071,
+        "rsi_14": 52.59896138422025,
+        "zscore_20d": 0.03676945354295548
+      }
+    },
+    {
+      "symbol": "^GSPC",
+      "rank": 4,
+      "score": 34.0,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -1.8%; below MA20 by 0.1%; RSI14=52",
+      "features": {
+        "ret_1d": 0.011750057250389023,
+        "ret_5d": -0.004330358957242875,
+        "ret_20d": -0.01842068291453669,
+        "ret_60d": 0.1315693190125986,
+        "ma20_dist": -0.0009582159357146318,
+        "ma50_dist": 0.009362892767250025,
+        "vol_20d": 0.17036891830450615,
+        "mdd_60d": 0.045045922544289706,
+        "rsi_14": 51.985864831755066,
+        "zscore_20d": -0.07606658423488323
+      }
+    },
+    {
+      "symbol": "^GDAXI",
+      "rank": 5,
+      "score": 24.0,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -1.5%; below MA20 by 0.6%; RSI14=54",
+      "features": {
+        "ret_1d": -0.0017968335924044565,
+        "ret_5d": -0.0203979778302813,
+        "ret_20d": -0.015044108700536074,
+        "ret_60d": 0.056998422001047544,
+        "ma20_dist": -0.006042357861912993,
+        "ma50_dist": 0.0010081572583248816,
+        "vol_20d": 0.13014779322224254,
+        "mdd_60d": 0.04701974787869948,
+        "rsi_14": 54.2398181732737,
+        "zscore_20d": -0.5733037647685076
+      }
+    }
+  ]
+}

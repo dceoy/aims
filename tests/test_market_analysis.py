@@ -572,6 +572,14 @@ def test_collect_gates_malformed(ma: ModuleType) -> None:
     assert ma.RISK_GATE_MALFORMED in gates
 
 
+def test_collect_gates_dedupes_same_category(ma: ModuleType) -> None:
+    gates = ma._collect_risk_gates(
+        _report(ma, ["malformed OHLC at index 0", "duplicate timestamps detected"]),
+        _empty_features(ma),
+    )
+    assert gates == [ma.RISK_GATE_MALFORMED]
+
+
 def test_collect_gates_high_vol(ma: ModuleType) -> None:
     feats = ma.InstrumentFeatures(
         ret_1d=None,

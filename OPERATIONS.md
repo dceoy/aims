@@ -41,11 +41,11 @@ Examples: `^GSPC` (S&P 500), `^DJI` (Dow Jones), `^NDX` (NASDAQ 100), `^N225` (N
 
 AIMS routes market-data fetches through a provider registry defined in `src/aims/market_analysis.py`. Registered providers:
 
-| Provider   | Supported intervals | Notes                                       |
-| ---------- | -------------------- | -------------------------------------------- |
-| `yfinance` | `d`, `w`, `m`       | Yahoo Finance via the `yfinance` library; default provider |
+| Provider   | Supported intervals | Notes                                                       |
+| ---------- | ------------------- | ----------------------------------------------------------- |
+| `yfinance` | `d`, `w`, `m`       | Yahoo Finance via the `yfinance` library; default provider  |
 | `stooq`    | `d`, `w`, `m`       | Free CSV download; registered fallback/alternative provider |
-| `csv`      | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir     |
+| `csv`      | `d`, `w`, `m`       | Reads pre-downloaded CSVs from data dir                     |
 
 Pass `--provider <name>` to `init-fetch-status`, `fetch`, or `generate`. The default is `yfinance`.
 
@@ -216,6 +216,7 @@ The market regime label is derived from the median composite score of reliable i
 - Volatility and drawdown are historical. They do not predict future risk.
 - Missing or stale data can distort percentile ranks when the universe is small.
 - Short history (< 60 bars) triggers the `insufficient_history` gate and excludes an instrument from reliable rankings.
+- Score/rank deltas in `data/history/` and the Signal History report section compare each instrument only against the most recent prior report. If the analyzed instrument universe changes between reports (e.g. a mapping addition or removal), deltas reflect both genuine market moves and the change in cross-sectional population, and should be interpreted with care until the universe is stable across both dates.
 
 ---
 
@@ -295,14 +296,14 @@ Step 10 calls `gh pr merge --auto --squash --delete-branch`, which merges the PR
 
 The workflow supports `workflow_dispatch` with optional inputs:
 
-| Input                 | Default    | Description                                                                |
-| --------------------- | ---------- | --------------------------------------------------------------------------- |
-| `analysis_date`       | Today UTC  | Override the analysis date (YYYY-MM-DD)                                   |
-| `interval`            | `d`        | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)              |
-| `dry_run`             | `false`    | When `true`, skips PR creation, auto-merge, and Slack success notification |
-| `min_success_ratio`   | `0.8`      | Minimum symbol fetch success ratio for coverage gate                      |
+| Input                 | Default    | Description                                                                                       |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
+| `analysis_date`       | Today UTC  | Override the analysis date (YYYY-MM-DD)                                                           |
+| `interval`            | `d`        | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)                                      |
+| `dry_run`             | `false`    | When `true`, skips PR creation, auto-merge, and Slack success notification                        |
+| `min_success_ratio`   | `0.8`      | Minimum symbol fetch success ratio for coverage gate                                              |
 | `max_missing_symbols` | `4`        | Maximum allowed missing symbols for coverage gate (scaled for the ~20-instrument mapped universe) |
-| `provider`            | `yfinance` | Market data provider: `yfinance` or `stooq`                               |
+| `provider`            | `yfinance` | Market data provider: `yfinance` or `stooq`                                                       |
 
 ### Deployment gate
 
@@ -310,7 +311,7 @@ GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), 
 
 ### Rollback
 
-If a published report or artifact needs to be removed, see [Delete a published report](#delete-a-published-report) in Manual recovery. Reverting a bad *code* change (as opposed to a bad daily *report*) is a normal `git revert` on `main`, gated by the same CI checks as any other change.
+If a published report or artifact needs to be removed, see [Delete a published report](#delete-a-published-report) in Manual recovery. Reverting a bad _code_ change (as opposed to a bad daily _report_) is a normal `git revert` on `main`, gated by the same CI checks as any other change.
 
 ---
 

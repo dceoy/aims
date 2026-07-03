@@ -1,0 +1,5 @@
+name,url,category
+federal_reserve_press,https://www.federalreserve.gov/feeds/press_all.xml,macro
+ecb_press,https://www.ecb.europa.eu/rss/press.html,macro
+boj_whatsnew,https://www.boj.or.jp/en/rss/whatsnew.xml,macro
+bls_news,https://www.bls.gov/feed/news_release.rss,macro

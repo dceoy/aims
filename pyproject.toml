@@ -194,6 +194,10 @@ ignore = [
   "S607",     # git partial path is intentional
   "T201",     # CLI status output via print is intentional
 ]
+".agents/skills/qualitative-analysis/scripts/*.py" = [
+  "D100",     # Module docstrings are in the module-level string
+  "INP001",   # Not a package; scripts are thin CLI entrypoints
+]
 ".agents/skills/update-cfd-instruments/scripts/*.py" = [
   "C901",     # Agent scraper scripts can have parser/state-machine complexity
   "D100",     # Missing module docstring
@@ -234,6 +238,7 @@ include = [
   "src/aims",
   "tools",
   ".agents/skills/market-analysis/scripts",
+  ".agents/skills/qualitative-analysis/scripts",
   ".agents/skills/update-cfd-instruments/scripts",
 ]
 exclude = ["build", ".venv", ".claude", "tests"]

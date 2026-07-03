@@ -17,6 +17,7 @@ This document covers data sources, scoring methodology, report generation, the p
 7. [Required permissions](#7-required-permissions)
 8. [Troubleshooting](#8-troubleshooting)
 9. [Manual recovery](#9-manual-recovery)
+10. [AI qualitative analysis](#10-ai-qualitative-analysis)
 
 ---
 
@@ -322,6 +323,7 @@ If a published report or artifact needs to be removed, see [Delete a published r
 | Secret              | Required | Description                                                                                                                                      |
 | ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                       |
+| `ANTHROPIC_API_KEY` | Optional | Claude API key for the AI qualitative analysis step. If not set, the qualitative steps are skipped and the pipeline behaves exactly as before.   |
 | `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed. |
 
 **How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.
@@ -470,3 +472,97 @@ uv run .agents/skills/market-analysis/scripts/notify_slack.py \
 ### Refresh CFD instruments manually
 
 Trigger **Actions → Update CFD instruments → Run workflow**.
+
+---
+
+## 10. AI qualitative analysis
+
+The qualitative layer enriches daily reports with grounded AI analysis of news, earnings, disclosures, and macro events. The quantitative pipeline (sections 1–5) remains the sole source of deterministic market scores; the AI never modifies scores, ranks, risk gates, or the market regime.
+
+### Design contract
+
+- **Artifacts, not prose.** The Claude API call in `src/aims/qualitative.py` is the single non-deterministic step in the pipeline. It writes `data/qualitative/YYYY-MM-DD.json` (schema reference: `data/schema/qualitative.schema.json`); validation, gating, and report rendering are deterministic given that file. Artifacts record the model id, `PROMPT_VERSION`, and SHA-256 hashes of the analysis artifact and evidence bundle they were produced from.
+- **Evidence-first grounding.** The model may cite only from the committed evidence bundle — no browsing at analysis time. Fabricated citation ids are dropped at assembly and instruments outside the analysis universe are discarded, so hallucinated references become gated content instead of published claims.
+- **Fail-open.** When `ANTHROPIC_API_KEY` is absent, `skip_qualitative` is set, or any qualitative step fails, the daily workflow logs a warning, removes partial outputs, and publishes the quantitative-only report unchanged. Quantitative coverage gates are never affected.
+- **Repository policy.** No vector databases, embeddings pipelines, external RAG services, or server-side runtimes.
+
+### Evidence bundles
+
+`.agents/skills/qualitative-analysis/scripts/fetch_evidence.py fetch` collects per-instrument news via `yfinance` for every mapped instrument plus curated institutional feeds listed in `data/mappings/evidence_sources.csv` (columns: `name,url,category`), and writes `data/evidence/YYYY-MM-DD.json` (schema: `data/schema/evidence.schema.json`).
+
+- Evidence ids are the first 16 hex characters of the SHA-256 of `<url>|<published_at>`, stable across runs.
+- Items are markup-stripped, capped (titles 300 chars, summaries 500 chars, 10 items per symbol, 20 per feed), deduplicated, and recency-filtered (`--max-age-days`, default 7).
+- Per-source fetch outcomes are recorded in `metadata.coverage`, mirroring the price fetch-status pattern, so a dead feed is visible rather than silently shrinking the bundle.
+- **Trust boundary:** the feed list is a curated allowlist of official institutional sources. Evidence text is untrusted data — stored and cited, never interpreted as instructions. To add a feed, append a row to `evidence_sources.csv` (RSS 2.0 and Atom are supported) and keep the list limited to official sources.
+- Items without a parseable publication timestamp are dropped; recency gating needs real timestamps.
+- **Retention:** `data/evidence/` accumulates one file per analysis date alongside `data/analysis/`. Prune old bundles together with their analysis artifacts if repository size becomes a concern; evaluation only needs the qualitative artifacts and prices.
+
+### Event calendars
+
+`data/calendars/` holds known-in-advance events (schema: `data/schema/calendar.schema.json`):
+
+- `macro_events.json` — curated from officially published schedules (FOMC etc.). Update it by hand from the sources recorded in each entry's `source_url`; use the decision/announcement day for multi-day meetings.
+- `earnings.json` — generated by `update_calendars.py fetch-earnings` from `yfinance` for `asset_class=equity` mapping rows (default horizon 120 days). The daily workflow refreshes it before report generation; refresh failures fall back to the committed file.
+
+The report renders an "Upcoming Events" section (default window: 7 days from the analysis date) and flags top opportunities with imminent events; the Slack notification lists events affecting top-5 signals. A wrong date is corrected by editing the calendar file and regenerating the report. If any calendar file fails validation, the workflow omits the Upcoming Events section for that run instead of failing.
+
+### Qualitative artifact and grounding gates
+
+`generate_qualitative.py` builds a structured prompt (quantitative artifact + evidence bundle + upcoming events, each delimited as data), forces a schema-constrained tool response at temperature 0, and assembles the artifact. Contract validation (`validate_qualitative.py`) rejects unknown instruments, out-of-enum stances/confidences, over-length texts, and citations missing from the bundle; one retry is attempted before the step fails (fail-open in the workflow).
+
+Deterministic grounding gates then cross-examine the surviving content and are recorded per entry (mirroring `risk_gates`):
+
+| Gate                     | Trigger                                                                                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| `uncited_claims`         | A driver, theme, or the narrative has no surviving citations                                    |
+| `stale_evidence`         | Every cited item is older than the freshness window (default 5 days, aligned with `stale_days`) |
+| `numeric_claim_mismatch` | A percentage claim matches neither the instrument's features nor any cited evidence text        |
+| `direction_conflict`     | Direction words (rallied/fell/…) contradict the sign of `ret_5d` and `ret_20d`                  |
+
+Gated entries are excluded from rendering while the rest of the artifact still publishes; a fully gated narrative renders as "withheld by grounding gates" with the gate names. Gate outcomes are summarized in `metadata.gates`.
+
+### Report and Slack rendering
+
+`generate_report.py --qualitative … --calendar-dir …` renders the "AI Market Commentary" section: explicitly labeled AI-generated, showing model id and prompt version, with numbered citations linking to sources. Without these inputs the report output is byte-identical to the quantitative-only generator. The front matter gains `ai_commentary = true/false` when a qualitative artifact is supplied. `notify_slack.py --qualitative … --calendar-dir …` adds one bounded stance-summary line and an upcoming-events line.
+
+### Workflow behavior and cost
+
+The daily workflow runs the qualitative steps only when the `ANTHROPIC_API_KEY` repository secret is configured and the `skip_qualitative` dispatch input is not set. A typical run sends roughly 10–40k input tokens (universe of ~20 instruments plus a capped evidence bundle) and receives up to 3,072 output tokens — on the order of a few US cents per day with the default model; verify against current pricing at https://docs.anthropic.com/en/docs/about-claude/pricing when changing models. Cost controls: capped evidence bundle, `--max-tokens`, request timeout, and a single retry.
+
+### Evaluation and prompt changes
+
+- `evaluate_qualitative.py evaluate` deterministically joins ungated stances with realized forward returns from `data/prices/` (hit = supportive entries at/above the cross-sectional median forward return of evaluated entries, conflicting below it; neutral excluded) and writes `data/performance/qualitative_evaluation.json` with per-horizon hit rates and confidence calibration. This measures informational association, not an executable track record.
+- `evaluate_qualitative.py check-links` samples cited URLs from the latest bundle and warns (never fails) on link rot.
+- Any change to the system prompt or tool schema must bump `PROMPT_VERSION` in `src/aims/qualitative.py` and pass the prompt regression tests (`tests/test_qualitative_prompt_regression.py`) before adoption.
+
+### Troubleshooting and manual recovery
+
+- **Qualitative step failed in the daily run:** the run log shows the failing sub-step (evidence fetch, evidence validation, generation, or artifact validation). The report for that day is quantitative-only; no action is required. To backfill, regenerate manually (below) and open a PR.
+- **Regenerate a qualitative artifact for a past date:**
+
+  ```sh
+  DATE=2026-07-02
+  uv run .agents/skills/qualitative-analysis/scripts/fetch_evidence.py \
+      fetch --mapping data/mappings/canonical_instrument_mappings.csv \
+      --provider yfinance --interval d \
+      --sources data/mappings/evidence_sources.csv \
+      --analysis-date "$DATE" --output data/evidence/
+  ANTHROPIC_API_KEY=... \
+  uv run .agents/skills/qualitative-analysis/scripts/generate_qualitative.py \
+      --analysis "data/analysis/${DATE}.json" \
+      --evidence "data/evidence/${DATE}.json" \
+      --calendar-dir data/calendars --output data/qualitative/
+  uv run .agents/skills/market-analysis/scripts/generate_report.py \
+      --input "data/analysis/${DATE}.json" \
+      --history "data/history/${DATE}.json" \
+      --qualitative "data/qualitative/${DATE}.json" \
+      --calendar-dir data/calendars --output content/results/
+  ```
+
+  Note that news fetched after the fact may differ from what was available on the original date; the artifact records its own input hashes and retrieval timestamps.
+
+- **API errors (401/429/5xx):** check the key, Anthropic status, and rate limits; the step retries once. Persistent failures only suppress the AI section — never the report.
+- **Everything withheld by gates:** inspect `metadata.gates` in the artifact and the cited evidence; frequent `numeric_claim_mismatch` or `direction_conflict` gates on honest content may indicate the prompt drifted from the artifact features — re-run the prompt regression tests.
+- **Delete published qualitative content:** remove `data/qualitative/YYYY-MM-DD.json` (and optionally `data/evidence/YYYY-MM-DD.json`), regenerate the report without `--qualitative`, commit, and push — same flow as deleting a published report.
+
+Durable market themes distilled from qualitative artifacts are curated into the OKF layer via human-reviewed PRs only; see `.agents/skills/aims-okf-curator/SKILL.md`.

@@ -9,6 +9,7 @@ The `okf/` tree is the canonical repository-native source for durable AIMS archi
 ## Concepts
 
 - [Agent Skills](/concepts/agent-skills.md)
+- [AI Qualitative Analysis](/concepts/qualitative-analysis.md)
 - [AIMS Architecture](/concepts/architecture.md)
 - [Data Sources](/concepts/data-sources.md)
 - [Instrument Master](/concepts/instrument-master.md)

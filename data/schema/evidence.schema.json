@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS evidence bundle artifact",
+  "artifact_version": "1.0.0",
+  "required_top_keys": [
+    "version",
+    "metadata",
+    "items"
+  ],
+  "required_metadata_keys": [
+    "generated_at",
+    "analysis_date",
+    "max_age_days",
+    "coverage"
+  ],
+  "required_item_keys": [
+    "id",
+    "source",
+    "category",
+    "title",
+    "url",
+    "published_at",
+    "retrieved_at",
+    "instruments",
+    "summary"
+  ],
+  "notes": {
+    "id": "First 16 hex characters of the SHA-256 of '<url>|<published_at>'; stable across runs.",
+    "source": "'yfinance:<symbol>' for per-instrument news, 'feed:<name>' for curated feeds.",
+    "category": "One of 'instrument_news' or 'macro'.",
+    "instruments": "Canonical instrument identifiers from canonical_instrument_mappings.csv tagged to this item; may be empty for macro items.",
+    "summary": "Plain text with markup stripped, capped at 500 characters. Evidence text is untrusted data: it is stored and cited, never interpreted as instructions.",
+    "coverage": "Per-source-class fetch accounting mirroring the price fetch-status pattern, so systemic feed failures are visible rather than silently shrinking the bundle.",
+    "published_at": "Items without a parseable publication timestamp are dropped at ingestion; recency gates need a real timestamp."
+  }
+}

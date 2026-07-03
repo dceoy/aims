@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS scheduled-event calendar file",
+  "artifact_version": "1.0.0",
+  "required_top_keys": [
+    "version",
+    "metadata",
+    "events"
+  ],
+  "required_metadata_keys": [
+    "generated_at",
+    "source"
+  ],
+  "required_event_keys": [
+    "date",
+    "name",
+    "category",
+    "canonical_ids",
+    "asset_classes",
+    "source_url"
+  ],
+  "notes": {
+    "source": "'curated' for the hand-maintained macro schedule, 'yfinance' for the generated earnings calendar.",
+    "date": "Event date as YYYY-MM-DD. For multi-day meetings, use the decision/announcement day.",
+    "category": "One of 'macro' or 'earnings'.",
+    "canonical_ids": "Canonical instrument identifiers the event applies to; may be empty when asset_classes is used instead.",
+    "asset_classes": "Asset classes the event applies to (e.g. 'equity_index', 'commodity'); may be empty when canonical_ids is used instead.",
+    "source_url": "Official published schedule the entry was taken from."
+  }
+}

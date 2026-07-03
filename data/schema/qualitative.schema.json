@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS qualitative analysis artifact",
+  "artifact_version": "1.0.0",
+  "required_top_keys": [
+    "version",
+    "metadata",
+    "market_narrative",
+    "themes",
+    "instruments",
+    "citations"
+  ],
+  "required_metadata_keys": [
+    "generated_at",
+    "analysis_date",
+    "model",
+    "prompt_version",
+    "input_hashes",
+    "gates"
+  ],
+  "required_instrument_keys": [
+    "canonical_id",
+    "symbol",
+    "stance",
+    "confidence",
+    "drivers",
+    "gates"
+  ],
+  "stance_values": ["supportive", "neutral", "conflicting"],
+  "confidence_values": ["low", "medium", "high"],
+  "gate_values": [
+    "direction_conflict",
+    "numeric_claim_mismatch",
+    "stale_evidence",
+    "uncited_claims"
+  ],
+  "length_caps": {
+    "market_narrative_text": 1200,
+    "theme_title": 80,
+    "theme_text": 400,
+    "driver_text": 300,
+    "max_themes": 5,
+    "max_drivers_per_instrument": 3,
+    "max_citations_per_list": 8
+  },
+  "notes": {
+    "source_of_truth": "The quantitative analysis artifact remains authoritative for all scores, ranks, dates, prices, risk gates, and data availability. This artifact may reference those facts but never restates them authoritatively and never modifies them.",
+    "grounding": "Every citation must be an evidence id present in the referenced evidence bundle. Drivers, themes, and the market narrative without citations are gated as 'uncited_claims'.",
+    "stance": "Relationship of the cited evidence to the instrument's quantitative signal: 'supportive' (evidence supports the signal direction), 'neutral', or 'conflicting' (evidence argues against the signal).",
+    "gates": "Deterministic grounding-gate outcomes recorded per entry, mirroring the risk_gates pattern. Gated entries are excluded from report rendering; the artifact still publishes.",
+    "input_hashes": "SHA-256 of the exact analysis artifact and evidence bundle JSON bytes the model saw, so any artifact traces to exactly what produced it.",
+    "citations_map": "Denormalized {evidence_id: {title, url, source, published_at}} for cited items only, so the report renders sources without re-reading the evidence bundle.",
+    "non_determinism": "The LLM call producing this artifact is the single non-deterministic step in the pipeline; everything downstream (validation, gating, rendering) is deterministic given this file."
+  }
+}

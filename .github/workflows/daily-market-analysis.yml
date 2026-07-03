@@ -42,6 +42,11 @@ on:
         options:
           - yfinance
           - stooq
+      skip_qualitative:
+        description: "Skip evidence fetch and AI qualitative analysis"
+        required: false
+        default: "false"
+        type: boolean
 permissions:
   contents: read
 jobs:
@@ -57,7 +62,9 @@ jobs:
       MIN_SUCCESS_RATIO: ${{ inputs.min_success_ratio || '0.8' }}
       MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '4' }}
       PROVIDER: ${{ inputs.provider || 'yfinance' }}
+      SKIP_QUALITATIVE: ${{ inputs.skip_qualitative || 'false' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+      QUALITATIVE_ENABLED: ${{ secrets.ANTHROPIC_API_KEY != '' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
         with:
@@ -161,15 +168,91 @@ jobs:
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_history.py \
             --input "data/history/${DATE}.json"
+      - name: Update earnings calendar
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          # Deterministic calendar refresh; failures never block publication.
+          if uv run python \
+            .agents/skills/qualitative-analysis/scripts/update_calendars.py \
+            fetch-earnings \
+            --mapping data/mappings/canonical_instrument_mappings.csv \
+            --provider "$PROVIDER" \
+            --interval "$INTERVAL" \
+            --output data/calendars/earnings.json; then
+            echo "Earnings calendar refreshed."
+          else
+            echo "WARNING: earnings calendar refresh failed;" \
+              "continuing with committed calendars."
+          fi
+      - name: Validate calendars
+        id: calendars
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          CALENDAR_OK=true
+          for FILE in data/calendars/*.json; do
+            uv run python \
+              .agents/skills/qualitative-analysis/scripts/update_calendars.py \
+              validate --input "$FILE" || CALENDAR_OK=false
+          done
+          if [ "$CALENDAR_OK" != "true" ]; then
+            echo "WARNING: calendar validation failed;" \
+              "the report will omit the Upcoming Events section."
+          fi
+          echo "calendar_ok=$CALENDAR_OK" >> "$GITHUB_OUTPUT"
+      - name: Generate AI qualitative analysis
+        if: >-
+          steps.symbols.outputs.symbols != ''
+          && env.QUALITATIVE_ENABLED == 'true'
+          && env.SKIP_QUALITATIVE != 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATE: ${{ steps.date.outputs.date }}
+        run: |
+          # Fail-open: any failure below logs a warning, removes the partial
+          # outputs, and the quantitative report publishes unchanged.
+          SCRIPTS=.agents/skills/qualitative-analysis/scripts
+          if uv run python "$SCRIPTS/fetch_evidence.py" fetch \
+              --mapping data/mappings/canonical_instrument_mappings.csv \
+              --provider "$PROVIDER" \
+              --interval "$INTERVAL" \
+              --sources data/mappings/evidence_sources.csv \
+              --analysis-date "${DATE}" \
+              --output data/evidence/ \
+            && uv run python "$SCRIPTS/fetch_evidence.py" validate \
+              --input "data/evidence/${DATE}.json" \
+            && uv run python "$SCRIPTS/generate_qualitative.py" \
+              --analysis "data/analysis/${DATE}.json" \
+              --evidence "data/evidence/${DATE}.json" \
+              --calendar-dir data/calendars \
+              --output data/qualitative/ \
+            && uv run python "$SCRIPTS/validate_qualitative.py" \
+              --input "data/qualitative/${DATE}.json" \
+              --evidence "data/evidence/${DATE}.json" \
+              --analysis "data/analysis/${DATE}.json"; then
+            echo "Qualitative artifact generated and validated."
+          else
+            echo "WARNING: qualitative analysis failed;" \
+              "publishing quantitative-only report."
+            rm -f "data/evidence/${DATE}.json" "data/qualitative/${DATE}.json"
+          fi
       - name: Generate Hugo report
         if: steps.symbols.outputs.symbols != ''
         env:
           DATE: ${{ steps.date.outputs.date }}
+          CALENDAR_OK: ${{ steps.calendars.outputs.calendar_ok }}
         run: |
+          EXTRA_ARGS=()
+          if [ "$CALENDAR_OK" = "true" ]; then
+            EXTRA_ARGS+=(--calendar-dir data/calendars)
+          fi
+          if [ -f "data/qualitative/${DATE}.json" ]; then
+            EXTRA_ARGS+=(--qualitative "data/qualitative/${DATE}.json")
+          fi
           uv run python .agents/skills/market-analysis/scripts/generate_report.py \
             --input "data/analysis/${DATE}.json" \
             --history "data/history/${DATE}.json" \
-            --output content/results/
+            --output content/results/ \
+            "${EXTRA_ARGS[@]}"
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version: stable
@@ -194,6 +277,11 @@ jobs:
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
           git add data/analysis/ data/history/ content/results/
+          for DIR in data/evidence data/qualitative data/calendars; do
+            if [ -d "$DIR" ]; then
+              git add "$DIR"
+            fi
+          done
           if git diff --cached --quiet; then
             echo "No changes to commit."
             echo "pr_url=" >> "$GITHUB_OUTPUT"
@@ -236,11 +324,20 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DATE: ${{ steps.date.outputs.date }}
           PR_URL: ${{ steps.pr.outputs.pr_url }}
+          CALENDAR_OK: ${{ steps.calendars.outputs.calendar_ok }}
         run: |
+          EXTRA_ARGS=()
+          if [ -f "data/qualitative/${DATE}.json" ]; then
+            EXTRA_ARGS+=(--qualitative "data/qualitative/${DATE}.json")
+          fi
+          if [ "$CALENDAR_OK" = "true" ]; then
+            EXTRA_ARGS+=(--calendar-dir data/calendars)
+          fi
           uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
             --artifact "data/analysis/${DATE}.json" \
             --history "data/history/${DATE}.json" \
-            --pr-url "${PR_URL}"
+            --pr-url "${PR_URL}" \
+            "${EXTRA_ARGS[@]}"
       - name: Notify Slack (failure)
         if: failure() && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
         env:

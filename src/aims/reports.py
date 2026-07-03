@@ -13,6 +13,13 @@ import json
 from pathlib import Path
 from typing import Any, Final, Literal
 
+from aims.calendars import (
+    DEFAULT_WINDOW_DAYS,
+    event_applies,
+    load_calendar_events,
+    upcoming_events,
+)
+
 _Alignment = Literal["left", "right", "center"]
 
 _DEFAULT_OUTPUT_DIR: Final[Path] = Path("content/results")
@@ -96,8 +103,23 @@ def market_regime(reliable: list[dict[str, Any]]) -> str:
     return "Neutral"
 
 
+def _qualitative_has_content(qualitative: dict[str, Any]) -> bool:
+    """Return True when any narrative, theme, or instrument note is ungated."""
+    narrative = qualitative.get("market_narrative") or {}
+    if narrative.get("text") and not narrative.get("gates"):
+        return True
+    if any(not (theme.get("gates") or []) for theme in qualitative.get("themes") or []):
+        return True
+    return any(
+        not (inst.get("gates") or []) for inst in qualitative.get("instruments") or []
+    )
+
+
 def _build_front_matter(
-    artifact: dict[str, Any], date_str: str, history: dict[str, Any] | None = None
+    artifact: dict[str, Any],
+    date_str: str,
+    history: dict[str, Any] | None = None,
+    qualitative: dict[str, Any] | None = None,
 ) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "1970-01-01T00:00:00+00:00")
@@ -119,6 +141,8 @@ def _build_front_matter(
     source_files = [f"data/analysis/{date_str}.json"]
     if history is not None:
         source_files.append(f"data/history/{date_str}.json")
+    if qualitative is not None:
+        source_files.append(f"data/qualitative/{date_str}.json")
     sources_toml = ", ".join(f'"{_toml_escape(path)}"' for path in source_files)
 
     if reliable:
@@ -144,8 +168,11 @@ def _build_front_matter(
         f'data_source = "{_toml_escape(data_source)}"',
         f'scoring_version = "{_toml_escape(scoring_version)}"',
         f'git_commit = "{_toml_escape(git_commit)}"',
-        "+++",
     ]
+    if qualitative is not None:
+        has_content = _qualitative_has_content(qualitative)
+        lines.append(f"ai_commentary = {'true' if has_content else 'false'}")
+    lines.append("+++")
     return "\n".join(lines)
 
 
@@ -171,7 +198,10 @@ def _instrument_label(inst: dict[str, Any]) -> str:
     return symbol
 
 
-def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
+def _section_top_opportunities(
+    reliable: list[dict[str, Any]],
+    events: list[dict[str, Any]] | None = None,
+) -> str:
     header = "## Top Opportunities"
     top5 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:5]
     if not top5:
@@ -185,11 +215,16 @@ def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
         rsi_raw = features.get("rsi_14")
         rsi_str = f"{rsi_raw:.0f}" if isinstance(rsi_raw, (int, float)) else "n/a"
         explanation = str(inst.get("explanation", ""))
-        lines.append(
+        line = (
             f"- **{label}** — score {score:.1f},"
             f" 20d return {_format_pct(ret_20d)},"
             f" RSI14={rsi_str}. {explanation}"
         )
+        matching = [e for e in events or [] if event_applies(e, inst)]
+        if matching:
+            first = matching[0]
+            line += f" ⚠ Scheduled event: {first['name']} on {first['date']}."
+        lines.append(line)
     return f"{header}\n\n" + "\n".join(lines)
 
 
@@ -507,6 +542,137 @@ def _section_methodology(scoring_version: str, git_commit: str) -> str:
     return f"{header}\n\n{content}"
 
 
+def _event_scope_label(event: dict[str, Any], instruments: list[dict[str, Any]]) -> str:
+    """Label who an event applies to: instrument names and/or asset classes."""
+    by_id = {
+        str(i.get("canonical_id")): i for i in instruments if i.get("canonical_id")
+    }
+    parts = [
+        _instrument_label(by_id[cid]) if cid in by_id else str(cid)
+        for cid in event.get("canonical_ids") or []
+    ]
+    parts.extend(_asset_class_label(str(ac)) for ac in event.get("asset_classes") or [])
+    return ", ".join(parts) if parts else "—"
+
+
+def _section_upcoming_events(
+    events: list[dict[str, Any]],
+    instruments: list[dict[str, Any]],
+    window_days: int,
+) -> str:
+    header = "## Upcoming Events"
+    if not events:
+        return f"{header}\n\n_No scheduled events within the next {window_days} days._"
+    rows = [
+        [
+            str(event["date"]),
+            str(event["name"]),
+            _event_scope_label(event, instruments),
+        ]
+        for event in events
+    ]
+    table = _format_markdown_table(
+        ["Date", "Event", "Applies To"], rows, ["left", "left", "left"]
+    )
+    return f"{header}\n\n{table}"
+
+
+def _section_ai_commentary(
+    qualitative: dict[str, Any],
+    instruments: list[dict[str, Any]],
+) -> str:
+    header = "## AI Market Commentary"
+    meta = qualitative.get("metadata", {}) or {}
+    model = str(meta.get("model", ""))
+    prompt_version = str(meta.get("prompt_version", ""))
+    citations_map = qualitative.get("citations") or {}
+    labels_by_id = {
+        str(i.get("canonical_id")): _instrument_label(i)
+        for i in instruments
+        if i.get("canonical_id")
+    }
+    order: list[str] = []
+
+    def _refs(citations: list[Any]) -> str:
+        marks: list[str] = []
+        for raw in citations:
+            cid = str(raw)
+            if cid not in order:
+                order.append(cid)
+            marks.append(f"[{order.index(cid) + 1}]")
+        return "".join(marks)
+
+    lines: list[str] = [
+        (
+            "> **AI-generated content.** This commentary is produced by a"
+            f" language model (`{model}`, prompt v{prompt_version}) from the"
+            " cited sources listed below. It is informational only; the"
+            " quantitative scores in this report remain the authoritative"
+            " output."
+        ),
+        "",
+    ]
+
+    narrative = qualitative.get("market_narrative") or {}
+    narrative_gates = [str(g) for g in narrative.get("gates") or []]
+    if narrative.get("text") and not narrative_gates:
+        refs = _refs(narrative.get("citations") or [])
+        lines.append(f"{narrative['text']} {refs}".rstrip())
+    else:
+        reason = f" ({', '.join(narrative_gates)})" if narrative_gates else ""
+        lines.append(f"_Market narrative withheld by grounding gates{reason}._")
+
+    ungated_themes = [
+        theme
+        for theme in qualitative.get("themes") or []
+        if not (theme.get("gates") or [])
+    ]
+    if ungated_themes:
+        lines.extend(("", "### Themes", ""))
+        lines.extend(
+            f"- **{theme.get('title', '')}** — {theme.get('text', '')}"
+            f" {_refs(theme.get('citations') or [])}".rstrip()
+            for theme in ungated_themes
+        )
+
+    entries = qualitative.get("instruments") or []
+    ungated = [e for e in entries if not (e.get("gates") or [])]
+    if ungated:
+        lines.extend(("", "### Instrument Notes", ""))
+        for entry in ungated:
+            label = labels_by_id.get(
+                str(entry.get("canonical_id")), str(entry.get("symbol", ""))
+            )
+            drivers = " ".join(
+                (
+                    f"{driver.get('text', '')} {_refs(driver.get('citations') or [])}"
+                ).rstrip()
+                for driver in entry.get("drivers") or []
+            )
+            lines.append(
+                f"- **{label}** — stance: {entry.get('stance', '')}"
+                f" (confidence: {entry.get('confidence', '')}). {drivers}"
+            )
+    gated_count = len(entries) - len(ungated)
+    if gated_count:
+        lines.extend((
+            "",
+            f"_{gated_count} instrument note(s) withheld by grounding gates._",
+        ))
+
+    if order:
+        lines.extend(("", "### Sources", ""))
+        for idx, cid in enumerate(order, start=1):
+            entry = citations_map.get(cid) or {}
+            title = str(entry.get("title", cid))
+            url = str(entry.get("url", ""))
+            source = str(entry.get("source", ""))
+            published = str(entry.get("published_at", ""))[:10]
+            lines.append(f"{idx}. [{title}]({url}) — {source}, {published}")
+
+    return f"{header}\n\n" + "\n".join(lines)
+
+
 def _section_disclaimer() -> str:
     return f"## Disclaimer\n\n> {_DISCLAIMER}"
 
@@ -532,7 +698,12 @@ def _validate_for_report(artifact: dict[str, Any]) -> None:
 
 
 def generate_report(
-    artifact: dict[str, Any], history: dict[str, Any] | None = None
+    artifact: dict[str, Any],
+    history: dict[str, Any] | None = None,
+    *,
+    qualitative: dict[str, Any] | None = None,
+    events: list[dict[str, Any]] | None = None,
+    events_window: int = DEFAULT_WINDOW_DAYS,
 ) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -557,12 +728,18 @@ def generate_report(
     above, valid = _regime_breadth(reliable)
     total = len(instruments)
 
-    front_matter = _build_front_matter(artifact, date_str, history)
+    front_matter = _build_front_matter(artifact, date_str, history, qualitative)
 
-    sections = [
-        _section_market_regime(regime, above, valid, total),
-        _section_top_opportunities(reliable),
+    sections = [_section_market_regime(regime, above, valid, total)]
+    if events is not None:
+        sections.append(_section_upcoming_events(events, instruments, events_window))
+    sections.extend((
+        _section_top_opportunities(reliable, events),
         _section_signal_history(history),
+    ))
+    if qualitative is not None:
+        sections.append(_section_ai_commentary(qualitative, instruments))
+    sections.extend((
         _section_instruments_to_avoid(unreliable),
         _section_key_risks(instruments),
         _section_instrument_scores(instruments),
@@ -570,7 +747,7 @@ def generate_report(
         _section_symbol_details(instruments),
         _section_methodology(scoring_version, git_commit),
         _section_disclaimer(),
-    ]
+    ))
     body = "\n\n".join(sections)
     return f"{front_matter}\n\n{body}\n"
 
@@ -589,6 +766,10 @@ def generate_and_save(
     artifact_path: Path,
     output_dir: Path = _DEFAULT_OUTPUT_DIR,
     history_path: Path | None = None,
+    *,
+    qualitative_path: Path | None = None,
+    calendar_dir: Path | None = None,
+    events_window: int = DEFAULT_WINDOW_DAYS,
 ) -> Path:
     with artifact_path.open(encoding="utf-8") as fh:
         artifact: dict[str, Any] = json.load(fh)
@@ -597,7 +778,23 @@ def generate_and_save(
     if history_path is not None:
         with history_path.open(encoding="utf-8") as fh:
             history = json.load(fh)
-    content = generate_report(artifact, history)
+    qualitative = None
+    if qualitative_path is not None:
+        with qualitative_path.open(encoding="utf-8") as fh:
+            qualitative = json.load(fh)
+    events = None
+    if calendar_dir is not None:
+        date_str = str(artifact["metadata"]["generated_at"])[:10]
+        events = upcoming_events(
+            load_calendar_events(calendar_dir), date_str, events_window
+        )
+    content = generate_report(
+        artifact,
+        history,
+        qualitative=qualitative,
+        events=events,
+        events_window=events_window,
+    )
     filename = report_filename(artifact)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / filename
@@ -616,6 +813,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--history", type=Path, help="Path to score-history JSON")
     parser.add_argument(
+        "--qualitative",
+        type=Path,
+        default=None,
+        help="Path to a validated qualitative artifact JSON",
+    )
+    parser.add_argument(
+        "--calendar-dir",
+        type=Path,
+        default=None,
+        help="Directory of calendar JSON files for the Upcoming Events section",
+    )
+    parser.add_argument(
+        "--events-window",
+        type=int,
+        default=DEFAULT_WINDOW_DAYS,
+        help=f"Upcoming-events window in days (default: {DEFAULT_WINDOW_DAYS})",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=_DEFAULT_OUTPUT_DIR,
@@ -627,7 +842,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        generate_and_save(args.input, args.output, args.history)
+        generate_and_save(
+            args.input,
+            args.output,
+            args.history,
+            qualitative_path=args.qualitative,
+            calendar_dir=args.calendar_dir,
+            events_window=args.events_window,
+        )
     except FileNotFoundError:
         print(f"ERROR: file not found: {args.input}")
         return 1

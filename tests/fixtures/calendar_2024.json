@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "generated_at": "2024-01-01T00:00:00+00:00",
+    "source": "curated"
+  },
+  "events": [
+    {
+      "date": "2024-01-03",
+      "name": "FOMC minutes release",
+      "category": "macro",
+      "canonical_ids": [],
+      "asset_classes": ["equity_index"],
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    },
+    {
+      "date": "2024-01-05",
+      "name": "NASDAQ 100 rebalance",
+      "category": "macro",
+      "canonical_ids": ["ndx"],
+      "asset_classes": [],
+      "source_url": "https://example.com/rebalance"
+    },
+    {
+      "date": "2024-02-01",
+      "name": "Out-of-window event",
+      "category": "macro",
+      "canonical_ids": [],
+      "asset_classes": ["equity_index"],
+      "source_url": "https://example.com/later"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "generated_at": "2024-01-01T02:00:00+00:00",
+    "analysis_date": "2024-01-01",
+    "model": "claude-test",
+    "prompt_version": "1.0.0",
+    "input_hashes": {
+      "analysis": "1111111111111111111111111111111111111111111111111111111111111111",
+      "evidence": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "gates": {
+      "gated_instruments": ["dji"],
+      "narrative_gates": []
+    }
+  },
+  "market_narrative": {
+    "text": "Large-cap indices carried year-end momentum into January, helped by a Federal Reserve pause that markets read as the end of the hiking cycle.",
+    "citations": ["aaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb"],
+    "gates": []
+  },
+  "themes": [
+    {
+      "title": "Rate pause",
+      "text": "The Federal Reserve held its policy rate, supporting risk appetite across equity indices.",
+      "citations": ["bbbbbbbbbbbbbbbb"],
+      "gates": []
+    }
+  ],
+  "instruments": [
+    {
+      "canonical_id": "spx",
+      "symbol": "^SPX",
+      "stance": "supportive",
+      "confidence": "high",
+      "drivers": [
+        {
+          "text": "A reported weekly gain of 3.1% is consistent with the strong momentum signal.",
+          "citations": ["aaaaaaaaaaaaaaaa"]
+        }
+      ],
+      "gates": []
+    },
+    {
+      "canonical_id": "dji",
+      "symbol": "^DJI",
+      "stance": "conflicting",
+      "confidence": "low",
+      "drivers": [
+        {
+          "text": "Coverage of the Dow in the bundle is older than the freshness window.",
+          "citations": ["cccccccccccccccc"]
+        }
+      ],
+      "gates": ["stale_evidence"]
+    }
+  ],
+  "citations": {
+    "aaaaaaaaaaaaaaaa": {
+      "title": "S&P 500 posts weekly gain of 3.1%",
+      "url": "https://news.example/spx-weekly",
+      "source": "yfinance:^SPX",
+      "published_at": "2023-12-31T12:00:00+00:00",
+      "summary": "The index rose 3.1% over five sessions."
+    },
+    "bbbbbbbbbbbbbbbb": {
+      "title": "Federal Reserve holds policy rate",
+      "url": "https://example.gov/press/2023-12-13",
+      "source": "feed:federal_reserve_press",
+      "published_at": "2024-01-01T08:00:00+00:00",
+      "summary": "The committee held the target range unchanged."
+    },
+    "cccccccccccccccc": {
+      "title": "Dow outlook feature",
+      "url": "https://news.example/dji-outlook",
+      "source": "yfinance:^DJI",
+      "published_at": "2023-11-01T12:00:00+00:00",
+      "summary": "An older feature story on the Dow."
+    }
+  }
+}

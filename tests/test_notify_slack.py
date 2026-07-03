@@ -590,3 +590,191 @@ def test_sample_payloads(ns: ModuleType) -> None:
     assert "text" in ns.SAMPLE_SUCCESS_PAYLOAD
     assert isinstance(ns.SAMPLE_FAILURE_PAYLOAD, dict)
     assert "text" in ns.SAMPLE_FAILURE_PAYLOAD
+
+
+# ── qualitative summary and upcoming-events fields ─────────────────────────────
+
+QUAL_FIXTURE_PATH = (
+    Path(__file__).resolve().parent / "fixtures" / "qualitative_2024-01-01.json"
+)
+CAL_FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "calendar_2024.json"
+
+
+@pytest.fixture(scope="module")
+def fixture_qualitative() -> dict[str, Any]:
+    with QUAL_FIXTURE_PATH.open() as fh:
+        return json.load(fh)
+
+
+def test_qualitative_summary_counts(
+    ns: ModuleType, fixture_qualitative: dict[str, Any]
+) -> None:
+    summary = ns._qualitative_summary(fixture_qualitative)
+    assert "1 supportive, 0 neutral, 0 conflicting" in summary
+    assert "(claude-test)" in summary
+    assert "1 note(s) gated" in summary
+    assert "narrative withheld" not in summary
+
+
+def test_qualitative_summary_all_withheld(ns: ModuleType) -> None:
+    qualitative: dict[str, Any] = {
+        "metadata": {"model": "m"},
+        "market_narrative": {"gates": ["uncited_claims"]},
+        "instruments": [],
+    }
+    assert ns._qualitative_summary(qualitative) == (
+        "*AI commentary:* withheld by grounding gates"
+    )
+
+
+def test_qualitative_summary_narrative_gated_with_notes(ns: ModuleType) -> None:
+    qualitative: dict[str, Any] = {
+        "metadata": {"model": "m"},
+        "market_narrative": {"gates": ["stale_evidence"]},
+        "instruments": [
+            {"stance": "neutral", "gates": []},
+            {"stance": "weird", "gates": []},
+        ],
+    }
+    summary = ns._qualitative_summary(qualitative)
+    assert "0 supportive, 1 neutral, 0 conflicting" in summary
+    assert "narrative withheld" in summary
+    assert "gated" not in summary
+
+
+def test_events_summary(ns: ModuleType) -> None:
+    events = [
+        {
+            "date": "2024-01-03",
+            "name": "FOMC",
+            "canonical_ids": [],
+            "asset_classes": ["equity_index"],
+        },
+        {
+            "date": "2024-01-03",
+            "name": "FOMC",
+            "canonical_ids": [],
+            "asset_classes": ["equity_index"],
+        },
+    ]
+    top = [{"canonical_id": "spx", "asset_class": "equity_index"}]
+    assert ns._events_summary(events, top) == "*Upcoming events:* FOMC (2024-01-03)"
+    assert ns._events_summary(events, [{"asset_class": "commodity"}]) is None
+
+
+def test_events_summary_caps_at_three(ns: ModuleType) -> None:
+    events = [
+        {
+            "date": f"2024-01-0{i}",
+            "name": f"E{i}",
+            "canonical_ids": ["spx"],
+            "asset_classes": [],
+        }
+        for i in range(1, 6)
+    ]
+    top = [{"canonical_id": "spx"}]
+    summary = ns._events_summary(events, top)
+    assert summary is not None
+    assert summary.endswith(", …")
+    assert "E4" not in summary
+
+
+def test_build_success_payload_with_qualitative_and_events(
+    ns: ModuleType,
+    fixture_artifact: dict[str, Any],
+    fixture_qualitative: dict[str, Any],
+) -> None:
+    events = [
+        {
+            "date": "2024-01-03",
+            "name": "FOMC minutes release",
+            "canonical_ids": [],
+            "asset_classes": ["equity_index"],
+        }
+    ]
+    payload = ns.build_success_payload(
+        fixture_artifact,
+        "https://example.com/report/",
+        qualitative=fixture_qualitative,
+        events=events,
+    )
+    texts = [f["text"] for f in payload["blocks"][1]["fields"]]
+    assert any("*AI commentary:*" in t for t in texts)
+    assert any("*Upcoming events:* FOMC minutes release" in t for t in texts)
+
+
+def test_build_success_payload_events_without_match(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    events = [
+        {
+            "date": "2024-01-03",
+            "name": "Copper expiry",
+            "canonical_ids": [],
+            "asset_classes": ["commodity"],
+        }
+    ]
+    payload = ns.build_success_payload(fixture_artifact, "", events=events)
+    texts = [f["text"] for f in payload["blocks"][1]["fields"]]
+    assert not any("Upcoming events" in t for t in texts)
+
+
+def test_main_success_with_qualitative_and_calendar(
+    ns: ModuleType, tmp_path: Path
+) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    qualitative_path = tmp_path / "qualitative.json"
+    qualitative_path.write_text(QUAL_FIXTURE_PATH.read_text())
+    calendar_dir = tmp_path / "calendars"
+    calendar_dir.mkdir()
+    (calendar_dir / "cal.json").write_text(CAL_FIXTURE_PATH.read_text())
+
+    mock_response = MagicMock()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
+        patch("urllib.request.urlopen", return_value=mock_response),
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--qualitative",
+            str(qualitative_path),
+            "--calendar-dir",
+            str(calendar_dir),
+        ])
+    assert result == 0
+
+
+def test_main_skips_bad_qualitative_and_calendar(
+    ns: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    calendar_dir = tmp_path / "calendars"
+    calendar_dir.mkdir()
+    (calendar_dir / "bad.json").write_text(json.dumps({"version": "1.0.0"}))
+
+    mock_response = MagicMock()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
+        patch("urllib.request.urlopen", return_value=mock_response),
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--qualitative",
+            str(tmp_path / "missing.json"),
+            "--calendar-dir",
+            str(calendar_dir),
+        ])
+    assert result == 0
+    out = capsys.readouterr().out
+    assert "skipping qualitative artifact" in out
+    assert "skipping calendars" in out

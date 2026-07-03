@@ -23,11 +23,61 @@ import json
 import os
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Any, Final
 
+from aims.calendars import (
+    DEFAULT_WINDOW_DAYS,
+    event_applies,
+    load_calendar_events,
+    upcoming_events,
+)
 from aims.reports import market_regime
 
 _TIMEOUT: Final[int] = 15
+_MAX_EVENTS_IN_SLACK: Final[int] = 3
+
+
+def _qualitative_summary(qualitative: dict[str, Any]) -> str:
+    """Summarize a qualitative artifact in one bounded Slack field line."""
+    entries = qualitative.get("instruments") or []
+    ungated = [e for e in entries if not (e.get("gates") or [])]
+    counts = dict.fromkeys(("supportive", "neutral", "conflicting"), 0)
+    for entry in ungated:
+        stance = str(entry.get("stance", ""))
+        if stance in counts:
+            counts[stance] += 1
+    narrative = qualitative.get("market_narrative") or {}
+    narrative_gated = bool(narrative.get("gates"))
+    if not ungated and narrative_gated:
+        return "*AI commentary:* withheld by grounding gates"
+    model = str(qualitative.get("metadata", {}).get("model", ""))
+    parts = [f"{counts[s]} {s}" for s in ("supportive", "neutral", "conflicting")]
+    summary = f"*AI commentary:* {', '.join(parts)} ({model})"
+    if narrative_gated:
+        summary += "; narrative withheld"
+    gated_count = len(entries) - len(ungated)
+    if gated_count:
+        summary += f"; {gated_count} note(s) gated"
+    return summary
+
+
+def _events_summary(
+    events: list[dict[str, Any]], top_instruments: list[dict[str, Any]]
+) -> str | None:
+    """Return an upcoming-events line for top signals, or None when quiet."""
+    matching: list[str] = []
+    for event in events:
+        if any(event_applies(event, inst) for inst in top_instruments):
+            label = f"{event['name']} ({event['date']})"
+            if label not in matching:
+                matching.append(label)
+    if not matching:
+        return None
+    shown = ", ".join(matching[:_MAX_EVENTS_IN_SLACK])
+    if len(matching) > _MAX_EVENTS_IN_SLACK:
+        shown += ", …"
+    return f"*Upcoming events:* {shown}"
 
 
 def build_success_payload(
@@ -36,6 +86,8 @@ def build_success_payload(
     *,
     pr_url: str | None = None,
     history: dict[str, Any] | None = None,
+    qualitative: dict[str, Any] | None = None,
+    events: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -92,6 +144,17 @@ def build_success_payload(
             f"risk changes: {', '.join(risk_changes) or 'none'}"
         )
         fields.append({"type": "mrkdwn", "text": summary})
+
+    if qualitative is not None:
+        fields.append({"type": "mrkdwn", "text": _qualitative_summary(qualitative)})
+
+    if events:
+        top5 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[
+            :5
+        ]
+        events_line = _events_summary(events, top5)
+        if events_line is not None:
+            fields.append({"type": "mrkdwn", "text": events_line})
 
     coverage_raw = meta.get("coverage")
     if isinstance(coverage_raw, dict):
@@ -225,6 +288,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="URL to the analysis pull request (used in success mode)",
     )
+    parser.add_argument(
+        "--qualitative",
+        type=str,
+        default=None,
+        help="Path to a validated qualitative artifact JSON (success mode)",
+    )
+    parser.add_argument(
+        "--calendar-dir",
+        type=str,
+        default=None,
+        help="Directory of calendar JSON files for the upcoming-events line",
+    )
+    parser.add_argument(
+        "--events-window",
+        type=int,
+        default=DEFAULT_WINDOW_DAYS,
+        help=f"Upcoming-events window in days (default: {DEFAULT_WINDOW_DAYS})",
+    )
     return parser.parse_args(argv)
 
 
@@ -260,8 +341,31 @@ def main(argv: list[str] | None = None) -> int:
             except (FileNotFoundError, json.JSONDecodeError) as exc:
                 print(f"ERROR: invalid history artifact: {exc}")
                 return 1
+        qualitative = None
+        if args.qualitative:
+            try:
+                with open(args.qualitative, encoding="utf-8") as fh:  # noqa: PTH123
+                    qualitative = json.load(fh)
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                print(f"WARNING: skipping qualitative artifact: {exc}")
+        events = None
+        if args.calendar_dir:
+            date_str = str(artifact.get("metadata", {}).get("generated_at", ""))[:10]
+            try:
+                events = upcoming_events(
+                    load_calendar_events(Path(args.calendar_dir)),
+                    date_str,
+                    args.events_window,
+                )
+            except (ValueError, OSError, json.JSONDecodeError) as exc:
+                print(f"WARNING: skipping calendars: {exc}")
         payload = build_success_payload(
-            artifact, report_url, pr_url=args.pr_url or None, history=history
+            artifact,
+            report_url,
+            pr_url=args.pr_url or None,
+            history=history,
+            qualitative=qualitative,
+            events=events,
         )
 
     try:

@@ -31,7 +31,7 @@ Validate a generated JSON artifact against the expected schema.
 
 ### `generate_report.py`
 
-Generate a Hugo Markdown report from a JSON analysis artifact and write it to `content/results/`.
+Generate a Hugo Markdown report from a JSON analysis artifact and write it to `content/results/`. Optional inputs: `--qualitative` (a validated `data/qualitative/YYYY-MM-DD.json` artifact rendered as a clearly labeled "AI Market Commentary" section) and `--calendar-dir` (calendar files rendered as an "Upcoming Events" section, window set by `--events-window`). Without these inputs the output is byte-identical to the quantitative-only report. See the `qualitative-analysis` skill for how those inputs are produced.
 
 ### `generate_history.py`
 
@@ -47,7 +47,7 @@ Validate a generated score-history artifact before report publication.
 
 ### `notify_slack.py`
 
-Send a Slack notification (success or failure) via an incoming webhook. Reads `SLACK_WEBHOOK_URL` from the environment; exits silently if the variable is not set. Success notifications include a coverage summary when `metadata.coverage` is present.
+Send a Slack notification (success or failure) via an incoming webhook. Reads `SLACK_WEBHOOK_URL` from the environment; exits silently if the variable is not set. Success notifications include a coverage summary when `metadata.coverage` is present, a bounded AI-commentary stance summary when `--qualitative` is passed, and an upcoming-events line for top-5 signals when `--calendar-dir` is passed.
 
 ### `data_quality_policy.py`
 

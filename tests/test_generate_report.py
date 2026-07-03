@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from types import ModuleType
 
 import aims.reports as _aims_reports
+from aims.calendars import upcoming_events
 
 FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "analysis_2024-01-01.json"
 GOLDEN_PATH = (
@@ -856,3 +857,221 @@ def test_section_signal_history_delta_none_rank(gr: ModuleType) -> None:
     result = gr._section_signal_history(history)
     assert "n/a" in result
     assert "+2.0" in result
+
+
+# ── Upcoming Events and AI Market Commentary tests ─────────────────────────────
+
+QUAL_FIXTURE_PATH = (
+    Path(__file__).resolve().parent / "fixtures" / "qualitative_2024-01-01.json"
+)
+CAL_FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "calendar_2024.json"
+ENRICHED_GOLDEN_PATH = (
+    Path(__file__).resolve().parent
+    / "golden"
+    / "2024-01-01-market-analysis-enriched.md"
+)
+
+
+@pytest.fixture(scope="module")
+def fixture_qualitative() -> dict[str, Any]:
+    with QUAL_FIXTURE_PATH.open() as fh:
+        return json.load(fh)
+
+
+@pytest.fixture(scope="module")
+def fixture_events() -> list[dict[str, Any]]:
+    with CAL_FIXTURE_PATH.open() as fh:
+        calendar = json.load(fh)
+    return upcoming_events(calendar["events"], "2024-01-01", 7)
+
+
+def test_generate_report_enriched_golden(
+    gr: ModuleType,
+    fixture_artifact: dict[str, Any],
+    fixture_qualitative: dict[str, Any],
+    fixture_events: list[dict[str, Any]],
+) -> None:
+    actual = gr.generate_report(
+        fixture_artifact,
+        None,
+        qualitative=fixture_qualitative,
+        events=fixture_events,
+        events_window=7,
+    )
+    assert actual == ENRICHED_GOLDEN_PATH.read_text()
+
+
+def test_generate_report_without_inputs_is_byte_identical(
+    gr: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    assert gr.generate_report(fixture_artifact) == GOLDEN_PATH.read_text()
+
+
+def test_section_upcoming_events_empty(gr: ModuleType) -> None:
+    result = gr._section_upcoming_events([], [], 7)
+    assert "_No scheduled events within the next 7 days._" in result
+
+
+def test_event_scope_label(gr: ModuleType) -> None:
+    instruments = [{"canonical_id": "spx", "symbol": "^SPX", "display_name": "S&P 500"}]
+    event = {"canonical_ids": ["spx", "ghost"], "asset_classes": ["commodity"]}
+    label = gr._event_scope_label(event, instruments)
+    assert label == "S&P 500 / ^SPX, ghost, Commodity"
+    assert gr._event_scope_label({"canonical_ids": [], "asset_classes": []}, []) == "—"
+
+
+def test_top_opportunities_without_matching_event(gr: ModuleType) -> None:
+    reliable = [
+        {
+            "symbol": "GC=F",
+            "canonical_id": "gold",
+            "asset_class": "commodity",
+            "score": 60.0,
+            "is_reliable": True,
+            "features": {},
+            "explanation": "e",
+        }
+    ]
+    events = [
+        {
+            "date": "2024-01-03",
+            "name": "FOMC",
+            "canonical_ids": [],
+            "asset_classes": ["equity_index"],
+        }
+    ]
+    result = gr._section_top_opportunities(reliable, events)
+    assert "Scheduled event" not in result
+
+
+def test_qualitative_has_content_variants(gr: ModuleType) -> None:
+    base: dict[str, Any] = {
+        "market_narrative": {"text": "", "citations": [], "gates": []},
+        "themes": [],
+        "instruments": [],
+    }
+    assert not gr._qualitative_has_content(base)
+    narrative = dict(base, market_narrative={"text": "t", "gates": []})
+    assert gr._qualitative_has_content(narrative)
+    gated_narrative = dict(
+        base, market_narrative={"text": "t", "gates": ["uncited_claims"]}
+    )
+    assert not gr._qualitative_has_content(gated_narrative)
+    themes = dict(base, themes=[{"gates": []}])
+    assert gr._qualitative_has_content(themes)
+    instruments = dict(base, instruments=[{"gates": []}])
+    assert gr._qualitative_has_content(instruments)
+
+
+def test_front_matter_ai_commentary_false_when_all_gated(
+    gr: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    qualitative: dict[str, Any] = {
+        "metadata": {"model": "m", "prompt_version": "1.0.0", "gates": {}},
+        "market_narrative": {
+            "text": "t",
+            "citations": [],
+            "gates": ["uncited_claims"],
+        },
+        "themes": [],
+        "instruments": [],
+        "citations": {},
+    }
+    result = gr.generate_report(fixture_artifact, qualitative=qualitative)
+    assert "ai_commentary = false" in result
+    assert "_Market narrative withheld by grounding gates (uncited_claims)._" in result
+    assert "### Sources" not in result
+
+
+def test_ai_commentary_empty_narrative_without_gates(gr: ModuleType) -> None:
+    qualitative: dict[str, Any] = {
+        "metadata": {"model": "m", "prompt_version": "1.0.0"},
+        "market_narrative": {"text": "", "citations": [], "gates": []},
+        "themes": [],
+        "instruments": [],
+        "citations": {},
+    }
+    result = gr._section_ai_commentary(qualitative, [])
+    assert "_Market narrative withheld by grounding gates._" in result
+
+
+def test_ai_commentary_falls_back_to_symbol_label(gr: ModuleType) -> None:
+    qualitative: dict[str, Any] = {
+        "metadata": {"model": "m", "prompt_version": "1.0.0"},
+        "market_narrative": {"text": "t", "citations": ["x" * 16], "gates": []},
+        "themes": [],
+        "instruments": [
+            {
+                "canonical_id": "gold",
+                "symbol": "GC=F",
+                "stance": "neutral",
+                "confidence": "low",
+                "drivers": [{"text": "d", "citations": []}],
+                "gates": [],
+            }
+        ],
+        "citations": {},
+    }
+    result = gr._section_ai_commentary(qualitative, [])
+    assert "- **GC=F** — stance: neutral (confidence: low). d" in result
+    # Cited id missing from the citations map falls back to the raw id.
+    assert f"1. [{'x' * 16}]() — , " in result
+
+
+def test_generate_and_save_enriched(gr: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "analysis.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    qualitative_path = tmp_path / "qualitative.json"
+    qualitative_path.write_text(QUAL_FIXTURE_PATH.read_text())
+    calendar_dir = tmp_path / "calendars"
+    calendar_dir.mkdir()
+    (calendar_dir / "cal.json").write_text(CAL_FIXTURE_PATH.read_text())
+    result_path = gr.generate_and_save(
+        artifact_path,
+        tmp_path / "results",
+        qualitative_path=qualitative_path,
+        calendar_dir=calendar_dir,
+    )
+    content = result_path.read_text()
+    assert "ai_commentary = true" in content
+    assert "## Upcoming Events" in content
+
+
+def test_main_enriched(gr: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "analysis.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    qualitative_path = tmp_path / "qualitative.json"
+    qualitative_path.write_text(QUAL_FIXTURE_PATH.read_text())
+    calendar_dir = tmp_path / "calendars"
+    calendar_dir.mkdir()
+    (calendar_dir / "cal.json").write_text(CAL_FIXTURE_PATH.read_text())
+    result = gr.main([
+        "--input",
+        str(artifact_path),
+        "--qualitative",
+        str(qualitative_path),
+        "--calendar-dir",
+        str(calendar_dir),
+        "--events-window",
+        "7",
+        "--output",
+        str(tmp_path / "results"),
+    ])
+    assert result == 0
+
+
+def test_main_invalid_calendar(gr: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "analysis.json"
+    artifact_path.write_text(FIXTURE_PATH.read_text())
+    calendar_dir = tmp_path / "calendars"
+    calendar_dir.mkdir()
+    (calendar_dir / "bad.json").write_text(json.dumps({"version": "1.0.0"}))
+    result = gr.main([
+        "--input",
+        str(artifact_path),
+        "--calendar-dir",
+        str(calendar_dir),
+        "--output",
+        str(tmp_path / "results"),
+    ])
+    assert result == 1

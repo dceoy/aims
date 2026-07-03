@@ -48,7 +48,9 @@
         "mdd_60d": 0.031,
         "rsi_14": 62.0,
         "zscore_20d": 1.2
-      }
+      },
+      "canonical_id": "spx",
+      "asset_class": "equity_index"
     },
     {
       "symbol": "^DJI",
@@ -68,14 +70,18 @@
         "mdd_60d": 0.018,
         "rsi_14": 55.0,
         "zscore_20d": 0.7
-      }
+      },
+      "canonical_id": "dji",
+      "asset_class": "equity_index"
     },
     {
       "symbol": "^NDX",
       "rank": 3,
       "score": 31.7,
       "is_reliable": false,
-      "risk_gates": ["insufficient_history"],
+      "risk_gates": [
+        "insufficient_history"
+      ],
       "explanation": "Suppressed: insufficient_history",
       "features": {
         "ret_1d": null,
@@ -88,7 +94,9 @@
         "mdd_60d": null,
         "rsi_14": null,
         "zscore_20d": null
-      }
+      },
+      "canonical_id": "ndx",
+      "asset_class": "equity_index"
     }
   ]
 }

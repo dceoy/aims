@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "generated_at": "2026-07-02T00:00:00+00:00",
+    "source": "curated"
+  },
+  "events": [
+    {
+      "date": "2026-07-29",
+      "name": "FOMC rate decision",
+      "category": "macro",
+      "canonical_ids": [],
+      "asset_classes": ["equity_index", "commodity", "equity"],
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    },
+    {
+      "date": "2026-09-16",
+      "name": "FOMC rate decision",
+      "category": "macro",
+      "canonical_ids": [],
+      "asset_classes": ["equity_index", "commodity", "equity"],
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    },
+    {
+      "date": "2026-10-28",
+      "name": "FOMC rate decision",
+      "category": "macro",
+      "canonical_ids": [],
+      "asset_classes": ["equity_index", "commodity", "equity"],
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    },
+    {
+      "date": "2026-12-09",
+      "name": "FOMC rate decision",
+      "category": "macro",
+      "canonical_ids": [],
+      "asset_classes": ["equity_index", "commodity", "equity"],
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    }
+  ]
+}

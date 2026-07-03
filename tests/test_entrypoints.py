@@ -31,6 +31,11 @@ _SCRIPTS = [
     ".agents/skills/market-analysis/scripts/validate_instrument_mappings.py",
     ".agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py",
     ".agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py",
+    ".agents/skills/qualitative-analysis/scripts/fetch_evidence.py",
+    ".agents/skills/qualitative-analysis/scripts/update_calendars.py",
+    ".agents/skills/qualitative-analysis/scripts/generate_qualitative.py",
+    ".agents/skills/qualitative-analysis/scripts/validate_qualitative.py",
+    ".agents/skills/qualitative-analysis/scripts/evaluate_qualitative.py",
 ]
 
 _SCRIPT_SYMBOLS = [
@@ -73,6 +78,26 @@ _SCRIPT_SYMBOLS = [
     (
         ".agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py",
         ["validate_csv"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/fetch_evidence.py",
+        ["fetch_bundle", "parse_feed", "validate_bundle"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/update_calendars.py",
+        ["fetch_earnings_calendar", "validate_calendar"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/generate_qualitative.py",
+        ["build_prompt", "generate"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/validate_qualitative.py",
+        ["apply_gates", "validate_artifact"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/evaluate_qualitative.py",
+        ["check_links", "evaluate_stances"],
     ),
 ]
 

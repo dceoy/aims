@@ -21,7 +21,13 @@
     "gates": "Gate-pass summary written by the #93 gate pass: counts of gated entries and whether the market narrative was withheld. Absent before the gate pass runs."
   },
   "required_market_keys": ["narrative", "citations", "themes"],
+  "optional_market_keys": {
+    "numeric_claims": "List of {\"value\": number, \"unit\": \"percent\"|\"price\"|\"count\"|\"other\", \"refers_to\": <feature name or evidence ID>}. Declares every numeric token appearing in market.narrative free text; verified by the #93 numeric-claims gate the same way as driver-level numeric_claims."
+  },
   "required_theme_keys": ["title", "citations"],
+  "optional_theme_keys": {
+    "numeric_claims": "Same shape and verification as market numeric_claims, declaring numeric tokens appearing in themes[].title."
+  },
   "required_instrument_keys": [
     "canonical_id",
     "symbol",
@@ -35,7 +41,7 @@
   "required_driver_keys": ["text", "citations"],
   "optional_driver_keys": {
     "direction_claim": "Structured factual claim about realized price action: {\"direction\": \"up\"|\"down\", \"window\": \"1d\"|\"5d\"|\"20d\"|\"60d\"}. Checked by the #93 direction-consistency gate against the sign of the matching return feature. Omit when the driver asserts no price direction.",
-    "numeric_claims": "List of {\"value\": number, \"unit\": \"percent\"|\"price\"|\"count\"|\"other\", \"refers_to\": <feature name or evidence ID>}. Every numeric token appearing in driver or narrative free text must be declared here; the #93 numeric-claims gate verifies each entry against the quantitative artifact or the cited evidence item within tolerance."
+    "numeric_claims": "List of {\"value\": number, \"unit\": \"percent\"|\"price\"|\"count\"|\"other\", \"refers_to\": <feature name or evidence ID>}. Every numeric token appearing in driver text must be declared here; the #93 numeric-claims gate verifies each entry against the quantitative artifact or the cited evidence item within tolerance."
   },
   "enums": {
     "stance": ["supportive", "neutral", "conflicting"],

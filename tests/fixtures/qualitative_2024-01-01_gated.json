@@ -1,0 +1,106 @@
+{
+  "instruments": [
+    {
+      "canonical_id": "spx",
+      "confidence": "medium",
+      "drivers": [
+        {
+          "citations": [
+            "ev-3417310c9990050f"
+          ],
+          "direction_claim": {
+            "direction": "down",
+            "window": "20d"
+          },
+          "numeric_claims": [
+            {
+              "refers_to": "ret_20d",
+              "unit": "percent",
+              "value": 5.3
+            }
+          ],
+          "text": "Rally coverage matches the index gaining 5.3% over the 20-day window, with breadth improving."
+        }
+      ],
+      "qualitative_gates": [
+        "direction_inconsistent"
+      ],
+      "stance": "conflicting",
+      "symbol": "^SPX"
+    },
+    {
+      "canonical_id": "dji",
+      "confidence": "low",
+      "drivers": [
+        {
+          "citations": [
+            "ev-3bf486d5067f217c"
+          ],
+          "direction_claim": {
+            "direction": "up",
+            "window": "20d"
+          },
+          "numeric_claims": [
+            {
+              "refers_to": "ev-3bf486d5067f217c",
+              "unit": "percent",
+              "value": 2.1
+            }
+          ],
+          "text": "Coverage notes a modest monthly gain of 2.1 percent amid thin instrument-specific news."
+        }
+      ],
+      "qualitative_gates": [],
+      "stance": "neutral",
+      "symbol": "^DJI"
+    }
+  ],
+  "market": {
+    "citations": [
+      "ev-f3a8062a20d397a9",
+      "ev-3417310c9990050f"
+    ],
+    "narrative": "The cited coverage points to a broad year-end rally supported by a steady policy stance, which is consistent with equity indices leading the rankings. Nothing in the cited items contradicts the top-ranked signals.",
+    "themes": [
+      {
+        "citations": [
+          "ev-3417310c9990050f",
+          "ev-f3a8062a20d397a9"
+        ],
+        "title": "Year-end equity rally on rate-pause hopes"
+      }
+    ]
+  },
+  "metadata": {
+    "analysis_date": "2024-01-01",
+    "gates": {
+      "gated_instruments": {
+        "spx": [
+          "direction_inconsistent"
+        ]
+      },
+      "market_gates": [],
+      "market_narrative_withheld": false,
+      "passed": false,
+      "thresholds": {
+        "min_citation_coverage": 1.0,
+        "none_direction_tolerance": 0.01,
+        "numeric_abs_tolerance": 0.01,
+        "numeric_rel_tolerance": 0.05,
+        "percent_abs_tolerance": 0.005,
+        "stale_days": 5
+      }
+    },
+    "generated_at": "2024-01-01T00:00:00+00:00",
+    "git_commit": "abc1234",
+    "input_hashes": {
+      "analysis_sha256": "82ad29201e8316e6e12092406bfe1c3b5c96a2e605d0acaceaf8515448e93dc6",
+      "evidence_sha256": "fdcbf189f14050170347583bb0e2c6b8d6f81516446623db05b84b0f08c07c0c"
+    },
+    "interval": "d",
+    "model_id": "claude-opus-4-8",
+    "prompt_sha256": "abababababababababababababababababababababababababababababababab",
+    "prompt_version": "1.0.0"
+  },
+  "version": "1.0.0"
+}

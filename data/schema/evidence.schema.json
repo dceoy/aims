@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS evidence bundle",
+  "description": "Schema reference for validate_evidence.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies. Evidence bundles are the only material the AI qualitative layer (#92) may cite from.",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "metadata", "items"],
+  "required_metadata_keys": [
+    "generated_at",
+    "analysis_date",
+    "interval",
+    "retrieved_at",
+    "git_commit",
+    "lookback_days",
+    "coverage"
+  ],
+  "required_coverage_keys": [
+    "sources",
+    "instrument_count",
+    "instruments_with_direct_news",
+    "asset_classes"
+  ],
+  "required_item_keys": [
+    "id",
+    "title",
+    "source",
+    "url",
+    "published_at",
+    "snippet",
+    "category",
+    "canonical_ids",
+    "asset_classes"
+  ],
+  "enums": {
+    "category": ["instrument_news", "macro"],
+    "source_status": ["success", "failed"]
+  },
+  "notes": {
+    "id": "Stable evidence ID: 'ev-' + first 16 hex chars of SHA-256 over '<url>|<published_at>'. IDs are unique within a bundle; qualitative citations (#92) must reference these IDs.",
+    "generated_at": "Analysis-date midnight UTC, mirroring the analysis artifact; never wall-clock time.",
+    "retrieved_at": "Wall-clock UTC timestamp of the fetch run, recorded for provenance. Injectable for reproducible tests.",
+    "coverage.sources": "Per-source fetch outcomes keyed by 'yfinance:<symbol>' or 'feed:<source_id>': {status: success|failed, item_count?|error?}. A dead feed shows up here instead of silently shrinking the bundle.",
+    "coverage.asset_classes": "Per-asset-class direct-news coverage: {instruments, with_direct_news}. Equity rows get rich per-symbol news; indices and commodities rely mostly on macro feeds — the asymmetry is recorded so the #92 prompt can be honest about it.",
+    "canonical_ids": "Instrument tags via canonical_id from canonical_instrument_mappings.csv. Empty for macro items, which tag asset_classes instead.",
+    "text_caps": "title <= 300 chars; snippet <= 500 chars; markup stripped. Fetched text is untrusted data and is never interpreted as instructions.",
+    "item_caps": "<= 5 items per instrument (newest first), <= 10 items per macro source; items within [analysis_date - lookback_days, analysis_date + 1 day]; deduplicated by evidence ID across sources.",
+    "sources_file": "Curated macro feed list lives in data/mappings/evidence_sources.csv (source_id, name, url, category, pipe-separated asset_classes). See OPERATIONS.md for how to add a feed and the retention policy."
+  }
+}

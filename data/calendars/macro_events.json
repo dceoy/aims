@@ -1,0 +1,350 @@
+{
+  "events": [
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2026-07-23",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2026-07-29",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "mufg",
+        "nkx",
+        "sony",
+        "toyota"
+      ],
+      "category": "central_bank",
+      "date": "2026-07-31",
+      "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+      "title": "BOJ monetary policy decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2026-09-10",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2026-09-16",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "mufg",
+        "nkx",
+        "sony",
+        "toyota"
+      ],
+      "category": "central_bank",
+      "date": "2026-09-18",
+      "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+      "title": "BOJ monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2026-10-28",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2026-10-29",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "mufg",
+        "nkx",
+        "sony",
+        "toyota"
+      ],
+      "category": "central_bank",
+      "date": "2026-10-30",
+      "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+      "title": "BOJ monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2026-12-09",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2026-12-17",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "mufg",
+        "nkx",
+        "sony",
+        "toyota"
+      ],
+      "category": "central_bank",
+      "date": "2026-12-18",
+      "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+      "title": "BOJ monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-01-29",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-02-04",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-03-18",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-03-19",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-04-29",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-05-07",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-06-10",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-06-18",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-07-22",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-07-30",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-09-09",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-09-17",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-10-28",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-10-29",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2027-12-10",
+      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "title": "FOMC rate decision"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "stoxx50"
+      ],
+      "category": "central_bank",
+      "date": "2027-12-16",
+      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "title": "ECB monetary policy decision"
+    }
+  ],
+  "metadata": {
+    "calendar_id": "macro_events",
+    "source": "Officially published central-bank schedules; see OPERATIONS.md",
+    "updated_at": "2026-07-04"
+  },
+  "version": "1.0.0"
+}

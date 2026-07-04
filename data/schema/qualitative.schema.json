@@ -7,6 +7,7 @@
   "required_metadata_keys": [
     "generated_at",
     "analysis_date",
+    "interval",
     "git_commit",
     "model_id",
     "prompt_version",
@@ -53,12 +54,13 @@
   "notes": {
     "generated_at": "Analysis-date midnight UTC, mirroring the analysis artifact; never wall-clock time.",
     "analysis_date": "YYYY-MM-DD; must match the analysis and evidence artifacts the hashes point at.",
+    "interval": "Bar interval ('d'/'w'/'m') carried over from the analysis artifact's metadata.config.interval. Flat like the evidence bundle's metadata.interval (not nested), so the qualitative artifact's own filename stem ('d' -> no suffix, else '-{interval}') stays correct for manual weekly/monthly dispatches without depending on the analysis/history-specific config.interval shape.",
     "model_id": "Claude model ID used for the single LLM call, e.g. 'claude-opus-4-8'. Pinned in code; recorded here for provenance.",
     "prompt_version": "Version string of the committed prompt file; prompt_sha256 is the SHA-256 of that file's bytes.",
     "stance": "Relation of the qualitative evidence to the quantitative signal for this instrument. 'conflicting' (disagreeing with the signal) is legitimate output and is never gated for the disagreement itself; only factual misstatements of realized price action are gated.",
     "instruments": "Entries cover only the top-K published signals (K=5, matching history.py DEFAULT_TOP_K), keyed by canonical_id present in the day's analysis artifact.",
     "citations": "Lists of evidence IDs that must exist in the evidence bundle named by input_hashes.evidence_sha256. Every driver, theme, and the market narrative must carry at least one citation.",
-    "free_text": "Free text (driver text, narrative, theme titles) is display-only. It may not contain numeric tokens undeclared in numeric_claims, with a whitelist for feature names (e.g. ret_20d, ma50_dist, rsi_14) and ISO dates.",
+    "free_text": "Free text (driver text, narrative, theme titles) is display-only. It may not contain numeric tokens undeclared in numeric_claims, with a whitelist for feature names (e.g. ret_20d, ma50_dist, rsi_14), ISO dates, and — when the analysis artifact is supplied for cross-checking — numerals embedded in covered instruments' display_name (e.g. the '500' in 'S&P 500', the '100' in 'NASDAQ 100' or 'FTSE 100', '225' in 'Nikkei 225', '50' in 'Euro Stoxx 50', '40' in 'CAC 40', '2000' in 'Russell 2000'), so reciting a covered instrument's proper name is never mistaken for an undeclared numeric claim.",
     "length_caps": "narrative <= 1200 chars; driver text <= 300 chars; theme title <= 120 chars; <= 5 themes; <= 4 drivers per instrument; <= 6 citations per driver."
   }
 }

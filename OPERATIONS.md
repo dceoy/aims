@@ -18,6 +18,7 @@ This document covers data sources, scoring methodology, report generation, the p
 8. [Troubleshooting](#8-troubleshooting)
 9. [Manual recovery](#9-manual-recovery)
 10. [AI qualitative analysis layer (design)](#10-ai-qualitative-analysis-layer-design)
+11. [AI qualitative analysis layer (operations)](#11-ai-qualitative-analysis-layer-operations)
 
 ---
 
@@ -325,15 +326,21 @@ If a published report or artifact needs to be removed, see [Delete a published r
 
 ## 6. GitHub Actions secrets
 
-| Secret              | Required | Description                                                                                                                                                                                                                                                                             |
-| ------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                                                                                                                                                              |
-| `ANTHROPIC_API_KEY` | Optional | Claude API key for the AI qualitative analysis step (see [§10](#10-ai-qualitative-analysis-layer-design)). If not set, all qualitative steps are skipped and the pipeline behaves exactly as today. Not yet consumed by any workflow — wiring lands with the qualitative roadmap (#95). |
-| `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed.                                                                                                                                        |
+| Secret              | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                                                                                                                                                                                                                                                                                                                                                       |
+| `ANTHROPIC_API_KEY` | Optional | Claude API key for the AI qualitative analysis step (design in [§10](#10-ai-qualitative-analysis-layer-design), operations in [§11](#11-ai-qualitative-analysis-layer-operations)). Consumed by `daily-market-analysis.yml`: when set, the workflow fetches evidence and generates, validates, gates, and commits a qualitative artifact in the analysis PR (shadow mode). When unset, all qualitative steps are skipped and the run is byte-for-byte the quantitative pipeline. |
+| `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed.                                                                                                                                                                                                                                                                                                                                 |
 
 **How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.
 
-**Never commit secret values.** The `notify_slack.py` script reads `SLACK_WEBHOOK_URL` only from the environment.
+**Never commit secret values.** The `notify_slack.py` script reads `SLACK_WEBHOOK_URL` only from the environment, and `qualitative_analysis.py` reads `ANTHROPIC_API_KEY` only from the environment.
+
+**Repository variables:**
+
+| Variable                | Default   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AI_COMMENTARY_ENABLED` | unset/off | Rendering switch for AI commentary (#94/#95). While unset or not `true`, qualitative artifacts are committed in shadow mode but `generate_report.py` is never passed `--qualitative`, so published reports are unchanged. Flip to `true` only after the shadow-mode exit criteria recorded on issue #98 are met; the flip is a reviewed change, not a silent default. The `ai_commentary` workflow-dispatch input (`on`/`off`) overrides it per run. |
 
 ---
 
@@ -406,6 +413,20 @@ Run `validate_instrument_mappings.py` locally to see all errors before committin
 
 Reports include a freshness table. Symbols with `n/a` in the freshness column had no data returned from Stooq. Symbols with old dates may be delisted or have restricted access.
 
+### Qualitative step failed
+
+```
+WARNING: AI commentary: step failed; quantitative report unaffected
+```
+
+The "Run qualitative analysis (shadow mode)" step is `continue-on-error`: evidence fetch problems, Claude API errors (401/429/5xx/timeouts), or an artifact that stays invalid after the single regeneration retry never block quantitative publication. The Slack success message carries the warning above.
+
+**Fix:** Open the step log in the failed run. For API errors, check the `ANTHROPIC_API_KEY` secret and [status.anthropic.com](https://status.anthropic.com), then re-run (or backfill per [§9](#9-manual-recovery)). For validation errors, the log lists each violated rule from `validate_qualitative.py`. Repeated systemic failures can be silenced with the `skip_qualitative` dispatch input while investigating.
+
+### AI commentary absent or withheld by gates
+
+Commentary can be absent for benign reasons: the secret is unset, rendering is off (shadow mode), the evidence bundle was empty, or the #93 gates withheld content. Gate outcomes are recorded in the artifact itself — `metadata.gates` names the market-level gates and per-instrument `qualitative_gates`; the Slack summary shows `withheld by gates (...)`. Gated entries are working as designed: they are excluded from rendering, not retried. A market-narrative gate withholds the whole artifact from rendering while it still merges for shadow-mode measurement.
+
 ### 100% test coverage requirement
 
 All implementation modules under `src/aims/` are included in the pytest coverage check. If you add new code paths to `src/aims/`, add corresponding tests.
@@ -474,6 +495,37 @@ uv run .agents/skills/market-analysis/scripts/notify_slack.py \
 2. Commit and push to `main`.
 3. CI will rebuild and redeploy without the deleted report.
 
+### Regenerate a qualitative artifact for a past date
+
+Requires the committed analysis artifact for that date. Evidence for a past date can be re-fetched, but feeds only serve recent items — re-fetched bundles for old dates may be thin; prefer the originally committed bundle when it exists.
+
+```sh
+# 1. (only if the bundle is missing) rebuild the evidence bundle
+uv run .agents/skills/qualitative-analysis/scripts/fetch_evidence.py \
+    --analysis-date YYYY-MM-DD --output data/evidence/
+uv run .agents/skills/qualitative-analysis/scripts/validate_evidence.py \
+    --input data/evidence/YYYY-MM-DD.json
+
+# 2. regenerate, validate, and gate the qualitative artifact
+ANTHROPIC_API_KEY=... \
+uv run .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+    --analysis data/analysis/YYYY-MM-DD.json \
+    --evidence data/evidence/YYYY-MM-DD.json \
+    --calendar data/calendars/macro_events.json \
+    --calendar data/calendars/earnings.json \
+    --output data/qualitative/
+uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
+    --input data/qualitative/YYYY-MM-DD.json \
+    --analysis data/analysis/YYYY-MM-DD.json \
+    --evidence data/evidence/YYYY-MM-DD.json
+```
+
+Commit the artifacts through a reviewed PR.
+
+### Refresh event calendars manually
+
+Trigger **Actions → Update event calendars → Run workflow** (earnings only), or run `update_calendars.py` locally. Macro events are hand-maintained — see [§11](#11-ai-qualitative-analysis-layer-operations).
+
 ### Refresh CFD instruments manually
 
 Trigger **Actions → Update CFD instruments → Run workflow**.
@@ -482,7 +534,7 @@ Trigger **Actions → Update CFD instruments → Run workflow**.
 
 ## 10. AI qualitative analysis layer (design)
 
-This section is the design contract for the AI qualitative analysis roadmap (#98). It was written before implementation (#89) so that later issues (#90–#97) implement against agreed rules instead of re-litigating them. Nothing in this section is wired into the pipeline yet; each subsection names the issue that implements it.
+This section is the design contract for the AI qualitative analysis roadmap (#98). It was written before implementation (#89) so that later issues (#90–#97) implement against agreed rules instead of re-litigating them. Issues #90–#95 are implemented against this contract (evidence ingestion, calendars, the qualitative skill, the deterministic gates, the renderer, and the shadow-mode workflow integration); operational details live in [§11](#11-ai-qualitative-analysis-layer-operations). Rendering stays off until the shadow-mode exit criteria in this section are met and recorded on #98.
 
 ### Purpose and boundaries
 
@@ -498,8 +550,8 @@ The quantitative pipeline cannot see _why_ — news, earnings, disclosures, and 
 
 - **Scope:** per-instrument entries cover only the top-K published signals (K=5, matching `history.py`'s `DEFAULT_TOP_K`), plus one market-level narrative and up to five macro themes. One LLM call per day. No commentary on the rest of the universe — cost and review surface stay bounded.
 - **Closed enums:** stance is `supportive` / `neutral` / `conflicting` (relative to the quantitative signal); confidence is `low` / `medium` / `high`. A `conflicting` stance — the model disagreeing with the signal on outlook — is legitimate, expected output.
-- **Machine-checkable claims:** drivers carry structured fields instead of burying assertions in prose. A `direction_claim` (`up`/`down`/`none` over a `1d`/`5d`/`20d`/`60d` window) states realized price action, including an explicit no-movement claim so "flat" assertions are checkable too instead of living unverified in free text; `numeric_claims` entries (`value`, `unit`, `refers_to`) declare every number used. Free text is display-only and may not contain numeric tokens undeclared in `numeric_claims` (whitelist: feature names, ISO dates).
-- **Provenance metadata:** model ID, prompt version and prompt-file SHA-256, and content hashes of the inputs (analysis artifact, evidence bundle, calendar when it exists), so any artifact traces to exactly what produced it. `generated_at` is analysis-date midnight UTC, mirroring the analysis artifact.
+- **Machine-checkable claims:** drivers carry structured fields instead of burying assertions in prose. A `direction_claim` (`up`/`down`/`none` over a `1d`/`5d`/`20d`/`60d` window) states realized price action, including an explicit no-movement claim so "flat" assertions are checkable too instead of living unverified in free text; `numeric_claims` entries (`value`, `unit`, `refers_to`) declare every number used. Free text is display-only and may not contain numeric tokens undeclared in `numeric_claims` (whitelist: feature names, ISO dates, and — when the analysis artifact is supplied for cross-checking — numerals embedded in covered instruments' own names, e.g. the 500 in "S&P 500", so reciting a proper name is never mistaken for an undeclared claim).
+- **Provenance metadata:** model ID, prompt version and prompt-file SHA-256, the bar interval (`d`/`w`/`m`, carried from the analysis artifact so a manual weekly/monthly dispatch's qualitative artifact keeps the same `-w`/`-m` filename suffix as its analysis/evidence siblings), and content hashes of the inputs (analysis artifact, evidence bundle, calendar when it exists), so any artifact traces to exactly what produced it. `generated_at` is analysis-date midnight UTC, mirroring the analysis artifact.
 
 ### Grounding rules (#90, #92)
 
@@ -536,3 +588,47 @@ Daily analysis PRs auto-merge with no human review (#75), so schema validation a
 ### Non-goals
 
 No investment advice or trading automation; no vector databases, embeddings pipelines, external RAG services, custom CMS layers, or server-side runtimes; no AI modification of scores, ranks, gates, or regime labels; no LLM-based verification of LLM output.
+
+---
+
+## 11. AI qualitative analysis layer (operations)
+
+Operational reference for the implemented layer (#90–#95). The binding design contract is [§10](#10-ai-qualitative-analysis-layer-design); the runner is the `qualitative-analysis` agent skill (`.agents/skills/qualitative-analysis/`).
+
+### Evidence sources
+
+`data/mappings/evidence_sources.csv` is the curated macro feed list: `source_id`, `name`, `url`, `category`, and pipe-separated `asset_classes` the feed applies to. Per-symbol news comes from yfinance for every instrument in the canonical mapping. Both source classes are normalized into `data/evidence/<stem>.json` (schema: `data/schema/evidence.schema.json`): stable `ev-<hash>` IDs, stripped markup, length-capped titles/snippets, at most 5 items per instrument and 10 per macro feed, all within a 7-day lookback of the analysis date.
+
+**Adding a feed:** append a row to `evidence_sources.csv` with a stable `source_id`, the RSS/Atom URL, a category, and the asset classes it informs; verify it parses with a local `fetch_evidence.py` run. Feeds must be official/primary sources (central banks, statistical agencies, official energy data) — no scraping, no paywalled content. A dead feed is non-fatal: it appears as `status: failed` under `metadata.coverage.sources` in each bundle; remove or fix the row when a feed fails persistently. (BLS is intentionally absent: `bls.gov` blocks non-browser clients.)
+
+**Coverage asymmetry is expected:** equities get direct yfinance news; indices and commodities rely mostly on macro feeds. `metadata.coverage.asset_classes` records the asymmetry per bundle so the #92 prompt can be honest about which instruments have direct evidence.
+
+**Retention policy:** evidence bundles are small (tens of KB) and accumulate one per scheduled run under `data/evidence/`. Keep at least 400 days so the #97 evaluation loop can join stances with realized forward returns. Prune older bundles manually via a reviewed PR (`git rm data/evidence/<old>.json`); never prune `data/qualitative/` artifacts that still reference a bundle you are deleting.
+
+### Calendars
+
+Two schema-validated files under `data/calendars/` (schema: `data/schema/calendar.schema.json`) drive the deterministic "Upcoming Events" report section, the Slack event lines, and the #92 prompt context:
+
+- **`macro_events.json`** — central-bank decision dates (FOMC, ECB, BOJ), hand-maintained from officially published yearly schedules (sources recorded per event). Refresh cadence: when each institution publishes next year's schedule (typically mid-year), extend the file through a reviewed PR and re-run `validate_calendar.py`. **Correcting a wrong date:** edit the event's `date`, keep the `source` URL pointing at the official schedule, and open a reviewed PR — the next daily run picks it up.
+- **`earnings.json`** — per-equity earnings dates fetched from yfinance, refreshed weekly by `update-calendars.yml` (Mondays 05:30 UTC) through an auto-created PR. Dates are provider estimates and can shift; the weekly refresh converges on the confirmed date.
+
+Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering windows are relative to the analysis date (7 days in reports/Slack by default, 14 days in the qualitative prompt), so output stays deterministic.
+
+### Qualitative gates and degradation policy
+
+`aims.qualitative_gates.apply_gates` runs after `validate_qualitative.py` and records outcomes in the artifact (`metadata.gates`, per-instrument `qualitative_gates`). All gates operate on structured claim fields, never prose:
+
+| Gate                     | Checks                                                                                                    | Threshold                                                                                         |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `direction_inconsistent` | Each `direction_claim` against the sign of the matching return feature (`1d/5d/20d/60d` → `ret_*`)        | `up`: feature > 0; `down`: feature < 0; `none`: abs(feature) ≤ 0.01; missing feature fails        |
+| `numeric_claim_mismatch` | Each `numeric_claims` entry against the referenced quantitative feature or cited evidence item's text     | percent units: ±0.5pp on the fraction scale; otherwise ±max(5% relative, 0.01)                    |
+| `stale_evidence`         | Entries may not rest solely on evidence older than the staleness cutoff                                   | at least one citation newer than `analysis_date − stale_days` (from `metadata.config`, default 5) |
+| `citation_coverage`      | Every driver (and the narrative and each theme) must carry at least one citation resolvable in the bundle | coverage ratio ≥ 1.0                                                                              |
+
+**Degradation policy:** a gated instrument entry is excluded from rendering while the rest of the artifact still renders; a gated market narrative withholds the whole artifact from rendering (the quantitative report publishes unchanged). The runner allows exactly one regeneration retry when the market narrative is gated, then commits the gated artifact for shadow-mode measurement. A `conflicting` stance is never gated for the disagreement itself.
+
+### Shadow mode, rendering switch, and cost
+
+Shadow mode is the default state: with `ANTHROPIC_API_KEY` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#6-github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
+
+Cost controls: one Claude call per run (`claude-opus-4-8`, pinned in `aims.qualitative.MODEL_ID`), input bounded by the evidence caps, output capped at 8192 tokens, 300-second request timeout, one SDK-level retry for 429/5xx, and one regeneration retry. Expected order of magnitude per [§10](#10-ai-qualitative-analysis-layer-design): roughly $0.20–0.45 per run (≈$10–20/month); record measured figures here after the first shadow-mode week. Changing the model or the committed prompt (`.agents/skills/qualitative-analysis/prompts/qualitative_v1.md`, version + SHA-256 recorded in every artifact) requires the #97 regression harness once it exists.

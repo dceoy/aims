@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any, Final
 
+from aims.market_analysis import artifact_filename_stem
+
 HISTORY_VERSION: Final[str] = "1.0.0"
 DEFAULT_TOP_K: Final[int] = 5
 
@@ -147,7 +149,7 @@ def generate_history(
     artifacts.append(current)
     history = build_history(artifacts, top_k)
     output_dir.mkdir(parents=True, exist_ok=True)
-    output = output_dir / f"{current_date}.json"
+    output = output_dir / f"{artifact_filename_stem(current)}.json"
     output.write_text(
         json.dumps(history, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )

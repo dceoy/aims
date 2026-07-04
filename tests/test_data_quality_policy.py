@@ -39,6 +39,29 @@ def test_unsupported_interval(policy: ModuleType) -> None:
         policy.get_interval_thresholds("h")
 
 
+def test_fetch_window_days_daily(policy: ModuleType) -> None:
+    assert policy.fetch_window_days("d") == 365
+
+
+def test_fetch_window_days_weekly_clears_min_history(policy: ModuleType) -> None:
+    thresholds = policy.get_interval_thresholds("w")
+    window = policy.fetch_window_days("w")
+    # ~7 calendar days per weekly bar; window must clear min_history bars.
+    assert window / 7 > thresholds.min_history
+
+
+def test_fetch_window_days_monthly_clears_min_history(policy: ModuleType) -> None:
+    thresholds = policy.get_interval_thresholds("m")
+    window = policy.fetch_window_days("m")
+    # ~30 calendar days per monthly bar; window must clear min_history bars.
+    assert window / 30 > thresholds.min_history
+
+
+def test_fetch_window_days_unsupported_interval(policy: ModuleType) -> None:
+    with pytest.raises(ValueError, match="unsupported interval"):
+        policy.fetch_window_days("h")
+
+
 def test_build_config_dict(policy: ModuleType) -> None:
     quality_policy = policy.get_data_quality_policy("d")
     config = policy.build_config_dict(quality_policy)

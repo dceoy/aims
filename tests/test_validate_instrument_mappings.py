@@ -143,11 +143,16 @@ def test_no_data_rows(vim: ModuleType, tmp_path: Path) -> None:
     assert any("no data rows" in e for e in errors)
 
 
-def test_cfd_path_not_exists_skips_broker_check(
-    vim: ModuleType, tmp_path: Path
-) -> None:
+def test_cfd_path_not_exists_is_error(vim: ModuleType, tmp_path: Path) -> None:
     mapping_path = _write_mapping(tmp_path, [_VALID_ROW])
-    errors, _ = vim.validate_mappings(mapping_path, tmp_path / "nonexistent.csv")
+    cfd_path = tmp_path / "nonexistent.csv"
+    errors, _ = vim.validate_mappings(mapping_path, cfd_path)
+    assert any("cfd-instruments file not found" in e for e in errors)
+
+
+def test_cfd_path_none_skips_broker_check(vim: ModuleType, tmp_path: Path) -> None:
+    mapping_path = _write_mapping(tmp_path, [_VALID_ROW])
+    errors, _ = vim.validate_mappings(mapping_path, None)
     assert errors == []
 
 
@@ -161,14 +166,27 @@ def test_row_with_empty_broker_skips_cfd_check(vim: ModuleType, tmp_path: Path) 
 
 def test_main_returns_0_on_valid(vim: ModuleType, tmp_path: Path) -> None:
     p = _write_mapping(tmp_path, [_VALID_ROW])
-    # Use a non-existent CFD path to skip broker reference checks
+    cfd_path = _write_cfd(tmp_path, ["TestBroker,US500"])
+    result = vim.main([
+        "--input",
+        str(p),
+        "--cfd-instruments",
+        str(cfd_path),
+    ])
+    assert result == 0
+
+
+def test_main_returns_1_on_missing_cfd_instruments_file(
+    vim: ModuleType, tmp_path: Path
+) -> None:
+    p = _write_mapping(tmp_path, [_VALID_ROW])
     result = vim.main([
         "--input",
         str(p),
         "--cfd-instruments",
         str(tmp_path / "no_cfd.csv"),
     ])
-    assert result == 0
+    assert result == 1
 
 
 def test_main_prints_warnings_and_returns_0(

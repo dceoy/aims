@@ -160,7 +160,9 @@ def build_failure_payload(
             "type": "section",
             "text": {"type": "mrkdwn", "text": f"*{message}*"},
         },
-        {
+    ]
+    if run_url:
+        blocks.append({
             "type": "actions",
             "elements": [
                 {
@@ -170,8 +172,7 @@ def build_failure_payload(
                     "style": "danger",
                 }
             ],
-        },
-    ]
+        })
     return {"text": text, "blocks": blocks}
 
 

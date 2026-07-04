@@ -162,6 +162,22 @@ def test_generate_history_and_main(gh: ModuleType, tmp_path: Path) -> None:
     assert gh.main(["--input", str(tmp_path / "missing.json")]) == 1
 
 
+def test_generate_history_weekly_output_has_interval_suffix(
+    gh: ModuleType, tmp_path: Path
+) -> None:
+    analysis = tmp_path / "analysis"
+    analysis.mkdir()
+    daily_path = analysis / "2024-01-03.json"
+    daily_path.write_text(json.dumps(_artifact("2024-01-03", [{"symbol": "A"}])))
+    current_path = analysis / "2024-01-03-w.json"
+    current = _artifact("2024-01-03", [{"symbol": "A"}])
+    current["metadata"]["config"]["interval"] = "w"
+    current_path.write_text(json.dumps(current))
+    output = tmp_path / "history"
+    result = gh.generate_history(current_path, analysis, output, 1)
+    assert result == output / "2024-01-03-w.json"
+
+
 def test_main_bad_json(gh: ModuleType, tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text("{")

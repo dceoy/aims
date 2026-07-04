@@ -87,8 +87,14 @@ def validate_mappings(
         return errors, warnings
 
     cfd_instruments: set[tuple[str, str]] = set()
-    if cfd_path is not None and cfd_path.exists():
-        cfd_instruments = _load_cfd_instruments(cfd_path)
+    if cfd_path is not None:
+        if cfd_path.exists():
+            cfd_instruments = _load_cfd_instruments(cfd_path)
+        else:
+            errors.append(
+                f"cfd-instruments file not found: {cfd_path};"
+                f" broker cross-checks cannot be performed"
+            )
 
     # canonical_id -> set of (provider, provider_symbol, provider_interval)
     canonical_provider_keys: dict[str, set[tuple[str, str, str]]] = {}

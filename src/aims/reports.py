@@ -118,9 +118,10 @@ def _build_front_matter(
     all_symbols = sorted(str(i.get("symbol", "")) for i in instruments)
     symbols_toml = ", ".join(f'"{_toml_escape(s)}"' for s in all_symbols)
 
-    source_files = [f"data/analysis/{date_str}.json"]
+    stem = f"{date_str}{artifact_interval_suffix(artifact)}"
+    source_files = [f"data/analysis/{stem}.json"]
     if history is not None:
-        source_files.append(f"data/history/{date_str}.json")
+        source_files.append(f"data/history/{stem}.json")
     sources_toml = ", ".join(f'"{_toml_escape(path)}"' for path in source_files)
 
     if reliable:

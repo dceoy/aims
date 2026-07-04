@@ -1536,6 +1536,46 @@ def test_cmd_generate_trims_bars_at_or_after_analysis_date(
     assert artifact["metadata"]["data_freshness"]["TRIM"] == "2024-01-09"
 
 
+def test_bar_period_end_date_daily_is_same_day(ma: ModuleType) -> None:
+    bar = _bar(ma, "X", 100.0, datetime(2024, 1, 10, tzinfo=UTC), interval="d")
+    assert ma._bar_period_end_date(bar) == datetime(2024, 1, 10, tzinfo=UTC).date()
+
+
+def test_bar_period_end_date_weekly_is_six_days_later(ma: ModuleType) -> None:
+    # Weekly bar timestamped at the Monday period start.
+    bar = _bar(ma, "X", 100.0, datetime(2024, 1, 8, tzinfo=UTC), interval="w")
+    assert ma._bar_period_end_date(bar) == datetime(2024, 1, 14, tzinfo=UTC).date()
+
+
+def test_bar_period_end_date_monthly_is_month_end(ma: ModuleType) -> None:
+    # Monthly bar timestamped at the period start; February 2024 is a leap month.
+    bar = _bar(ma, "X", 100.0, datetime(2024, 2, 1, tzinfo=UTC), interval="m")
+    assert ma._bar_period_end_date(bar) == datetime(2024, 2, 29, tzinfo=UTC).date()
+
+
+def test_trim_bars_at_or_after_excludes_in_progress_weekly_bar(
+    ma: ModuleType,
+) -> None:
+    """An in-progress weekly bar is trimmed despite its early Monday timestamp."""
+    # Week of 2024-01-08 (Mon) through 2024-01-14 (Sun); analysis runs
+    # mid-week on Wednesday, so this bar's period has not closed yet.
+    in_progress = _bar(ma, "X", 100.0, datetime(2024, 1, 8, tzinfo=UTC), interval="w")
+    closed = _bar(ma, "X", 99.0, datetime(2024, 1, 1, tzinfo=UTC), interval="w")
+    cutoff = datetime(2024, 1, 10, tzinfo=UTC)
+    trimmed = ma._trim_bars_at_or_after({"X": [closed, in_progress]}, cutoff)
+    assert trimmed["X"] == [closed]
+
+
+def test_trim_bars_at_or_after_excludes_in_progress_monthly_bar(
+    ma: ModuleType,
+) -> None:
+    in_progress = _bar(ma, "X", 100.0, datetime(2024, 2, 1, tzinfo=UTC), interval="m")
+    closed = _bar(ma, "X", 99.0, datetime(2024, 1, 1, tzinfo=UTC), interval="m")
+    cutoff = datetime(2024, 2, 15, tzinfo=UTC)
+    trimmed = ma._trim_bars_at_or_after({"X": [closed, in_progress]}, cutoff)
+    assert trimmed["X"] == [closed]
+
+
 # ── Coverage gates and artifact metadata ───────────────────────────────────────
 
 

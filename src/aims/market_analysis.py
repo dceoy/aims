@@ -26,8 +26,9 @@ import math
 import subprocess
 import sys
 from abc import ABC, abstractmethod
+from calendar import monthrange
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Final
 from urllib.error import URLError
@@ -1331,19 +1332,36 @@ def _resolve_symbols_for_generate(args: argparse.Namespace) -> list[str] | None:
     return None
 
 
+def _bar_period_end_date(bar: OhlcvBar) -> date:
+    """Return the last calendar date covered by *bar*'s reporting period.
+
+    Weekly/monthly bars are timestamped at the period start, so a
+    same-day comparison against the raw timestamp would let an
+    in-progress week/month through. Advance to the period's last day
+    before comparing against the cutoff.
+    """
+    start = bar.timestamp.date()
+    if bar.interval == "w":
+        return start + timedelta(days=6)
+    if bar.interval == "m":
+        return date(start.year, start.month, monthrange(start.year, start.month)[1])
+    return start
+
+
 def _trim_bars_at_or_after(
     data: dict[str, list[OhlcvBar]], cutoff: datetime
 ) -> dict[str, list[OhlcvBar]]:
-    """Drop bars dated on/after *cutoff* from every symbol's bar list.
+    """Drop bars whose period ends on/after *cutoff* from every bar list.
 
-    Excludes in-progress intraday bars for markets still open at fetch time
-    (e.g. ``*.T``, ``^N225``, ``^HSI``) and closes the backfill look-ahead
-    where a data directory holds bars newer than the requested analysis
-    date.
+    Excludes in-progress intraday/weekly/monthly bars for periods still
+    open at fetch time (e.g. ``*.T``, ``^N225``, ``^HSI`` daily bars, or a
+    weekly/monthly bar covering the current, incomplete period) and closes
+    the backfill look-ahead where a data directory holds bars newer than
+    the requested analysis date.
     """
     cutoff_date = cutoff.date()
     return {
-        symbol: [bar for bar in bars if bar.timestamp.date() < cutoff_date]
+        symbol: [bar for bar in bars if _bar_period_end_date(bar) < cutoff_date]
         for symbol, bars in data.items()
     }
 

@@ -324,6 +324,57 @@ def test_report_filename_weekly_interval_suffix(gr: ModuleType) -> None:
     assert gr.report_filename(artifact) == "2024-06-07-w-market-analysis.md"
 
 
+# ── _build_front_matter tests ───────────────────────────────────────────────────
+
+
+def test_build_front_matter_source_files_daily_has_no_suffix(
+    gr: ModuleType,
+) -> None:
+    artifact: dict[str, Any] = {
+        "metadata": {
+            "generated_at": "2024-01-01T00:00:00+00:00",
+            "config": {"interval": "d"},
+        }
+    }
+    front_matter = gr._build_front_matter(artifact, "2024-01-01")
+    assert 'source_files = ["data/analysis/2024-01-01.json"]' in front_matter
+
+
+def test_build_front_matter_source_files_match_suffixed_weekly_artifact(
+    gr: ModuleType,
+) -> None:
+    """A weekly report's source_files must point at the suffixed artifact.
+
+    ``report_filename`` writes ``2024-06-07-w-market-analysis.md`` for this
+    artifact, so ``source_files`` must reference ``2024-06-07-w.json``
+    rather than the unsuffixed daily filename.
+    """
+    artifact: dict[str, Any] = {
+        "metadata": {
+            "generated_at": "2024-06-07T00:00:00+00:00",
+            "config": {"interval": "w"},
+        }
+    }
+    front_matter = gr._build_front_matter(artifact, "2024-06-07")
+    assert 'source_files = ["data/analysis/2024-06-07-w.json"]' in front_matter
+
+
+def test_build_front_matter_source_files_with_history_include_suffix(
+    gr: ModuleType,
+) -> None:
+    artifact: dict[str, Any] = {
+        "metadata": {
+            "generated_at": "2024-06-07T00:00:00+00:00",
+            "config": {"interval": "m"},
+        }
+    }
+    front_matter = gr._build_front_matter(artifact, "2024-06-07", history={})
+    assert (
+        'source_files = ["data/analysis/2024-06-07-m.json",'
+        ' "data/history/2024-06-07-m.json"]' in front_matter
+    )
+
+
 # ── generate_and_save tests ─────────────────────────────────────────────────────
 
 

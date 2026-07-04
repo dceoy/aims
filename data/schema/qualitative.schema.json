@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS qualitative analysis artifact (draft)",
+  "description": "Schema reference for the planned validate_qualitative.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies. Draft contract defined by issue #89; implemented by #92 and gated by #93.",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "metadata", "market", "instruments"],
+  "required_metadata_keys": [
+    "generated_at",
+    "analysis_date",
+    "git_commit",
+    "model_id",
+    "prompt_version",
+    "prompt_sha256",
+    "input_hashes"
+  ],
+  "required_input_hashes_keys": ["analysis_sha256", "evidence_sha256"],
+  "optional_input_hashes_keys": {
+    "calendar_sha256": "SHA-256 of the calendar artifact (#91). Null or absent until calendars exist."
+  },
+  "optional_metadata_keys": {
+    "gates": "Gate-pass summary written by the #93 gate pass: counts of gated entries and whether the market narrative was withheld. Absent before the gate pass runs."
+  },
+  "required_market_keys": ["narrative", "citations", "themes"],
+  "required_theme_keys": ["title", "citations"],
+  "required_instrument_keys": [
+    "canonical_id",
+    "symbol",
+    "stance",
+    "confidence",
+    "drivers"
+  ],
+  "optional_instrument_keys": {
+    "qualitative_gates": "List of gate names attached by the #93 gate pass, mirroring the risk_gates pattern. Entries with a non-empty list are excluded from rendering."
+  },
+  "required_driver_keys": ["text", "citations"],
+  "optional_driver_keys": {
+    "direction_claim": "Structured factual claim about realized price action: {\"direction\": \"up\"|\"down\", \"window\": \"1d\"|\"5d\"|\"20d\"|\"60d\"}. Checked by the #93 direction-consistency gate against the sign of the matching return feature. Omit when the driver asserts no price direction.",
+    "numeric_claims": "List of {\"value\": number, \"unit\": \"percent\"|\"price\"|\"count\"|\"other\", \"refers_to\": <feature name or evidence ID>}. Every numeric token appearing in driver or narrative free text must be declared here; the #93 numeric-claims gate verifies each entry against the quantitative artifact or the cited evidence item within tolerance."
+  },
+  "enums": {
+    "stance": ["supportive", "neutral", "conflicting"],
+    "confidence": ["low", "medium", "high"],
+    "direction": ["up", "down"],
+    "window": ["1d", "5d", "20d", "60d"],
+    "unit": ["percent", "price", "count", "other"]
+  },
+  "notes": {
+    "generated_at": "Analysis-date midnight UTC, mirroring the analysis artifact; never wall-clock time.",
+    "analysis_date": "YYYY-MM-DD; must match the analysis and evidence artifacts the hashes point at.",
+    "model_id": "Claude model ID used for the single LLM call, e.g. 'claude-opus-4-8'. Pinned in code; recorded here for provenance.",
+    "prompt_version": "Version string of the committed prompt file; prompt_sha256 is the SHA-256 of that file's bytes.",
+    "stance": "Relation of the qualitative evidence to the quantitative signal for this instrument. 'conflicting' (disagreeing with the signal) is legitimate output and is never gated for the disagreement itself; only factual misstatements of realized price action are gated.",
+    "instruments": "Entries cover only the top-K published signals (K=5, matching history.py DEFAULT_TOP_K), keyed by canonical_id present in the day's analysis artifact.",
+    "citations": "Lists of evidence IDs that must exist in the evidence bundle named by input_hashes.evidence_sha256. Every driver, theme, and the market narrative must carry at least one citation.",
+    "free_text": "Free text (driver text, narrative, theme titles) is display-only. It may not contain numeric tokens undeclared in numeric_claims, with a whitelist for feature names (e.g. ret_20d, ma50_dist, rsi_14) and ISO dates.",
+    "length_caps": "narrative <= 1200 chars; driver text <= 300 chars; theme title <= 120 chars; <= 5 themes; <= 4 drivers per instrument; <= 6 citations per driver."
+  }
+}

@@ -10,9 +10,17 @@ from __future__ import annotations
 
 import argparse
 import json
+from operator import itemgetter
 from pathlib import Path
 from typing import Any, Final, Literal
 
+from aims.calendars import (
+    DEFAULT_WINDOW_DAYS,
+    CalendarEvent,
+    events_for_instrument,
+    load_calendar_events,
+    upcoming_events,
+)
 from aims.market_analysis import artifact_interval_suffix
 
 _Alignment = Literal["left", "right", "center"]
@@ -99,7 +107,11 @@ def market_regime(reliable: list[dict[str, Any]]) -> str:
 
 
 def _build_front_matter(
-    artifact: dict[str, Any], date_str: str, history: dict[str, Any] | None = None
+    artifact: dict[str, Any],
+    date_str: str,
+    history: dict[str, Any] | None = None,
+    *,
+    ai_commentary: bool = False,
 ) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "1970-01-01T00:00:00+00:00")
@@ -122,6 +134,11 @@ def _build_front_matter(
     source_files = [f"data/analysis/{stem}.json"]
     if history is not None:
         source_files.append(f"data/history/{stem}.json")
+    if ai_commentary:
+        source_files.extend([
+            f"data/evidence/{stem}.json",
+            f"data/qualitative/{stem}.json",
+        ])
     sources_toml = ", ".join(f'"{_toml_escape(path)}"' for path in source_files)
 
     if reliable:
@@ -147,8 +164,10 @@ def _build_front_matter(
         f'data_source = "{_toml_escape(data_source)}"',
         f'scoring_version = "{_toml_escape(scoring_version)}"',
         f'git_commit = "{_toml_escape(git_commit)}"',
-        "+++",
     ]
+    if ai_commentary:
+        lines.append("ai_commentary = true")
+    lines.append("+++")
     return "\n".join(lines)
 
 
@@ -174,7 +193,20 @@ def _instrument_label(inst: dict[str, Any]) -> str:
     return symbol
 
 
-def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
+def _instrument_events(
+    inst: dict[str, Any], events: list[CalendarEvent]
+) -> list[CalendarEvent]:
+    return events_for_instrument(
+        events,
+        str(inst.get("canonical_id") or ""),
+        str(inst.get("asset_class") or ""),
+    )
+
+
+def _section_top_opportunities(
+    reliable: list[dict[str, Any]],
+    events: list[CalendarEvent] | None = None,
+) -> str:
     header = "## Top Opportunities"
     top5 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:5]
     if not top5:
@@ -188,12 +220,56 @@ def _section_top_opportunities(reliable: list[dict[str, Any]]) -> str:
         rsi_raw = features.get("rsi_14")
         rsi_str = f"{rsi_raw:.0f}" if isinstance(rsi_raw, (int, float)) else "n/a"
         explanation = str(inst.get("explanation", ""))
-        lines.append(
+        line = (
             f"- **{label}** — score {score:.1f},"
             f" 20d return {_format_pct(ret_20d)},"
             f" RSI14={rsi_str}. {explanation}"
         )
+        matched = _instrument_events(inst, events) if events else []
+        if matched:
+            flagged = "; ".join(f"{e.title} ({e.date})" for e in matched)
+            line += f" ⚠️ Upcoming: {flagged}"
+        lines.append(line)
     return f"{header}\n\n" + "\n".join(lines)
+
+
+def _event_scope(event: CalendarEvent, instruments: list[dict[str, Any]]) -> str:
+    symbol_by_cid = {
+        str(inst.get("canonical_id")): str(inst.get("symbol", ""))
+        for inst in instruments
+        if inst.get("canonical_id")
+    }
+    symbols = sorted(
+        symbol_by_cid[cid] for cid in event.canonical_ids if cid in symbol_by_cid
+    )
+    classes = sorted(_asset_class_label(ac) for ac in event.asset_classes)
+    return ", ".join(symbols + classes)
+
+
+def _section_upcoming_events(
+    instruments: list[dict[str, Any]],
+    events: list[CalendarEvent],
+    window_days: int,
+) -> str:
+    header = "## Upcoming Events"
+    rows: list[list[str]] = []
+    for event in events:
+        scope = _event_scope(event, instruments)
+        if scope:
+            rows.append([event.date, event.title, scope])
+    if not rows:
+        return (
+            f"{header}\n\n_No scheduled events for covered instruments in the"
+            f" next {window_days} days._"
+        )
+    table = _format_markdown_table(
+        ["Date", "Event", "Applies To"], rows, ["left", "left", "left"]
+    )
+    preamble = (
+        f"Scheduled events within the next {window_days} days for covered"
+        " instruments (from `data/calendars/`)."
+    )
+    return f"{header}\n\n{preamble}\n\n{table}"
 
 
 def _section_instruments_to_avoid(unreliable: list[dict[str, Any]]) -> str:
@@ -210,6 +286,102 @@ def _section_instruments_to_avoid(unreliable: list[dict[str, Any]]) -> str:
         gates_str = ", ".join(str(g) for g in gates)
         lines.append(f"- **{label}** — {gates_str}")
     return f"{header}\n\n{preamble}\n\n" + "\n".join(lines)
+
+
+def _qualitative_withheld(qualitative: dict[str, Any]) -> bool:
+    gates = qualitative.get("metadata", {}).get("gates", {})
+    return bool(gates.get("market_narrative_withheld"))
+
+
+def _citation_refs(citations: list[Any], numbers: dict[str, int]) -> str:
+    refs = ""
+    for cid in citations:
+        key = str(cid)
+        if key not in numbers:
+            numbers[key] = len(numbers) + 1
+        refs += f"[{numbers[key]}]"
+    return refs
+
+
+def _section_ai_commentary(
+    qualitative: dict[str, Any],
+    evidence: dict[str, Any] | None,
+    instruments: list[dict[str, Any]],
+) -> str:
+    meta = qualitative.get("metadata", {})
+    market = qualitative.get("market", {})
+    numbers: dict[str, int] = {}
+
+    label_by_cid = {
+        str(inst.get("canonical_id")): _instrument_label(inst)
+        for inst in instruments
+        if inst.get("canonical_id")
+    }
+    banner = (
+        "> **AI-generated section.** Produced by"
+        f" `{meta.get('model_id', 'unknown')}` (prompt"
+        f" v{meta.get('prompt_version', 'unknown')}) from the committed"
+        " evidence bundle and quantitative artifact, after schema validation"
+        " and deterministic consistency gates. It does not modify the scores,"
+        " ranks, risk gates, or market regime above, and it is not investment"
+        " advice — see the Disclaimer section below."
+    )
+    parts = ["## AI Market Commentary", banner]
+
+    narrative = str(market.get("narrative", ""))
+    refs = _citation_refs(market.get("citations", []), numbers)
+    parts.append(f"{narrative} {refs}".rstrip())
+
+    themes = market.get("themes", [])
+    if themes:
+        theme_lines = [
+            f"- {theme.get('title', '')}"
+            f" {_citation_refs(theme.get('citations', []), numbers)}".rstrip()
+            for theme in themes
+        ]
+        parts.append("**Recurring themes:**\n\n" + "\n".join(theme_lines))
+
+    withheld_notes: list[str] = []
+    for entry in qualitative.get("instruments", []):
+        cid = str(entry.get("canonical_id", ""))
+        label = label_by_cid.get(cid, str(entry.get("symbol", cid)))
+        gates = entry.get("qualitative_gates") or []
+        if gates:
+            gates_str = ", ".join(str(g) for g in gates)
+            withheld_notes.append(
+                f"_Commentary for **{label}** withheld by consistency gates:"
+                f" {gates_str}._"
+            )
+            continue
+        driver_lines = [
+            f"- {driver.get('text', '')}"
+            f" {_citation_refs(driver.get('citations', []), numbers)}".rstrip()
+            for driver in entry.get("drivers", [])
+        ]
+        parts.append(
+            f"### {label} — {entry.get('stance', '')}"
+            f" (confidence: {entry.get('confidence', '')})\n\n"
+            + "\n".join(driver_lines)
+        )
+    parts.extend(withheld_notes)
+
+    if numbers:
+        items_by_id = {
+            str(item.get("id")): item for item in (evidence or {}).get("items", [])
+        }
+        source_lines = []
+        for cid, number in sorted(numbers.items(), key=itemgetter(1)):
+            item = items_by_id.get(cid)
+            if item is None:
+                source_lines.append(f"{number}. {cid}")
+            else:
+                source_lines.append(
+                    f"{number}. [{item.get('title', '')}]({item.get('url', '')})"
+                    f" — {item.get('source', '')}, {item.get('published_at', '')[:10]}"
+                )
+        parts.append("### Sources\n\n" + "\n".join(source_lines))
+
+    return "\n\n".join(parts)
 
 
 def _section_signal_history(history: dict[str, Any] | None) -> str:
@@ -535,7 +707,13 @@ def _validate_for_report(artifact: dict[str, Any]) -> None:
 
 
 def generate_report(
-    artifact: dict[str, Any], history: dict[str, Any] | None = None
+    artifact: dict[str, Any],
+    history: dict[str, Any] | None = None,
+    *,
+    calendar_events: list[CalendarEvent] | None = None,
+    window_days: int = DEFAULT_WINDOW_DAYS,
+    qualitative: dict[str, Any] | None = None,
+    evidence: dict[str, Any] | None = None,
 ) -> str:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -560,11 +738,31 @@ def generate_report(
     above, valid = _regime_breadth(reliable)
     total = len(instruments)
 
-    front_matter = _build_front_matter(artifact, date_str, history)
+    # A qualitative artifact whose market narrative was withheld by the #93
+    # gates renders nothing: the report stays byte-identical to a run
+    # without a qualitative artifact.
+    if qualitative is not None and _qualitative_withheld(qualitative):
+        qualitative = None
+
+    events = (
+        upcoming_events(calendar_events, date_str, window_days)
+        if calendar_events is not None
+        else None
+    )
+
+    front_matter = _build_front_matter(
+        artifact, date_str, history, ai_commentary=qualitative is not None
+    )
 
     sections = [
         _section_market_regime(regime, above, valid, total),
-        _section_top_opportunities(reliable),
+        _section_top_opportunities(reliable, events),
+    ]
+    if events is not None:
+        sections.append(_section_upcoming_events(instruments, events, window_days))
+    if qualitative is not None:
+        sections.append(_section_ai_commentary(qualitative, evidence, instruments))
+    sections.extend([
         _section_signal_history(history),
         _section_instruments_to_avoid(unreliable),
         _section_key_risks(instruments),
@@ -573,7 +771,7 @@ def generate_report(
         _section_symbol_details(instruments),
         _section_methodology(scoring_version, git_commit),
         _section_disclaimer(),
-    ]
+    ])
     body = "\n\n".join(sections)
     return f"{front_matter}\n\n{body}\n"
 
@@ -588,19 +786,36 @@ def report_filename(artifact: dict[str, Any]) -> str:
     return f"{date_str}{artifact_interval_suffix(artifact)}-market-analysis.md"
 
 
+def _load_json(path: Path) -> dict[str, Any]:
+    with path.open(encoding="utf-8") as fh:
+        value: dict[str, Any] = json.load(fh)
+    return value
+
+
 def generate_and_save(
     artifact_path: Path,
     output_dir: Path = _DEFAULT_OUTPUT_DIR,
     history_path: Path | None = None,
+    *,
+    calendar_paths: list[Path] | None = None,
+    qualitative_path: Path | None = None,
+    evidence_path: Path | None = None,
+    window_days: int = DEFAULT_WINDOW_DAYS,
 ) -> Path:
-    with artifact_path.open(encoding="utf-8") as fh:
-        artifact: dict[str, Any] = json.load(fh)
+    artifact = _load_json(artifact_path)
     _validate_for_report(artifact)
-    history = None
-    if history_path is not None:
-        with history_path.open(encoding="utf-8") as fh:
-            history = json.load(fh)
-    content = generate_report(artifact, history)
+    history = _load_json(history_path) if history_path is not None else None
+    calendar_events = load_calendar_events(calendar_paths) if calendar_paths else None
+    qualitative = _load_json(qualitative_path) if qualitative_path is not None else None
+    evidence = _load_json(evidence_path) if evidence_path is not None else None
+    content = generate_report(
+        artifact,
+        history,
+        calendar_events=calendar_events,
+        window_days=window_days,
+        qualitative=qualitative,
+        evidence=evidence,
+    )
     filename = report_filename(artifact)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / filename
@@ -619,6 +834,31 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--history", type=Path, help="Path to score-history JSON")
     parser.add_argument(
+        "--calendar",
+        type=Path,
+        action="append",
+        default=None,
+        help="Calendar JSON file for the Upcoming Events section (repeatable)",
+    )
+    parser.add_argument(
+        "--events-window-days",
+        type=int,
+        default=DEFAULT_WINDOW_DAYS,
+        help="Upcoming-events window in days after the analysis date",
+    )
+    parser.add_argument(
+        "--qualitative",
+        type=Path,
+        default=None,
+        help="Validated, gate-passed qualitative artifact to render",
+    )
+    parser.add_argument(
+        "--evidence",
+        type=Path,
+        default=None,
+        help="Evidence bundle for resolving qualitative citations",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=_DEFAULT_OUTPUT_DIR,
@@ -629,13 +869,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.qualitative is not None and args.evidence is None:
+        print("ERROR: --qualitative requires --evidence for citation sources.")
+        return 1
     try:
-        generate_and_save(args.input, args.output, args.history)
-    except FileNotFoundError:
-        print(f"ERROR: file not found: {args.input}")
+        generate_and_save(
+            args.input,
+            args.output,
+            args.history,
+            calendar_paths=args.calendar,
+            qualitative_path=args.qualitative,
+            evidence_path=args.evidence,
+            window_days=args.events_window_days,
+        )
+    except FileNotFoundError as exc:
+        print(f"ERROR: file not found: {exc.filename}")
         return 1
     except json.JSONDecodeError as exc:
-        print(f"ERROR: invalid JSON in {args.input}: {exc}")
+        print(f"ERROR: invalid JSON in input: {exc}")
         return 1
     except ValueError as exc:
         print(f"ERROR: artifact validation failed: {exc}")

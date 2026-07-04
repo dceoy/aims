@@ -23,11 +23,65 @@ import json
 import os
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Any, Final
 
+from aims.calendars import (
+    DEFAULT_WINDOW_DAYS,
+    CalendarEvent,
+    events_for_instrument,
+    load_calendar_events,
+    upcoming_events,
+)
 from aims.reports import market_regime
 
 _TIMEOUT: Final[int] = 15
+_MAX_EVENT_LINES: Final[int] = 3
+_TOP_SIGNALS_FOR_EVENTS: Final[int] = 5
+
+
+def _event_lines(artifact: dict[str, Any], events: list[CalendarEvent]) -> list[str]:
+    """One bounded line per top-5 signal with an event inside the window."""
+    instruments = artifact.get("instruments", [])
+    reliable = [i for i in instruments if i.get("is_reliable")]
+    top = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[
+        :_TOP_SIGNALS_FOR_EVENTS
+    ]
+    lines: list[str] = []
+    for inst in top:
+        matched = events_for_instrument(
+            events,
+            str(inst.get("canonical_id") or ""),
+            str(inst.get("asset_class") or ""),
+        )
+        lines.extend(
+            f"{inst.get('symbol', '')}: {event.title} ({event.date})"
+            for event in matched
+        )
+    return lines[:_MAX_EVENT_LINES]
+
+
+def _qualitative_summary(qualitative: dict[str, Any]) -> str:
+    """Bounded one-line summary drawn only from the validated artifact."""
+    gates = qualitative.get("metadata", {}).get("gates", {})
+    if gates.get("market_narrative_withheld"):
+        reasons = ", ".join(str(g) for g in gates.get("market_gates", []))
+        return f"withheld by gates ({reasons})"
+    counts = {"supportive": 0, "neutral": 0, "conflicting": 0}
+    gated = 0
+    for entry in qualitative.get("instruments", []):
+        stance = str(entry.get("stance", ""))
+        if entry.get("qualitative_gates"):
+            gated += 1
+        elif stance in counts:
+            counts[stance] += 1
+    summary = (
+        f"{counts['supportive']} supportive / {counts['neutral']} neutral /"
+        f" {counts['conflicting']} conflicting"
+    )
+    if gated:
+        summary += f"; {gated} gated"
+    return summary
 
 
 def build_success_payload(
@@ -36,6 +90,9 @@ def build_success_payload(
     *,
     pr_url: str | None = None,
     history: dict[str, Any] | None = None,
+    events: list[CalendarEvent] | None = None,
+    qualitative: dict[str, Any] | None = None,
+    qualitative_failed: bool = False,
 ) -> dict[str, Any]:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -92,6 +149,24 @@ def build_success_payload(
             f"risk changes: {', '.join(risk_changes) or 'none'}"
         )
         fields.append({"type": "mrkdwn", "text": summary})
+
+    if events:
+        event_lines = _event_lines(artifact, events)
+        if event_lines:
+            fields.append({
+                "type": "mrkdwn",
+                "text": f"*📅 Events:* {'; '.join(event_lines)}",
+            })
+    if qualitative is not None:
+        fields.append({
+            "type": "mrkdwn",
+            "text": f"*AI commentary:* {_qualitative_summary(qualitative)}",
+        })
+    if qualitative_failed:
+        fields.append({
+            "type": "mrkdwn",
+            "text": ("*⚠️ AI commentary:* step failed; quantitative report unaffected"),
+        })
 
     coverage_raw = meta.get("coverage")
     if isinstance(coverage_raw, dict):
@@ -226,6 +301,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="URL to the analysis pull request (used in success mode)",
     )
+    parser.add_argument(
+        "--calendar",
+        type=Path,
+        action="append",
+        default=None,
+        help="Calendar JSON file for upcoming-event lines (repeatable)",
+    )
+    parser.add_argument(
+        "--events-window-days",
+        type=int,
+        default=DEFAULT_WINDOW_DAYS,
+        help="Upcoming-events window in days after the analysis date",
+    )
+    parser.add_argument(
+        "--qualitative",
+        type=str,
+        default=None,
+        help="Validated qualitative artifact for the AI-commentary summary",
+    )
+    parser.add_argument(
+        "--qualitative-failed",
+        action="store_true",
+        help="Add a warning that the qualitative step failed (fail-open)",
+    )
     return parser.parse_args(argv)
 
 
@@ -261,8 +360,31 @@ def main(argv: list[str] | None = None) -> int:
             except (FileNotFoundError, json.JSONDecodeError) as exc:
                 print(f"ERROR: invalid history artifact: {exc}")
                 return 1
+        events = None
+        qualitative = None
+        date_str = str(artifact.get("metadata", {}).get("generated_at", ""))[:10]
+        try:
+            if args.calendar:
+                merged = load_calendar_events(list(args.calendar))
+                events = upcoming_events(merged, date_str, args.events_window_days)
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            print(f"ERROR: invalid calendar input: {exc}")
+            return 1
+        if args.qualitative:
+            try:
+                with open(args.qualitative, encoding="utf-8") as fh:  # noqa: PTH123
+                    qualitative = json.load(fh)
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                print(f"ERROR: invalid qualitative artifact: {exc}")
+                return 1
         payload = build_success_payload(
-            artifact, report_url, pr_url=args.pr_url or None, history=history
+            artifact,
+            report_url,
+            pr_url=args.pr_url or None,
+            history=history,
+            events=events,
+            qualitative=qualitative,
+            qualitative_failed=args.qualitative_failed,
         )
 
     try:

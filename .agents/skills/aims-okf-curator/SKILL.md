@@ -24,6 +24,31 @@ Keep tags lowercase kebab-case. Ensure `okf/index.md` links durable concepts and
 - Do not hand-edit `content/knowledge/`; regenerate it from `okf/`.
 - Keep custom code small and deterministic.
 
+## Qualitative theme curation (#96)
+
+Daily qualitative artifacts (`data/qualitative/*.json`) are point-in-time
+snapshots; some of what they surface is durable and belongs in OKF. Run a
+curation pass **monthly** (or when a theme visibly persists) once artifacts
+have accumulated on `main`:
+
+- **Promotion criteria:** promote a theme only when it recurs in artifacts
+  from at least 3 distinct analysis dates spanning at least 14 days — never a
+  single-day observation. Judge recurrence from `market.themes` titles and
+  per-instrument drivers.
+- **Concept content:** describe the driver qualitatively; cite the dated
+  qualitative artifacts (`data/qualitative/YYYY-MM-DD.json`) and the evidence
+  IDs they rest on. Numeric facts stay pointers into `data/analysis/`, per
+  the guardrail above — never asserted as truth in OKF prose.
+- **Review:** curation output is a human-reviewed pull request only; never
+  auto-merge OKF changes. Record each pass (including "no promotions") in
+  `okf/logs/log.md`, then regenerate shadow content (`--clean`), verify with
+  `--check`, and build with `hugo --gc --minify`.
+- **Retirement criteria:** archive a theme concept when it has not recurred
+  in any qualitative artifact for 60 days, when the #93 gates repeatedly
+  withheld the entries it rests on, or when it is contradicted by newer
+  artifacts. Retirement follows the stale-concept cleanup flow (reviewed PR
+  plus a log entry); do not silently delete.
+
 ## OKF primary references
 
 - Google Cloud announcement: https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing

@@ -24,6 +24,20 @@ on:
         required: false
         default: "false"
         type: boolean
+      skip_qualitative:
+        description: "Skip the AI qualitative analysis steps for this run"
+        required: false
+        default: "false"
+        type: boolean
+      ai_commentary:
+        description: "Render AI commentary (default: AI_COMMENTARY_ENABLED repo variable)"
+        required: false
+        default: default
+        type: choice
+        options:
+          - default
+          - "on"
+          - "off"
       min_success_ratio:
         description: "Minimum symbol fetch success ratio (default 0.8)"
         required: false
@@ -58,6 +72,15 @@ jobs:
       MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '4' }}
       PROVIDER: ${{ inputs.provider || 'yfinance' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+      # Qualitative steps run only when the optional ANTHROPIC_API_KEY secret
+      # exists (mirroring SLACK_NOTIFICATIONS_ENABLED); without it the run is
+      # byte-for-byte today's behavior.
+      QUALITATIVE_ENABLED: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      SKIP_QUALITATIVE: ${{ inputs.skip_qualitative || 'false' }}
+      # Rendering switch (shadow-mode exit, roadmap #98): the per-run input
+      # overrides the default-off AI_COMMENTARY_ENABLED repository variable.
+      AI_COMMENTARY_INPUT: ${{ inputs.ai_commentary || 'default' }}
+      AI_COMMENTARY_VAR: ${{ vars.AI_COMMENTARY_ENABLED || 'false' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
         with:
@@ -181,15 +204,79 @@ jobs:
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_history.py \
             --input "data/history/${STEM}.json"
+      - name: Validate calendars
+        if: steps.symbols.outputs.symbols != ''
+        run: |
+          for CAL in data/calendars/*.json; do
+            uv run python \
+              .agents/skills/qualitative-analysis/scripts/validate_calendar.py \
+              --input "$CAL"
+          done
+      # Shadow mode (#95): evidence and qualitative artifacts are generated,
+      # validated, gated, and committed in the analysis PR, but rendering
+      # stays off until AI_COMMENTARY_ENABLED flips after the shadow-mode
+      # exit criteria on #98 are met. Any failure here is non-fatal
+      # (fail-open): the quantitative report publishes unchanged and the
+      # Slack success message carries a warning.
+      - name: Run qualitative analysis (shadow mode)
+        id: qualitative
+        if: steps.symbols.outputs.symbols != '' && env.QUALITATIVE_ENABLED == 'true' && env.SKIP_QUALITATIVE != 'true'
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/fetch_evidence.py \
+            --mapping data/mappings/canonical_instrument_mappings.csv \
+            --sources data/mappings/evidence_sources.csv \
+            --analysis-date "${DATE}" \
+            --interval "$INTERVAL" \
+            --provider "$PROVIDER" \
+            --output data/evidence/
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/validate_evidence.py \
+            --input "data/evidence/${STEM}.json"
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+            --analysis "data/analysis/${STEM}.json" \
+            --evidence "data/evidence/${STEM}.json" \
+            --calendar data/calendars/macro_events.json \
+            --calendar data/calendars/earnings.json \
+            --output data/qualitative/
+          if [ -f "data/qualitative/${STEM}.json" ]; then
+            uv run python \
+              .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
+              --input "data/qualitative/${STEM}.json" \
+              --analysis "data/analysis/${STEM}.json" \
+              --evidence "data/evidence/${STEM}.json"
+          fi
       - name: Generate Hugo report
         if: steps.symbols.outputs.symbols != ''
         env:
           STEM: ${{ steps.date.outputs.stem }}
         run: |
-          uv run python .agents/skills/market-analysis/scripts/generate_report.py \
-            --input "data/analysis/${STEM}.json" \
-            --history "data/history/${STEM}.json" \
+          ARGS=(
+            --input "data/analysis/${STEM}.json"
+            --history "data/history/${STEM}.json"
+            --calendar data/calendars/macro_events.json
+            --calendar data/calendars/earnings.json
             --output content/results/
+          )
+          case "$AI_COMMENTARY_INPUT" in
+            on) AI_COMMENTARY=true ;;
+            off) AI_COMMENTARY=false ;;
+            *) AI_COMMENTARY="$AI_COMMENTARY_VAR" ;;
+          esac
+          if [ "$AI_COMMENTARY" = "true" ] && [ -f "data/qualitative/${STEM}.json" ]; then
+            ARGS+=(
+              --qualitative "data/qualitative/${STEM}.json"
+              --evidence "data/evidence/${STEM}.json"
+            )
+          fi
+          uv run python .agents/skills/market-analysis/scripts/generate_report.py \
+            "${ARGS[@]}"
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version: stable
@@ -215,6 +302,14 @@ jobs:
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
           git add data/analysis/ data/history/ content/results/
+          # Evidence and qualitative artifacts (shadow mode) travel in the
+          # same analysis PR; the directories exist only when the
+          # qualitative steps ran.
+          for QUAL_DIR in data/evidence data/qualitative; do
+            if [ -d "$QUAL_DIR" ]; then
+              git add "$QUAL_DIR"
+            fi
+          done
           if git diff --cached --quiet; then
             echo "No changes to commit."
             echo "pr_url=" >> "$GITHUB_OUTPUT"
@@ -257,11 +352,23 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           STEM: ${{ steps.date.outputs.stem }}
           PR_URL: ${{ steps.pr.outputs.pr_url }}
+          QUALITATIVE_OUTCOME: ${{ steps.qualitative.outcome }}
         run: |
-          uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
-            --artifact "data/analysis/${STEM}.json" \
-            --history "data/history/${STEM}.json" \
+          ARGS=(
+            --artifact "data/analysis/${STEM}.json"
+            --history "data/history/${STEM}.json"
             --pr-url "${PR_URL}"
+            --calendar data/calendars/macro_events.json
+            --calendar data/calendars/earnings.json
+          )
+          if [ -f "data/qualitative/${STEM}.json" ]; then
+            ARGS+=(--qualitative "data/qualitative/${STEM}.json")
+          fi
+          if [ "$QUALITATIVE_OUTCOME" = "failure" ]; then
+            ARGS+=(--qualitative-failed)
+          fi
+          uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
+            "${ARGS[@]}"
       - name: Notify Slack (failure)
         if: failure() && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
         env:

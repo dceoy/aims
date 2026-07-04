@@ -1,0 +1,61 @@
+---
+name: Update event calendars
+on:
+  schedule:
+    - cron: "30 5 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39   # v8.2.0
+      - name: Sync dependencies
+        run: uv sync
+      - name: Refresh earnings calendar
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/update_calendars.py \
+            --mapping data/mappings/canonical_instrument_mappings.csv \
+            --output data/calendars/earnings.json
+      - name: Validate calendars
+        run: |
+          for CAL in data/calendars/*.json; do
+            uv run python \
+              .agents/skills/qualitative-analysis/scripts/validate_calendar.py \
+              --input "$CAL"
+          done
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- data/calendars/; then
+            echo "No calendar changes detected."
+            exit 0
+          fi
+          BRANCH="chore/refresh-calendars-$(date -u +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+          git fetch origin "$BRANCH" 2>/dev/null || true
+          git checkout -B "$BRANCH"
+          git add data/calendars/
+          git commit -m "chore(data): refresh event calendars $(date -u +%Y-%m-%d)"
+          git push --force-with-lease -u origin "$BRANCH"
+          PR_NUMBER="$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -n "$PR_NUMBER" ]; then
+            echo "PR #$PR_NUMBER already exists for $BRANCH; branch updated."
+          else
+            gh pr create \
+              --title "chore(data): refresh event calendars $(date -u +%Y-%m-%d)" \
+              --body "Automated earnings-calendar refresh from yfinance. Macro events in data/calendars/macro_events.json are maintained by hand (see OPERATIONS.md)." \
+              --base main \
+              --head "$BRANCH"
+          fi

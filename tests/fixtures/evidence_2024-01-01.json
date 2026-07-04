@@ -1,0 +1,89 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-f3a8062a20d397a9",
+      "published_at": "2023-12-29T15:00:00+00:00",
+      "snippet": "The Committee decided to maintain the target range and noted that inflation has eased over the past year.",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve holds policy rate steady into the new year",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/example.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3bf486d5067f217c",
+      "published_at": "2023-12-30T09:30:00+00:00",
+      "snippet": "The blue-chip average is up 2.1 percent over the month as investors position for a soft landing.",
+      "source": "Example Newswire",
+      "title": "Dow industrials post a modest monthly gain",
+      "url": "https://news.example.com/dow-monthly-gain"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3417310c9990050f",
+      "published_at": "2023-12-31T12:00:00+00:00",
+      "snippet": "Large-cap equities extended their year-end rally, with breadth improving across sectors.",
+      "source": "Example Newswire",
+      "title": "US stocks extend year-end rally on rate-pause hopes",
+      "url": "https://news.example.com/us-stocks-extend-rally"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2024-01-01",
+    "coverage": {
+      "asset_classes": {
+        "equity_index": {
+          "instruments": 3,
+          "with_direct_news": 2
+        }
+      },
+      "instrument_count": 3,
+      "instruments_with_direct_news": [
+        "dji",
+        "spx"
+      ],
+      "sources": {
+        "feed:fed_press": {
+          "item_count": 1,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 1,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^SPX": {
+          "item_count": 1,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2024-01-01T00:00:00+00:00",
+    "git_commit": "abc1234",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2024-01-01T05:00:00+00:00"
+  },
+  "version": "1.0.0"
+}

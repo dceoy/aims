@@ -1,0 +1,50 @@
+{
+  "events": [
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [],
+      "category": "macro_release",
+      "date": "2023-12-30",
+      "source": "https://example.org/past",
+      "title": "Past macro release"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2024-01-03",
+      "source": "https://example.org/fomc",
+      "title": "FOMC minutes release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "dji"
+      ],
+      "category": "earnings",
+      "date": "2024-01-05",
+      "source": "yfinance",
+      "title": "Dow component earnings"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [],
+      "category": "central_bank",
+      "date": "2024-06-01",
+      "source": "https://example.org/future",
+      "title": "Far-future central bank meeting"
+    }
+  ],
+  "metadata": {
+    "calendar_id": "macro_events",
+    "source": "test fixture",
+    "updated_at": "2024-01-01"
+  },
+  "version": "1.0.0"
+}

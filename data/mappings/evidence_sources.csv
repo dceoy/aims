@@ -1,0 +1,5 @@
+source_id,name,url,category,asset_classes
+boj_news,Bank of Japan releases,https://www.boj.or.jp/en/rss/whatsnew.xml,central_bank,equity_index|equity
+ecb_press,European Central Bank press releases,https://www.ecb.europa.eu/rss/press.html,central_bank,equity_index|equity
+eia_today,U.S. EIA Today in Energy,https://www.eia.gov/rss/todayinenergy.xml,energy,commodity
+fed_press,Federal Reserve press releases,https://www.federalreserve.gov/feeds/press_all.xml,central_bank,equity_index|equity|commodity

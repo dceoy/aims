@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS event calendar",
+  "description": "Schema reference for validate_calendar.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies. Calendars drive the deterministic 'Upcoming Events' report section (#91) and provide context for the AI qualitative layer (#92).",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "metadata", "events"],
+  "required_metadata_keys": ["calendar_id", "updated_at", "source"],
+  "required_event_keys": [
+    "date",
+    "title",
+    "category",
+    "canonical_ids",
+    "asset_classes",
+    "source"
+  ],
+  "enums": {
+    "category": ["central_bank", "macro_release", "earnings"]
+  },
+  "notes": {
+    "files": "data/calendars/macro_events.json holds central-bank and macro-release dates maintained by hand from officially published yearly schedules; data/calendars/earnings.json is refreshed from yfinance by update_calendars.py on a schedule.",
+    "date": "Event date (YYYY-MM-DD). For multi-day central-bank meetings, the decision/statement day is recorded.",
+    "tagging": "Events tag instruments via canonical_ids (specific instruments) and/or asset_classes (whole classes, e.g. an FOMC decision tagging equity_index, equity, and commodity). Every event must carry at least one tag.",
+    "windowing": "Report and Slack rendering shows events strictly after the analysis date within a configurable window (default 7 days), so output stays deterministic given the artifact date."
+  }
+}

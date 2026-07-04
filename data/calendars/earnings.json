@@ -1,0 +1,9 @@
+{
+  "events": [],
+  "metadata": {
+    "calendar_id": "earnings",
+    "source": "yfinance get_earnings_dates via update_calendars.py",
+    "updated_at": "2026-07-04"
+  },
+  "version": "1.0.0"
+}

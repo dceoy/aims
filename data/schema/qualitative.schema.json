@@ -40,13 +40,13 @@
   },
   "required_driver_keys": ["text", "citations"],
   "optional_driver_keys": {
-    "direction_claim": "Structured factual claim about realized price action: {\"direction\": \"up\"|\"down\", \"window\": \"1d\"|\"5d\"|\"20d\"|\"60d\"}. Checked by the #93 direction-consistency gate against the sign of the matching return feature. Omit when the driver asserts no price direction.",
+    "direction_claim": "Structured factual claim about realized price action: {\"direction\": \"up\"|\"down\"|\"none\", \"window\": \"1d\"|\"5d\"|\"20d\"|\"60d\"}. \"up\"/\"down\" are checked by the #93 direction-consistency gate against the sign of the matching return feature; \"none\" explicitly asserts no notable price movement and is checked against that feature falling within a near-zero tolerance band (threshold defined by #93). Omit the field entirely when the driver does not address price direction at all.",
     "numeric_claims": "List of {\"value\": number, \"unit\": \"percent\"|\"price\"|\"count\"|\"other\", \"refers_to\": <feature name or evidence ID>}. Every numeric token appearing in driver text must be declared here; the #93 numeric-claims gate verifies each entry against the quantitative artifact or the cited evidence item within tolerance."
   },
   "enums": {
     "stance": ["supportive", "neutral", "conflicting"],
     "confidence": ["low", "medium", "high"],
-    "direction": ["up", "down"],
+    "direction": ["up", "down", "none"],
     "window": ["1d", "5d", "20d", "60d"],
     "unit": ["percent", "price", "count", "other"]
   },

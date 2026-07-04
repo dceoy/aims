@@ -314,6 +314,16 @@ def test_report_filename_non_string_generated_at(gr: ModuleType) -> None:
     assert gr.report_filename(artifact) == "1970-01-01-market-analysis.md"
 
 
+def test_report_filename_weekly_interval_suffix(gr: ModuleType) -> None:
+    artifact: dict[str, Any] = {
+        "metadata": {
+            "generated_at": "2024-06-07T00:00:00+00:00",
+            "config": {"interval": "w"},
+        }
+    }
+    assert gr.report_filename(artifact) == "2024-06-07-w-market-analysis.md"
+
+
 # ── generate_and_save tests ─────────────────────────────────────────────────────
 
 

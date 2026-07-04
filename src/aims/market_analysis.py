@@ -1124,15 +1124,41 @@ def generate_artifact(
     }
 
 
+def artifact_interval_suffix(artifact: dict[str, Any]) -> str:
+    """Return ``"-{interval}"`` for non-daily artifacts, else ``""``.
+
+    Daily (``d``, the default and only interval the scheduled pipeline
+    uses) keeps plain ``YYYY-MM-DD`` filenames for backward compatibility.
+    Non-daily intervals get this suffix appended to artifact, history, and
+    report filenames so a manual ``w``/``m`` dispatch cannot silently
+    overwrite a same-date daily output.
+    """
+    meta = artifact.get("metadata")
+    if not isinstance(meta, dict):
+        return ""
+    config = meta.get("config")
+    if not isinstance(config, dict):
+        return ""
+    interval = config.get("interval")
+    if isinstance(interval, str) and interval and interval != "d":
+        return f"-{interval}"
+    return ""
+
+
+def artifact_filename_stem(artifact: dict[str, Any]) -> str:
+    """Return the date[-interval] filename stem for *artifact*."""
+    meta = artifact.get("metadata")
+    gen_at = str(meta.get("generated_at", "")) if isinstance(meta, dict) else ""
+    date_str = gen_at[:10] if gen_at else datetime.now(tz=UTC).date().isoformat()
+    return f"{date_str}{artifact_interval_suffix(artifact)}"
+
+
 def save_artifact(
     artifact: dict[str, Any],
     output_dir: Path = _DEFAULT_ANALYSIS_DIR,
 ) -> Path:
-    meta = artifact.get("metadata")
-    gen_at = str(meta.get("generated_at", "")) if isinstance(meta, dict) else ""
-    date_str = gen_at[:10] if gen_at else datetime.now(tz=UTC).date().isoformat()
     output_dir.mkdir(parents=True, exist_ok=True)
-    path = output_dir / f"{date_str}.json"
+    path = output_dir / f"{artifact_filename_stem(artifact)}.json"
     with path.open("w", encoding="utf-8") as fh:
         json.dump(artifact, fh, indent=2)
     return path
@@ -1305,6 +1331,23 @@ def _resolve_symbols_for_generate(args: argparse.Namespace) -> list[str] | None:
     return None
 
 
+def _trim_bars_at_or_after(
+    data: dict[str, list[OhlcvBar]], cutoff: datetime
+) -> dict[str, list[OhlcvBar]]:
+    """Drop bars dated on/after *cutoff* from every symbol's bar list.
+
+    Excludes in-progress intraday bars for markets still open at fetch time
+    (e.g. ``*.T``, ``^N225``, ``^HSI``) and closes the backfill look-ahead
+    where a data directory holds bars newer than the requested analysis
+    date.
+    """
+    cutoff_date = cutoff.date()
+    return {
+        symbol: [bar for bar in bars if bar.timestamp.date() < cutoff_date]
+        for symbol, bars in data.items()
+    }
+
+
 def _cmd_generate(args: argparse.Namespace) -> int:
     provider_name: str = (
         getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
@@ -1403,6 +1446,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         reference_time = datetime.strptime(analysis_date, "%Y-%m-%d").replace(
             tzinfo=UTC
         )
+        data = _trim_bars_at_or_after(data, reference_time)
     results = score_instruments(
         data,
         reference_time=reference_time,

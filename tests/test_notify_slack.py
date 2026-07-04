@@ -346,6 +346,13 @@ def test_build_failure_payload_custom_message(ns: ModuleType) -> None:
     assert "Custom failure message" in payload["text"]
 
 
+def test_build_failure_payload_no_run_url_omits_actions_block(
+    ns: ModuleType,
+) -> None:
+    payload = ns.build_failure_payload("")
+    assert all(block["type"] != "actions" for block in payload["blocks"])
+
+
 # ── send_notification tests ─────────────────────────────────────────────────────
 
 
@@ -518,12 +525,19 @@ def test_main_failure_mode_no_run_url(ns: ModuleType) -> None:
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=False)
 
+    captured_payload: dict[str, Any] = {}
+
+    def _capture_urlopen(req: Any, timeout: float) -> MagicMock:  # noqa: ARG001
+        captured_payload.update(json.loads(req.data.decode()))
+        return mock_response
+
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("urllib.request.urlopen", side_effect=_capture_urlopen),
     ):
         result = ns.main(["--failure"])
     assert result == 0
+    assert all(block["type"] != "actions" for block in captured_payload["blocks"])
 
 
 def test_build_success_payload_with_pr_url(

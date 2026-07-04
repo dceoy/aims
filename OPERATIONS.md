@@ -197,6 +197,8 @@ Override coverage gates locally or in manual workflow runs via `market_analysis.
 
 **Current-run fetch status:** The daily workflow initializes `data/prices/fetch_status_<interval>.json` before fetching, records per-symbol success or failure during each `fetch` call, and passes that file to `generate --fetch-status`. Coverage gates use this fetch-status file as the source of truth, not merely the presence of pre-existing local price CSVs. A stale on-disk price file cannot mask a failed fetch in the current run. `generate` rejects fetch-status files whose `interval` or `analysis_date` do not match the current run.
 
+**Bar boundary policy:** `generate --analysis-date DATE` scores only bars strictly before `DATE`; any bar dated on or after `DATE` is dropped before scoring. This excludes in-progress intraday bars for markets still open when the scheduled run fires (e.g. `^N225`, `^HSI`, `*.T` — Tokyo/Hong Kong sessions are mid-day at the 01:00 UTC schedule), and rejects look-ahead when backfilling a past `analysis_date` against a `--data-dir` that holds newer bars. The tradeoff is one extra day of reporting lag for markets that had already closed by fetch time, in exchange for every instrument's `data_freshness` being computed the same way and a rerun of a past date reproducing the same artifact.
+
 ### Market regime
 
 The market regime label is derived from breadth: the share of reliable instruments whose latest close is above their 20-day moving average. Percentile-based composite scores are relative by construction — their median stays near 50 for any universe of meaningful size regardless of market direction — so breadth is used as an absolute directional measure instead. Reliable instruments without MA20 data are excluded from the ratio.
@@ -277,35 +279,38 @@ The generator is fully deterministic: identical input JSON always produces ident
 Pipeline order:
 
 1. Validate CFD instrument master
-2. Set analysis date (default: today UTC)
-3. Load symbols from `data/mappings/canonical_instrument_mappings.csv` for the configured `--provider`/`--interval` (the mapping file is the single source of truth; there is no separate `data/*_symbols.txt` file to keep in sync)
-4. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from the configured provider (1-year lookback), recording per-symbol outcomes in fetch status
-5. Generate JSON analysis artifact (`data/analysis/YYYY-MM-DD.json`) using `--mapping` and `--fetch-status`; fail if coverage gates are violated. Each instrument entry is enriched with `canonical_id`, `display_name`, and `asset_class` from the mapping.
-6. Validate artifact
-7. Generate score history (`data/history/YYYY-MM-DD.json`)
-8. Generate Hugo Markdown report (`content/results/YYYY-MM-DD-market-analysis.md`), grouped by asset class when the artifact carries more than one
-9. Build Hugo site (validation only — catches template or content errors before commit)
-10. Create (or update) a pull-request branch `generated/analysis-YYYY-MM-DD` with both artifacts and the report, then enable GitHub auto-merge (squash, delete branch on merge) on that PR
-11. A Slack notification summarizes new/persistent signals and risk-gate changes and links to the analysis PR.
+2. Validate instrument mappings (`validate_instrument_mappings.py`) — a typo'd `provider`/`provider_interval` value fails the run instead of silently shrinking the symbol universe
+3. Set analysis date (default: today UTC) and compute the interval-aware output stem (see below)
+4. Load symbols from `data/mappings/canonical_instrument_mappings.csv` for the configured `--provider`/`--interval` (the mapping file is the single source of truth; there is no separate `data/*_symbols.txt` file to keep in sync)
+5. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from the configured provider (lookback window scaled per interval by `aims.policy.fetch_window_days`), recording per-symbol outcomes in fetch status
+6. Generate JSON analysis artifact (`data/analysis/<stem>.json`) using `--mapping` and `--fetch-status`; fail if coverage gates are violated. Each instrument entry is enriched with `canonical_id`, `display_name`, and `asset_class` from the mapping. Bars dated on or after `--analysis-date` are dropped before scoring (see "Bar boundary policy" above).
+7. Validate artifact
+8. Generate score history (`data/history/<stem>.json`)
+9. Generate Hugo Markdown report (`content/results/<stem>-market-analysis.md`), grouped by asset class when the artifact carries more than one
+10. Build Hugo site (validation only — catches template or content errors before commit)
+11. Create (or update) a pull-request branch `generated/analysis-<stem>` with both artifacts and the report, then merge it directly (squash, delete branch)
+12. A Slack notification summarizes new/persistent signals and risk-gate changes and links to the analysis PR.
 
-### Auto-merge and CI approval
+**Interval-aware output stem:** `<stem>` is the analysis date (`YYYY-MM-DD`) for the default `d` interval, and `YYYY-MM-DD-<interval>` for `w`/`m` (see `aims.market_analysis.artifact_interval_suffix`). This keeps existing daily filenames unchanged while preventing a manual `w`/`m` dispatch from overwriting the same date's daily artifact, history, report, or PR branch.
 
-Step 10 calls `gh pr merge --auto --squash --delete-branch`, which merges the PR automatically once its required status checks pass — it does not bypass branch protection or required reviews. This requires **"Allow auto-merge"** to be enabled in **Settings → General → Pull Requests**; if it is not enabled, the step logs a warning and the PR falls back to manual merge exactly as before.
+### Merging the analysis PR
 
-**Known gotcha — PRs stuck in `action_required`:** pull-request-triggered `ci.yml` runs on `generated/analysis-*` branches can be gated with conclusion `action_required` and zero jobs executed, even though the PR was opened by `github-actions[bot]` pushing to a branch in the same repository (not a fork). When this happens, `gh pr merge --auto` waits indefinitely because the required checks never run. A repository maintainer must approve the pending workflow run (Actions tab → the run → **Approve and run**) or re-run it; only an authorized human/maintainer token can do this, the workflow's own `GITHUB_TOKEN` cannot self-approve. If this recurs daily, check **Settings → Actions → General** for an approval requirement (e.g. "Require approval for all outside collaborators") that is being applied to `github-actions[bot]`-authored pull requests, and relax it only if the operational risk is acceptable.
+Step 11 calls `gh pr merge --squash --delete-branch` directly rather than `--auto`: `main` has no branch protection or required status checks, and GitHub only allows `--auto` to be enabled on a PR whose merge is otherwise blocked by such requirements, so `--auto` fails outright here. All validation (artifact/history schema checks, Hugo build) has already run earlier in the same job, so merging immediately is safe. If the merge fails for any reason, the step fails the job (no error-masking) and the failure Slack notification fires.
+
+**Known gotcha — PRs stuck in `action_required`:** pull-request-triggered `ci.yml` runs on `generated/analysis-*` branches can be gated with conclusion `action_required` and zero jobs executed, even though the PR was opened by `github-actions[bot]` pushing to a branch in the same repository (not a fork). When this happens, the merge step above will fail (and notify) rather than merging. A repository maintainer must approve the pending workflow run (Actions tab → the run → **Approve and run**) or re-run it; only an authorized human/maintainer token can do this, the workflow's own `GITHUB_TOKEN` cannot self-approve. If this recurs daily, check **Settings → Actions → General** for an approval requirement (e.g. "Require approval for all outside collaborators") that is being applied to `github-actions[bot]`-authored pull requests, and relax it only if the operational risk is acceptable.
 
 ### Manual dispatch
 
 The workflow supports `workflow_dispatch` with optional inputs:
 
-| Input                 | Default    | Description                                                                                       |
-| --------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
-| `analysis_date`       | Today UTC  | Override the analysis date (YYYY-MM-DD)                                                           |
-| `interval`            | `d`        | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly)                                      |
-| `dry_run`             | `false`    | When `true`, skips PR creation, auto-merge, and Slack success notification                        |
-| `min_success_ratio`   | `0.8`      | Minimum symbol fetch success ratio for coverage gate                                              |
-| `max_missing_symbols` | `4`        | Maximum allowed missing symbols for coverage gate (scaled for the ~20-instrument mapped universe) |
-| `provider`            | `yfinance` | Market data provider: `yfinance` or `stooq`                                                       |
+| Input                 | Default    | Description                                                                                                                                                                                                                    |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `analysis_date`       | Today UTC  | Override the analysis date (YYYY-MM-DD)                                                                                                                                                                                        |
+| `interval`            | `d`        | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly). `w`/`m` currently only cover the mapping rows that exist for those intervals (the five original indices) and write to interval-suffixed output paths (see above) |
+| `dry_run`             | `false`    | When `true`, skips PR creation, merge, and Slack success notification                                                                                                                                                          |
+| `min_success_ratio`   | `0.8`      | Minimum symbol fetch success ratio for coverage gate                                                                                                                                                                           |
+| `max_missing_symbols` | `4`        | Maximum allowed missing symbols for coverage gate (scaled for the ~20-instrument mapped universe)                                                                                                                              |
+| `provider`            | `yfinance` | Market data provider: `yfinance` or `stooq`                                                                                                                                                                                    |
 
 ### Deployment gate
 

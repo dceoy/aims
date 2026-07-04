@@ -13,6 +13,8 @@ import json
 from pathlib import Path
 from typing import Any, Final, Literal
 
+from aims.market_analysis import artifact_interval_suffix
+
 _Alignment = Literal["left", "right", "center"]
 
 _DEFAULT_OUTPUT_DIR: Final[Path] = Path("content/results")
@@ -582,7 +584,7 @@ def report_filename(artifact: dict[str, Any]) -> str:
         date_str = "1970-01-01"
     else:
         date_str = generated_at[:10]
-    return f"{date_str}-market-analysis.md"
+    return f"{date_str}{artifact_interval_suffix(artifact)}-market-analysis.md"
 
 
 def generate_and_save(

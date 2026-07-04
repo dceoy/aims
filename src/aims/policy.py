@@ -54,6 +54,15 @@ _INTERVAL_THRESHOLDS: Final[dict[str, IntervalQualityThresholds]] = {
     "m": IntervalQualityThresholds(stale_days=62, max_gap_days=62, min_history=60),
 }
 
+# Calendar-day fetch lookback per interval, chosen so each interval clears
+# its min_history bar threshold above with a comfortable margin for
+# holidays, provider gaps, and the longest feature lookback (60 bars).
+_FETCH_WINDOW_DAYS: Final[dict[str, int]] = {
+    "d": 365,  # ~250 trading days
+    "w": 1460,  # ~4 years -> ~208 weekly bars
+    "m": 3650,  # ~10 years -> ~120 monthly bars
+}
+
 _DEFAULT_COVERAGE: Final[CoveragePolicy] = CoveragePolicy(
     min_success_ratio=0.8,
     max_missing_symbols=1,
@@ -70,6 +79,22 @@ def get_interval_thresholds(interval: str) -> IntervalQualityThresholds:
         )
         raise ValueError(msg)
     return _INTERVAL_THRESHOLDS[interval]
+
+
+def fetch_window_days(interval: str) -> int:
+    """Return the calendar-day fetch lookback window for *interval*.
+
+    A fixed 365-day window (enough for ~250 daily bars) is far too short
+    for weekly (~52 bars/year) or monthly (~12 bars/year) intervals to
+    clear ``min_history=60``; this scales the window per interval instead.
+    """
+    if interval not in _FETCH_WINDOW_DAYS:
+        msg = (
+            f"unsupported interval: {interval!r}"
+            f" (expected one of {_SUPPORTED_INTERVALS})"
+        )
+        raise ValueError(msg)
+    return _FETCH_WINDOW_DAYS[interval]
 
 
 def get_data_quality_policy(

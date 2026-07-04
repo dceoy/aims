@@ -71,14 +71,32 @@ jobs:
             .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
             --input data/cfd_instruments.csv \
             --schema data/schema/cfd_instruments.schema.json
+      - name: Validate instrument mappings
+        run: |
+          uv run python \
+            .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
+            --input data/mappings/canonical_instrument_mappings.csv \
+            --cfd-instruments data/cfd_instruments.csv
       - name: Set analysis date
         id: date
         run: |
           if [ -n "$ANALYSIS_DATE" ]; then
-            echo "date=$ANALYSIS_DATE" >> "$GITHUB_OUTPUT"
+            DATE="$ANALYSIS_DATE"
           else
-            echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+            DATE="$(date -u +%Y-%m-%d)"
           fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          # Interval-aware output stem: "d" (the default/scheduled interval)
+          # keeps the plain date for backward compatibility; "w"/"m" get a
+          # suffix so a manual dispatch cannot collide with the same date's
+          # daily artifact/history/report/PR branch. Mirrors
+          # aims.market_analysis.artifact_interval_suffix.
+          if [ "$INTERVAL" = "d" ]; then
+            STEM="$DATE"
+          else
+            STEM="${DATE}-${INTERVAL}"
+          fi
+          echo "stem=$STEM" >> "$GITHUB_OUTPUT"
       - name: Load symbols
         id: symbols
         env:
@@ -101,10 +119,12 @@ jobs:
           DATE: ${{ steps.date.outputs.date }}
           SYMBOLS: ${{ steps.symbols.outputs.symbols }}
         run: |
-          START=$(python3 -c "
+          START=$(uv run python -c "
           from datetime import datetime, timedelta
+          from aims.policy import fetch_window_days
           d = datetime.strptime('${DATE}', '%Y-%m-%d')
-          print((d - timedelta(days=365)).strftime('%Y-%m-%d'))
+          window = fetch_window_days('${INTERVAL}')
+          print((d - timedelta(days=window)).strftime('%Y-%m-%d'))
           ")
           FETCH_STATUS="data/prices/fetch_status_${INTERVAL}.json"
           uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
@@ -141,34 +161,34 @@ jobs:
       - name: Validate artifact
         if: steps.symbols.outputs.symbols != ''
         env:
-          DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_analysis.py \
-            --input "data/analysis/${DATE}.json"
+            --input "data/analysis/${STEM}.json"
       - name: Generate score history
         if: steps.symbols.outputs.symbols != ''
         env:
-          DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/generate_history.py \
-            --input "data/analysis/${DATE}.json" \
+            --input "data/analysis/${STEM}.json" \
             --analysis-dir data/analysis \
             --output data/history
       - name: Validate score history
         if: steps.symbols.outputs.symbols != ''
         env:
-          DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_history.py \
-            --input "data/history/${DATE}.json"
+            --input "data/history/${STEM}.json"
       - name: Generate Hugo report
         if: steps.symbols.outputs.symbols != ''
         env:
-          DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/generate_report.py \
-            --input "data/analysis/${DATE}.json" \
-            --history "data/history/${DATE}.json" \
+            --input "data/analysis/${STEM}.json" \
+            --history "data/history/${STEM}.json" \
             --output content/results/
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
@@ -186,8 +206,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
         run: |
-          BRANCH="generated/analysis-${DATE}"
+          BRANCH="generated/analysis-${STEM}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           gh auth setup-git
@@ -216,30 +237,30 @@ jobs:
             echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
             echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           fi
-      - name: Enable auto-merge for analysis pull request
+      - name: Merge analysis pull request
         if: steps.pr.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
         run: |
-          # Merges automatically once required status checks (lint, type check,
-          # tests, Hugo build) pass. If branch protection requires review, the
-          # PR waits for that review instead of merging — no gate is bypassed.
-          # Requires "Allow auto-merge" enabled in repository settings; if it
-          # is not enabled, this warns and the PR falls back to manual merge.
-          gh pr merge "$PR_NUMBER" --auto --squash --delete-branch \
-            || echo "WARNING: could not enable auto-merge for PR #$PR_NUMBER;" \
-              "enable 'Allow auto-merge' in repository settings or merge manually."
+          # All validation (artifact/history schema checks, Hugo build) has
+          # already run earlier in this job, so merge immediately instead of
+          # requesting `--auto`: main has no branch protection or required
+          # status checks, and GitHub only allows auto-merge to be enabled on
+          # a PR whose merge is blocked by such requirements, so `--auto`
+          # fails outright here. A failed merge must fail this step (no
+          # `|| echo` masking) so it routes into "Notify Slack (failure)".
+          gh pr merge "$PR_NUMBER" --squash --delete-branch
       - name: Notify Slack (success)
         if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true' && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          DATE: ${{ steps.date.outputs.date }}
+          STEM: ${{ steps.date.outputs.stem }}
           PR_URL: ${{ steps.pr.outputs.pr_url }}
         run: |
           uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
-            --artifact "data/analysis/${DATE}.json" \
-            --history "data/history/${DATE}.json" \
+            --artifact "data/analysis/${STEM}.json" \
+            --history "data/history/${STEM}.json" \
             --pr-url "${PR_URL}"
       - name: Notify Slack (failure)
         if: failure() && env.SLACK_NOTIFICATIONS_ENABLED == 'true'

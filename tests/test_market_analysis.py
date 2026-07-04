@@ -897,6 +897,59 @@ def test_save_artifact_no_generated_at(ma: ModuleType, tmp_path: Path) -> None:
     assert path.exists()
 
 
+# ── artifact_interval_suffix / artifact_filename_stem ──────────────────────────
+
+
+def test_artifact_interval_suffix_daily_is_empty(ma: ModuleType) -> None:
+    artifact = {"metadata": {"config": {"interval": "d"}}}
+    assert ma.artifact_interval_suffix(artifact) == ""
+
+
+def test_artifact_interval_suffix_weekly(ma: ModuleType) -> None:
+    artifact = {"metadata": {"config": {"interval": "w"}}}
+    assert ma.artifact_interval_suffix(artifact) == "-w"
+
+
+def test_artifact_interval_suffix_monthly(ma: ModuleType) -> None:
+    artifact = {"metadata": {"config": {"interval": "m"}}}
+    assert ma.artifact_interval_suffix(artifact) == "-m"
+
+
+def test_artifact_interval_suffix_missing_metadata(ma: ModuleType) -> None:
+    assert ma.artifact_interval_suffix({}) == ""
+
+
+def test_artifact_interval_suffix_missing_config(ma: ModuleType) -> None:
+    assert ma.artifact_interval_suffix({"metadata": {}}) == ""
+
+
+def test_artifact_filename_stem_weekly(ma: ModuleType) -> None:
+    artifact = {
+        "metadata": {
+            "generated_at": "2024-06-07T00:00:00+00:00",
+            "config": {"interval": "w"},
+        }
+    }
+    assert ma.artifact_filename_stem(artifact) == "2024-06-07-w"
+
+
+def test_save_artifact_weekly_filename_has_interval_suffix(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(70)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    artifact = ma.generate_artifact(
+        scores,
+        {"A": bars},
+        {"interval": "w"},
+        analysis_date="2024-06-07",
+    )
+    path = ma.save_artifact(artifact, tmp_path)
+    assert path.name == "2024-06-07-w.json"
+
+
 # ── CLI: _cmd_fetch ───────────────────────────────────────────────────────────
 
 
@@ -1448,6 +1501,39 @@ def test_cmd_generate_no_analysis_date_may_mark_stale(
     inst = next(i for i in artifact["instruments"] if i["symbol"] == "STALE")
     # Without reference_time fix, old bars stale relative to today
     assert ma.RISK_GATE_STALE in inst["risk_gates"]
+
+
+def test_cmd_generate_trims_bars_at_or_after_analysis_date(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    """In-progress and look-ahead bars dated >= analysis_date are excluded.
+
+    Covers markets still open at run time (e.g. ``*.T``, ``^N225``, ``^HSI``)
+    whose "today" bar is a partial intraday snapshot, and closes the backfill
+    look-ahead where a data directory holds bars newer than the requested
+    analysis date.
+    """
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    analysis_dt = datetime(2024, 1, 10, tzinfo=UTC)
+    base_dt = analysis_dt - timedelta(days=69)
+    # Index 69 lands exactly on analysis_date (in-progress bar); index 70
+    # lands one day after (look-ahead bar). Both must be trimmed.
+    bars = _make_bars(ma, "TRIM", [float(100 + i) for i in range(71)], start=base_dt)
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "TRIM"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-01-10"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-01-10.json").read_text())
+    assert artifact["metadata"]["data_freshness"]["TRIM"] == "2024-01-09"
 
 
 # ── Coverage gates and artifact metadata ───────────────────────────────────────

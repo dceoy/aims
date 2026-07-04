@@ -14,6 +14,7 @@ The `okf/` tree is the canonical repository-native source for durable AIMS archi
 - [Instrument Master](/concepts/instrument-master.md)
 - [Operational Recovery](/concepts/operational-recovery.md)
 - [Publication Workflow](/concepts/publication-workflow.md)
+- [Qualitative Analysis](/concepts/qualitative-analysis.md)
 - [Report Generation](/concepts/report-generation.md)
 - [Scoring Methodology](/concepts/scoring-methodology.md)
 

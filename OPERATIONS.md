@@ -17,6 +17,7 @@ This document covers data sources, scoring methodology, report generation, the p
 7. [Required permissions](#7-required-permissions)
 8. [Troubleshooting](#8-troubleshooting)
 9. [Manual recovery](#9-manual-recovery)
+10. [AI qualitative analysis layer (design)](#10-ai-qualitative-analysis-layer-design)
 
 ---
 
@@ -324,10 +325,11 @@ If a published report or artifact needs to be removed, see [Delete a published r
 
 ## 6. GitHub Actions secrets
 
-| Secret              | Required | Description                                                                                                                                      |
-| ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                       |
-| `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed. |
+| Secret              | Required | Description                                                                                                                                                                                                                                                                             |
+| ------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                                                                                                                                                              |
+| `ANTHROPIC_API_KEY` | Optional | Claude API key for the AI qualitative analysis step (see [§10](#10-ai-qualitative-analysis-layer-design)). If not set, all qualitative steps are skipped and the pipeline behaves exactly as today. Not yet consumed by any workflow — wiring lands with the qualitative roadmap (#95). |
+| `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed.                                                                                                                                        |
 
 **How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.
 
@@ -475,3 +477,62 @@ uv run .agents/skills/market-analysis/scripts/notify_slack.py \
 ### Refresh CFD instruments manually
 
 Trigger **Actions → Update CFD instruments → Run workflow**.
+
+---
+
+## 10. AI qualitative analysis layer (design)
+
+This section is the design contract for the AI qualitative analysis roadmap (#98). It was written before implementation (#89) so that later issues (#90–#97) implement against agreed rules instead of re-litigating them. Nothing in this section is wired into the pipeline yet; each subsection names the issue that implements it.
+
+### Purpose and boundaries
+
+The quantitative pipeline cannot see _why_ — news, earnings, disclosures, and macro events that explain or contradict the rankings. The qualitative layer adds grounded AI interpretation around the quantitative signal while leaving every existing guarantee intact:
+
+- **The quantitative artifact stays authoritative for all numbers.** The qualitative artifact may reference scores, ranks, features, risk gates, and the market regime; it never restates them authoritatively and never modifies them. This mirrors the OKF guardrail that LLM prose is never the source of truth for numeric facts.
+- **The LLM call is the single non-deterministic step.** It produces a committed, schema-validated JSON artifact (`data/qualitative/<stem>.json`). Everything downstream — validation, gating, report rendering, Hugo build — stays deterministic. Report generation without a qualitative artifact remains byte-identical to today's output.
+- **Fail-open.** Any qualitative failure (missing API key, API error, timeout, gate withholding) publishes the quantitative report unchanged. Quantitative coverage gates are never weakened. Qualitative-step failures are non-fatal warnings; quantitative failures remain fatal exactly as now.
+
+### Artifact contract (#92)
+
+`data/qualitative/<stem>.json`, versioned by its own `QUALITATIVE_VERSION` (starting at `1.0.0`), validated by a hand-rolled `validate_qualitative.py` following the `validate_analysis.py` pattern. The format reference is `data/schema/qualitative.schema.json`. Key points:
+
+- **Scope:** per-instrument entries cover only the top-K published signals (K=5, matching `history.py`'s `DEFAULT_TOP_K`), plus one market-level narrative and up to five macro themes. One LLM call per day. No commentary on the rest of the universe — cost and review surface stay bounded.
+- **Closed enums:** stance is `supportive` / `neutral` / `conflicting` (relative to the quantitative signal); confidence is `low` / `medium` / `high`. A `conflicting` stance — the model disagreeing with the signal on outlook — is legitimate, expected output.
+- **Machine-checkable claims:** drivers carry structured fields instead of burying assertions in prose. A `direction_claim` (`up`/`down`/`none` over a `1d`/`5d`/`20d`/`60d` window) states realized price action, including an explicit no-movement claim so "flat" assertions are checkable too instead of living unverified in free text; `numeric_claims` entries (`value`, `unit`, `refers_to`) declare every number used. Free text is display-only and may not contain numeric tokens undeclared in `numeric_claims` (whitelist: feature names, ISO dates).
+- **Provenance metadata:** model ID, prompt version and prompt-file SHA-256, and content hashes of the inputs (analysis artifact, evidence bundle, calendar when it exists), so any artifact traces to exactly what produced it. `generated_at` is analysis-date midnight UTC, mirroring the analysis artifact.
+
+### Grounding rules (#90, #92)
+
+- The model cites only from the day's committed, validated evidence bundle (`data/evidence/`, issue #90) — no browsing, retrieval, vector stores, embeddings, or external RAG services at analysis time (repository policy).
+- Every driver, theme, and the market narrative carries at least one citation; citations are evidence IDs that must exist in the referenced bundle.
+- Numeric statements must be reproducible from `data/analysis/` or from a cited evidence item.
+- Evidence text is untrusted data: it is delimited as quoted content in the prompt, instructions inside it are content to ignore, and the validator whitelists output shape, enums, and citation targets regardless of what the model emits.
+- Where evidence coverage for an instrument is thin (per-asset-class coverage accounting from #90), the prompt says so; `neutral` with few drivers is the correct output — absence of evidence must not be filled with plausible narrative.
+
+### Deterministic gates (#93)
+
+Schema validity is not truth. After validation, a deterministic gate pass cross-examines the structured claims against the numbers AIMS already computes, mirroring the `risk_gates` pattern: direction consistency (an `up`/`down` `direction_claim` contradicting the sign of the matching return feature, or a `none` claim contradicted by a non-trivial move in that feature, is gated — stance disagreement is never gated), numeric-claim verification within tolerance, evidence recency (aligned with `stale_days` in `src/aims/policy.py`), and citation coverage. Gated per-instrument entries are excluded from rendering; a gated market narrative withholds the whole artifact. One regeneration retry is allowed before degrading. Gate outcomes are recorded in artifact metadata so the report and Slack can say why commentary is absent. Gates are deterministic code only — no LLM-based verification.
+
+### Runner architecture and API access (#92)
+
+- **Runner:** an agent skill at `.agents/skills/qualitative-analysis/` whose scripts are thin wrappers delegating to `src/aims/qualitative.py`, the same pattern as `market-analysis/scripts/`. It runs in the daily workflow after the "Validate artifact" step (#95).
+- **API access:** the official `anthropic` Python SDK is added as a runtime dependency. Rationale: schema-constrained structured outputs, typed error classes, and built-in retry/backoff for 429/5xx — hand-rolling those over stdlib `urllib` (the `notify_slack.py` precedent, which was considered) would mean more custom code maintained at 100% branch coverage for no dependency saved in practice. `output_config.format` takes a real JSON Schema (`type`/`properties`/`required`) authored in code at implementation time (#92); `data/schema/qualitative.schema.json` stays a hand-rolled reference for `validate_qualitative.py`, not that request schema. The API-level schema guarantees basic shape and required-key presence; enum values, citation targets, and cross-field rules remain enforced by the validator and the #93 gates. The API-calling boundary in `src/aims/qualitative.py` stays thin and mockable; tests never call the network.
+- **Model:** `claude-opus-4-8`, pinned in code and recorded in artifact metadata alongside the prompt version. The prompt is a committed file; changing it or the model requires the #97 regression harness once that exists. Current Claude models accept no sampling parameters (`temperature` is rejected), so run-to-run reproducibility rests on committed inputs, structured outputs, deterministic gates, and committing a single validated artifact per date — not on a temperature setting.
+- **Caps:** one call per run; input capped by the evidence bundle's per-instrument item caps and length-capped snippets (#90); output capped via `max_tokens`; request timeout and a single retry (which is also the #93 regeneration retry).
+
+### Secret handling and cost (#95)
+
+`ANTHROPIC_API_KEY` is an optional repository secret read only from the environment, mirroring `SLACK_WEBHOOK_URL` (see [§6](#6-github-actions-secrets)). When absent, every qualitative step is skipped and the pipeline behaves exactly as today. Expected cost, to be re-measured once #92 runs: one daily call with roughly 30–60k input tokens and 2–5k output tokens on `claude-opus-4-8` ($5/$25 per million tokens) is about $0.20–0.45 per run, i.e. roughly $10–20/month. Record measured figures here after the first shadow-mode week.
+
+### Rollout: shadow mode before rendering (#95, then #94)
+
+Daily analysis PRs auto-merge with no human review (#75), so schema validation and the #93 gates are the only pre-publication defenses for LLM output. Rendering is therefore staged:
+
+1. **Shadow mode (#95):** evidence and qualitative artifacts are generated, validated, gated, and committed in the daily analysis PR, but `generate_report.py` is not passed `--qualitative`. Published reports stay byte-identical to today's.
+2. **Exit criteria** (tracked on #98): at least 10 consecutive scheduled runs with zero schema/validator failures, a market-narrative gate pass rate of at least 80%, and a human spot-review of the committed artifacts recorded on #98.
+3. **Enable rendering (#94):** a default-off repository variable (e.g. `AI_COMMENTARY_ENABLED`) flips `--qualitative` on. The flip is a reviewed change recorded against #98's checklist, not a silent default. AI commentary renders in an explicitly labeled section with citations, model/prompt provenance, and the financial disclaimer adjacent.
+4. **Go/no-go checkpoint** (tracked on #98): after roughly one quarter of enabled rendering, review stance hit rates and calibration (#97), gate withhold rates, and realized cost; continue, adjust, or retire the layer.
+
+### Non-goals
+
+No investment advice or trading automation; no vector databases, embeddings pipelines, external RAG services, custom CMS layers, or server-side runtimes; no AI modification of scores, ranks, gates, or regime labels; no LLM-based verification of LLM output.

@@ -168,6 +168,7 @@ def test_build_artifact_includes_calendar_hash_when_present(
     artifact = q.build_artifact(
         valid_response_payload,
         analysis_date="2024-01-01",
+        interval="d",
         prompt_sha256="a" * 64,
         analysis_sha256="b" * 64,
         evidence_sha256="c" * 64,
@@ -176,6 +177,7 @@ def test_build_artifact_includes_calendar_hash_when_present(
     assert artifact["metadata"]["input_hashes"]["calendar_sha256"] == "d" * 64
     assert artifact["version"] == q.QUALITATIVE_VERSION
     assert artifact["metadata"]["model_id"] == q.MODEL_ID
+    assert artifact["metadata"]["interval"] == "d"
 
 
 def test_build_artifact_omits_calendar_hash_when_absent(
@@ -184,6 +186,7 @@ def test_build_artifact_omits_calendar_hash_when_absent(
     artifact = q.build_artifact(
         valid_response_payload,
         analysis_date="2024-01-01",
+        interval="d",
         prompt_sha256="a" * 64,
         analysis_sha256="b" * 64,
         evidence_sha256="c" * 64,
@@ -192,14 +195,59 @@ def test_build_artifact_omits_calendar_hash_when_absent(
     assert "calendar_sha256" not in artifact["metadata"]["input_hashes"]
 
 
+def test_artifact_stem_daily_has_no_suffix() -> None:
+    artifact = {"metadata": {"analysis_date": "2024-01-01", "interval": "d"}}
+    assert q.artifact_stem(artifact) == "2024-01-01"
+
+
+def test_artifact_stem_defaults_to_daily_when_interval_absent() -> None:
+    artifact = {"metadata": {"analysis_date": "2024-01-01"}}
+    assert q.artifact_stem(artifact) == "2024-01-01"
+
+
+def test_artifact_stem_weekly_preserves_suffix() -> None:
+    artifact = {"metadata": {"analysis_date": "2024-01-01", "interval": "w"}}
+    assert q.artifact_stem(artifact) == "2024-01-01-w"
+
+
+def test_build_artifact_carries_interval_for_manual_weekly_dispatch(
+    valid_response_payload: dict[str, Any],
+) -> None:
+    # Regression test: a manual weekly/monthly dispatch's qualitative
+    # artifact must land at the workflow's suffixed STEM (e.g.
+    # data/qualitative/2024-01-01-w.json), not the bare daily filename,
+    # or the workflow's later `[ -f "data/qualitative/${STEM}.json" ]`
+    # check silently skips validation/rendering and the wrongly-named
+    # file collides with a same-date daily artifact.
+    artifact = q.build_artifact(
+        valid_response_payload,
+        analysis_date="2024-01-01",
+        interval="w",
+        prompt_sha256="a" * 64,
+        analysis_sha256="b" * 64,
+        evidence_sha256="c" * 64,
+        calendar_sha256=None,
+    )
+    assert q.artifact_stem(artifact) == "2024-01-01-w"
+
+
 def test_save_artifact(tmp_path: Path) -> None:
     artifact = {
         "version": q.QUALITATIVE_VERSION,
-        "metadata": {"generated_at": "2024-01-01T00:00:00+00:00"},
+        "metadata": {"analysis_date": "2024-01-01", "interval": "d"},
     }
     path = q.save_artifact(artifact, tmp_path)
     assert path == tmp_path / "2024-01-01.json"
     assert json.loads(path.read_text())["version"] == q.QUALITATIVE_VERSION
+
+
+def test_save_artifact_weekly_preserves_suffix(tmp_path: Path) -> None:
+    artifact = {
+        "version": q.QUALITATIVE_VERSION,
+        "metadata": {"analysis_date": "2024-01-01", "interval": "w"},
+    }
+    path = q.save_artifact(artifact, tmp_path)
+    assert path == tmp_path / "2024-01-01-w.json"
 
 
 # ── generate() orchestration ─────────────────────────────────────────────────
@@ -261,6 +309,29 @@ def test_generate_success_first_attempt(
     saved = json.loads(result.read_text())
     assert saved["metadata"]["gates"]["passed"] is True
     assert q.call_model.call_count == 1
+
+
+def test_generate_preserves_weekly_interval_in_output_filename(
+    tmp_path: Path,
+    analysis: dict[str, Any],
+    evidence: dict[str, Any],
+    valid_response_payload: dict[str, Any],
+    mocker: MockerFixture,
+) -> None:
+    analysis["metadata"]["config"]["interval"] = "w"
+    analysis_path, evidence_path = _write_inputs(tmp_path, analysis, evidence)
+    mocker.patch.object(q, "call_model", return_value=valid_response_payload)
+    output_dir = tmp_path / "out"
+    result = q.generate(
+        analysis_path,
+        evidence_path,
+        [],
+        prompt_path=PROMPT,
+        output_dir=output_dir,
+    )
+    assert result == output_dir / "2024-01-01-w.json"
+    saved = json.loads(result.read_text())
+    assert saved["metadata"]["interval"] == "w"
 
 
 def test_generate_retries_after_invalid_then_succeeds(

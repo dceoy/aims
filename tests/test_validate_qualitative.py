@@ -443,6 +443,57 @@ def test_undeclared_numbers_ignores_non_numeric_claims() -> None:
     assert vq.undeclared_numbers("It moved 3 points.", claims) == ["3"]
 
 
+def test_undeclared_numbers_whitelisted_number_is_exempt() -> None:
+    assert vq.undeclared_numbers("The S&P 500 led gains.", [], frozenset({"500"})) == []
+
+
+def test_undeclared_numbers_whitelist_does_not_mask_other_numbers() -> None:
+    tokens = vq.undeclared_numbers(
+        "The S&P 500 rose 12.5 percent.", [], frozenset({"500"})
+    )
+    assert tokens == ["12.5"]
+
+
+# ── instrument_name_numbers ──────────────────────────────────────────────────
+
+
+def test_instrument_name_numbers_none_analysis() -> None:
+    assert vq.instrument_name_numbers(None) == frozenset()
+
+
+def test_instrument_name_numbers_extracts_digits_from_display_names() -> None:
+    analysis = {
+        "instruments": [
+            {"display_name": "S&P 500"},
+            {"display_name": "NASDAQ 100"},
+            {"display_name": "Dow Jones Industrial Average"},
+            {"display_name": None},
+            {},
+        ]
+    }
+    assert vq.instrument_name_numbers(analysis) == frozenset({"500", "100"})
+
+
+def test_market_narrative_mentions_instrument_name_with_analysis(
+    artifact: dict[str, Any], analysis: dict[str, Any]
+) -> None:
+    # Regression test for a Codex finding: a covered instrument's own name
+    # ("S&P 500", the analysis fixture's spx display_name) must not be
+    # rejected as an undeclared numeric claim when the analysis artifact is
+    # supplied for cross-checking.
+    artifact["market"]["narrative"] += " The S&P 500 led the rally."
+    errors = vq.validate_artifact(artifact, analysis=analysis)
+    assert not any("numeric token '500'" in e for e in errors)
+
+
+def test_market_narrative_instrument_name_number_still_flagged_without_analysis(
+    artifact: dict[str, Any],
+) -> None:
+    artifact["market"]["narrative"] += " The S&P 500 led the rally."
+    errors = vq.validate_artifact(artifact)
+    assert any("numeric token '500'" in e for e in errors)
+
+
 # ── sha256_file ──────────────────────────────────────────────────────────────
 
 

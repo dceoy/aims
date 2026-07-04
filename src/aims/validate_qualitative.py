@@ -56,6 +56,7 @@ _REQUIRED_TOP: Final[tuple[str, ...]] = ("version", "metadata", "market", "instr
 _REQUIRED_META: Final[tuple[str, ...]] = (
     "generated_at",
     "analysis_date",
+    "interval",
     "git_commit",
     "model_id",
     "prompt_version",
@@ -107,18 +108,45 @@ def _declared_values(claims: list[Any]) -> list[float]:
     ]
 
 
-def undeclared_numbers(text: str, claims: list[Any]) -> list[str]:
+def instrument_name_numbers(analysis: dict[str, Any] | None) -> frozenset[str]:
+    """Return numeric tokens embedded in the universe's instrument names.
+
+    Many canonical display names carry a number that is part of the proper
+    name, not a market claim (e.g. "S&P 500", "NASDAQ 100", "Nikkei 225",
+    "Euro Stoxx 50", "FTSE 100", "CAC 40", "Russell 2000"). Free text that
+    mentions one of these instruments must not be rejected as an undeclared
+    numeric claim for reciting the name.
+    """
+    if analysis is None:
+        return frozenset()
+    numbers: set[str] = set()
+    for inst in analysis.get("instruments", []):
+        display_name = inst.get("display_name")
+        if isinstance(display_name, str):
+            numbers.update(_NUM_RE.findall(display_name))
+    return frozenset(numbers)
+
+
+def undeclared_numbers(
+    text: str,
+    claims: list[Any],
+    whitelisted_numbers: frozenset[str] = frozenset(),
+) -> list[str]:
     """Return numeric tokens in *text* not declared in *claims*.
 
     Whitelisted display conventions (dates, years, window phrases,
-    indicator/feature names) are stripped before scanning.
+    indicator/feature names) are stripped before scanning; numbers
+    matching *whitelisted_numbers* (e.g. instrument-name numerals from
+    ``instrument_name_numbers``) are also exempt.
     """
     declared = _declared_values(claims)
+    whitelisted = {float(n) for n in whitelisted_numbers}
     cleaned = _WHITELIST_RE.sub(" ", text)
     return [
         token
         for token in _NUM_RE.findall(cleaned)
-        if not any(abs(float(token) - value) <= _MATCH_TOLERANCE for value in declared)
+        if float(token) not in whitelisted
+        and not any(abs(float(token) - value) <= _MATCH_TOLERANCE for value in declared)
     ]
 
 
@@ -167,12 +195,17 @@ def _validate_citations(
     return errors
 
 
-def _validate_free_text(where: str, text: str, claims: Any) -> list[str]:
+def _validate_free_text(
+    where: str,
+    text: str,
+    claims: Any,
+    whitelisted_numbers: frozenset[str],
+) -> list[str]:
     claim_list = claims if isinstance(claims, list) else []
     return [
         f"{where}: numeric token {token!r} in free text is not declared"
         " in numeric_claims"
-        for token in undeclared_numbers(text, claim_list)
+        for token in undeclared_numbers(text, claim_list, whitelisted_numbers)
     ]
 
 
@@ -190,7 +223,10 @@ def _validate_direction_claim(where: str, claim: Any) -> list[str]:
 
 
 def _validate_driver(
-    where: str, driver: Any, evidence_ids: frozenset[str] | None
+    where: str,
+    driver: Any,
+    evidence_ids: frozenset[str] | None,
+    whitelisted_numbers: frozenset[str],
 ) -> list[str]:
     if not isinstance(driver, dict):
         return [f"{where} must be a JSON object"]
@@ -210,11 +246,19 @@ def _validate_driver(
         errors.extend(_validate_direction_claim(where, driver["direction_claim"]))
     if "numeric_claims" in driver:
         errors.extend(_validate_numeric_claims(where, driver["numeric_claims"]))
-    errors.extend(_validate_free_text(where, text, driver.get("numeric_claims", [])))
+    errors.extend(
+        _validate_free_text(
+            where, text, driver.get("numeric_claims", []), whitelisted_numbers
+        )
+    )
     return errors
 
 
-def _validate_market(market: Any, evidence_ids: frozenset[str] | None) -> list[str]:
+def _validate_market(
+    market: Any,
+    evidence_ids: frozenset[str] | None,
+    whitelisted_numbers: frozenset[str],
+) -> list[str]:
     if not isinstance(market, dict):
         return ["'market' must be a JSON object"]
     errors = [
@@ -234,7 +278,9 @@ def _validate_market(market: Any, evidence_ids: frozenset[str] | None) -> list[s
     if "numeric_claims" in market:
         errors.extend(_validate_numeric_claims("market", market["numeric_claims"]))
     errors.extend(
-        _validate_free_text("market", narrative, market.get("numeric_claims", []))
+        _validate_free_text(
+            "market", narrative, market.get("numeric_claims", []), whitelisted_numbers
+        )
     )
 
     themes = market["themes"]
@@ -258,7 +304,9 @@ def _validate_market(market: Any, evidence_ids: frozenset[str] | None) -> list[s
         if "numeric_claims" in theme:
             errors.extend(_validate_numeric_claims(where, theme["numeric_claims"]))
         errors.extend(
-            _validate_free_text(where, title, theme.get("numeric_claims", []))
+            _validate_free_text(
+                where, title, theme.get("numeric_claims", []), whitelisted_numbers
+            )
         )
     return errors
 
@@ -282,6 +330,7 @@ def _validate_instruments(
     evidence_ids: frozenset[str] | None,
     allowed: dict[str, str] | None,
     top_k: int,
+    whitelisted_numbers: frozenset[str],
 ) -> list[str]:
     if not isinstance(instruments, list):
         return ["'instruments' must be a JSON array"]
@@ -325,7 +374,12 @@ def _validate_instruments(
             errors.append(f"{where}: more than {MAX_DRIVERS_PER_INSTRUMENT} drivers")
         for didx, driver in enumerate(drivers):
             errors.extend(
-                _validate_driver(f"{where}.drivers[{didx}]", driver, evidence_ids)
+                _validate_driver(
+                    f"{where}.drivers[{didx}]",
+                    driver,
+                    evidence_ids,
+                    whitelisted_numbers,
+                )
             )
     return errors
 
@@ -400,10 +454,13 @@ def validate_artifact(
             str(item.get("id", "")) for item in evidence.get("items", [])
         )
     allowed = _top_k_instruments(analysis, top_k) if analysis is not None else None
+    whitelisted_numbers = instrument_name_numbers(analysis)
 
-    errors.extend(_validate_market(data["market"], evidence_ids))
+    errors.extend(_validate_market(data["market"], evidence_ids, whitelisted_numbers))
     errors.extend(
-        _validate_instruments(data["instruments"], evidence_ids, allowed, top_k)
+        _validate_instruments(
+            data["instruments"], evidence_ids, allowed, top_k, whitelisted_numbers
+        )
     )
     return errors
 

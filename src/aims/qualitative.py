@@ -41,7 +41,6 @@ from aims.calendars import (
 )
 from aims.evidence import git_commit
 from aims.history import DEFAULT_TOP_K
-from aims.market_analysis import artifact_filename_stem
 from aims.qualitative_gates import apply_gates
 from aims.validate_qualitative import (
     QUALITATIVE_VERSION,
@@ -290,6 +289,7 @@ def build_artifact(
     response_payload: dict[str, Any],
     *,
     analysis_date: str,
+    interval: str,
     prompt_sha256: str,
     analysis_sha256: str,
     evidence_sha256: str,
@@ -306,6 +306,7 @@ def build_artifact(
         "metadata": {
             "generated_at": f"{analysis_date}T00:00:00+00:00",
             "analysis_date": analysis_date,
+            "interval": interval,
             "git_commit": git_commit(),
             "model_id": MODEL_ID,
             "prompt_version": PROMPT_VERSION,
@@ -317,11 +318,26 @@ def build_artifact(
     }
 
 
+def artifact_stem(artifact: dict[str, Any]) -> str:
+    """Return the date[-interval] filename stem for a qualitative artifact.
+
+    Mirrors ``aims.evidence.bundle_stem``: the qualitative artifact carries
+    its own flat ``metadata.interval`` (unlike the nested
+    ``metadata.config.interval`` on analysis/history artifacts), so a
+    manual weekly/monthly run's suffixed stem is preserved instead of
+    silently collapsing to the bare daily filename.
+    """
+    meta = artifact["metadata"]
+    interval = meta.get("interval", "d")
+    suffix = "" if interval == "d" else f"-{interval}"
+    return f"{meta['analysis_date']}{suffix}"
+
+
 def save_artifact(
     artifact: dict[str, Any], output_dir: Path = _DEFAULT_OUTPUT_DIR
 ) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
-    path = output_dir / f"{artifact_filename_stem(artifact)}.json"
+    path = output_dir / f"{artifact_stem(artifact)}.json"
     path.write_text(
         json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -352,6 +368,7 @@ def generate(
     analysis = _load(analysis_path)
     evidence = _load(evidence_path)
     analysis_date = str(analysis["metadata"]["generated_at"])[:10]
+    interval = str(analysis["metadata"].get("config", {}).get("interval", "d"))
 
     signals = top_signals(analysis, top_k)
     evidence_ids = sorted(str(item["id"]) for item in evidence.get("items", []))
@@ -378,6 +395,7 @@ def generate(
         artifact = build_artifact(
             response_payload,
             analysis_date=analysis_date,
+            interval=interval,
             prompt_sha256=sha256_file(prompt_path),
             analysis_sha256=sha256_file(analysis_path),
             evidence_sha256=sha256_file(evidence_path),

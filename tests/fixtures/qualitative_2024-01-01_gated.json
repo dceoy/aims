@@ -97,6 +97,7 @@
       "analysis_sha256": "82ad29201e8316e6e12092406bfe1c3b5c96a2e605d0acaceaf8515448e93dc6",
       "evidence_sha256": "fdcbf189f14050170347583bb0e2c6b8d6f81516446623db05b84b0f08c07c0c"
     },
+    "interval": "d",
     "model_id": "claude-opus-4-8",
     "prompt_sha256": "abababababababababababababababababababababababababababababababab",
     "prompt_version": "1.0.0"

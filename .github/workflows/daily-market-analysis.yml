@@ -256,6 +256,7 @@ jobs:
         if: steps.symbols.outputs.symbols != ''
         env:
           STEM: ${{ steps.date.outputs.stem }}
+          QUALITATIVE_OUTCOME: ${{ steps.qualitative.outcome }}
         run: |
           ARGS=(
             --input "data/analysis/${STEM}.json"
@@ -269,7 +270,14 @@ jobs:
             off) AI_COMMENTARY=false ;;
             *) AI_COMMENTARY="$AI_COMMENTARY_VAR" ;;
           esac
-          if [ "$AI_COMMENTARY" = "true" ] && [ -f "data/qualitative/${STEM}.json" ]; then
+          # The qualitative step is continue-on-error, so a file can exist on
+          # disk even after its own validate_qualitative.py call failed
+          # (e.g. generation succeeded but validation didn't). Rendering
+          # must fail open in that case, so require the step's own outcome
+          # to be "success" in addition to file existence.
+          if [ "$AI_COMMENTARY" = "true" ] \
+            && [ "$QUALITATIVE_OUTCOME" = "success" ] \
+            && [ -f "data/qualitative/${STEM}.json" ]; then
             ARGS+=(
               --qualitative "data/qualitative/${STEM}.json"
               --evidence "data/evidence/${STEM}.json"
@@ -361,7 +369,10 @@ jobs:
             --calendar data/calendars/macro_events.json
             --calendar data/calendars/earnings.json
           )
-          if [ -f "data/qualitative/${STEM}.json" ]; then
+          # As in the report-render step, only trust the file once its own
+          # step outcome confirms generation and validation both succeeded.
+          if [ "$QUALITATIVE_OUTCOME" = "success" ] \
+            && [ -f "data/qualitative/${STEM}.json" ]; then
             ARGS+=(--qualitative "data/qualitative/${STEM}.json")
           fi
           if [ "$QUALITATIVE_OUTCOME" = "failure" ]; then

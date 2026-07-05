@@ -31,6 +31,12 @@ _SCRIPTS = [
     ".agents/skills/market-analysis/scripts/validate_instrument_mappings.py",
     ".agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py",
     ".agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py",
+    ".agents/skills/qualitative-analysis/scripts/evaluate_stances.py",
+    ".agents/skills/qualitative-analysis/scripts/validate_performance.py",
+    ".agents/skills/qualitative-analysis/scripts/prompt_regression.py",
+    ".agents/skills/qualitative-analysis/scripts/validate_prompt_regression.py",
+    ".agents/skills/qualitative-analysis/scripts/check_citation_links.py",
+    ".agents/skills/aims-okf-curator/scripts/curate_themes.py",
 ]
 
 _SCRIPT_SYMBOLS = [
@@ -73,6 +79,30 @@ _SCRIPT_SYMBOLS = [
     (
         ".agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py",
         ["validate_csv"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/evaluate_stances.py",
+        ["build_artifact", "evaluate_stances", "render_page"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/validate_performance.py",
+        ["validate_artifact"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/prompt_regression.py",
+        ["compute_metrics", "run_checks"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/validate_prompt_regression.py",
+        ["validate_history"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/check_citation_links.py",
+        ["check_url", "sample_items"],
+    ),
+    (
+        ".agents/skills/aims-okf-curator/scripts/curate_themes.py",
+        ["cluster_themes", "promotion_candidates"],
     ),
 ]
 

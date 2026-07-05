@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS stance-evaluation performance artifact",
+  "description": "Schema reference for validate_performance.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies. Deterministic accountability artifact for the AI qualitative layer (#97), sharing the data/performance/ home planned for realized-return tracking (#82).",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "metadata", "stance_evaluation", "warnings"],
+  "required_metadata_keys": [
+    "generated_at",
+    "analysis_date",
+    "interval",
+    "git_commit",
+    "config",
+    "inputs",
+    "disclaimer"
+  ],
+  "required_config_keys": ["horizons", "return_consistency_tolerance"],
+  "required_inputs_keys": ["analysis_dates", "qualitative_dates"],
+  "required_stance_evaluation_keys": [
+    "instruments_evaluated",
+    "excluded_gated",
+    "unmatched",
+    "horizons"
+  ],
+  "required_horizon_keys": [
+    "observations",
+    "pending",
+    "broken_chain",
+    "stances",
+    "confidence_calibration"
+  ],
+  "enums": {
+    "stance": ["supportive", "neutral", "conflicting"],
+    "confidence": ["low", "medium", "high"]
+  },
+  "notes": {
+    "generated_at": "Analysis-date midnight UTC, mirroring the analysis artifact; never wall-clock time.",
+    "determinism": "The artifact derives exclusively from committed data/analysis/ and data/qualitative/ files — no live price fetches. Rebuilding from the same inputs is byte-identical.",
+    "forward_returns": "Per-symbol forward returns are compounded from the trailing ret_1d feature chained across analysis artifacts, keyed by the per-symbol bar date in metadata.data_freshness. Wherever a later artifact carries ret_5d, the compounded product of the trailing five chained ret_1d values must reproduce it within config.return_consistency_tolerance; a mismatch marks the affected links broken and observations spanning them are skipped (counted in broken_chain) instead of scored.",
+    "horizons": "config.horizons lists forward horizons in trading bars (default [1, 5, 20]); stance_evaluation.horizons carries one entry per horizon keyed '<h>d'.",
+    "hit_definition": "supportive hits when the forward return is > 0; conflicting hits when it is < 0 (a conflicting stance on a top-ranked instrument predicts underperformance); neutral stances are counted and averaged but never scored directionally (hit_rate stays null).",
+    "confidence_calibration": "Hit rates of directional stances (supportive + conflicting) grouped by the model's stated confidence; higher confidence should show a higher hit rate.",
+    "gating": "Stance entries carrying non-empty qualitative_gates were withheld from rendering and are excluded from evaluation (counted in excluded_gated). unmatched counts entries whose symbol has no chained bar for the stance date.",
+    "pending": "Stances newer than the horizon (not enough subsequent committed bars) are counted as pending and mature in later runs; the artifact is regenerated from scratch daily.",
+    "empty_state": "With no qualitative artifacts, the artifact is still written with zero counts and a warning — safe empty-state behavior until production stance data accumulates.",
+    "disclaimer": "Embedded verbatim in every artifact and rendered prominently on the evaluation page: results measure informational association only, never an investable or executable track record."
+  }
+}

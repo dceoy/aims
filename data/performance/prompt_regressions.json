@@ -1,0 +1,49 @@
+{
+  "entries": [
+    {
+      "analysis_date": "2024-01-01",
+      "artifact": "tests/fixtures/qualitative_2024-01-01.json",
+      "artifact_provenance": {
+        "model_id": "claude-opus-4-8",
+        "prompt_sha256": "abababababababababababababababababababababababababababababababab",
+        "prompt_version": "1.0.0"
+      },
+      "checks": {
+        "citation_coverage": true,
+        "instrument_gate_pass_rate": true,
+        "market_narrative_rendered": true,
+        "stance_distribution_sane": true,
+        "validation_clean": true
+      },
+      "metrics": {
+        "citation_coverage": 1.0,
+        "confidence_distribution": {
+          "high": 0,
+          "low": 1,
+          "medium": 1
+        },
+        "distinct_evidence_cited": 3,
+        "drivers": 2,
+        "evidence_items": 3,
+        "instrument_gate_pass_rate": 1.0,
+        "instruments": 2,
+        "instruments_gated": 0,
+        "market_gates": [],
+        "market_narrative_withheld": false,
+        "narrative_chars": 213,
+        "stance_distribution": {
+          "conflicting": 0,
+          "neutral": 1,
+          "supportive": 1
+        },
+        "themes": 1,
+        "validation_errors": 0
+      },
+      "model_id": "claude-opus-4-8",
+      "passed": true,
+      "prompt_sha256": "02ee83475fc4b7cdaf9401f5726f2bce179ba2fe131748ab6fffefdb9e6e08cc",
+      "prompt_version": "1.0.0"
+    }
+  ],
+  "version": "1.0.0"
+}

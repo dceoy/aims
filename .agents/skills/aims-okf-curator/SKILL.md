@@ -31,6 +31,22 @@ snapshots; some of what they surface is durable and belongs in OKF. Run a
 curation pass **monthly** (or when a theme visibly persists) once artifacts
 have accumulated on `main`:
 
+```sh
+uv run .agents/skills/aims-okf-curator/scripts/curate_themes.py \
+    --qualitative-dir data/qualitative \
+    --concepts-dir okf/concepts
+```
+
+The script (delegating to `src/aims/okf_curation.py`) deterministically
+clusters recurring theme titles across artifacts, prints promotion
+candidates with dated artifact and evidence citations plus a ready-to-edit
+concept skeleton, lists supporting per-instrument stance streaks, and flags
+retirement candidates. Its output is a **proposal for human review** — it
+never writes to `okf/` itself. With no accumulated artifacts it prints a
+recorded empty pass. Promoted theme concepts must carry the
+`qualitative-theme` tag and a `theme_tokens` front-matter list (the skeleton
+includes both) so later passes can assess recurrence and retirement.
+
 - **Promotion criteria:** promote a theme only when it recurs in artifacts
   from at least 3 distinct analysis dates spanning at least 14 days — never a
   single-day observation. Judge recurrence from `market.themes` titles and
@@ -44,10 +60,11 @@ have accumulated on `main`:
   `okf/logs/log.md`, then regenerate shadow content (`--clean`), verify with
   `--check`, and build with `hugo --gc --minify`.
 - **Retirement criteria:** archive a theme concept when it has not recurred
-  in any qualitative artifact for 60 days, when the #93 gates repeatedly
-  withheld the entries it rests on, or when it is contradicted by newer
-  artifacts. Retirement follows the stale-concept cleanup flow (reviewed PR
-  plus a log entry); do not silently delete.
+  in any qualitative artifact for 60 days (`curate_themes.py` flags these
+  from `theme_tokens`), when the #93 gates repeatedly withheld the entries
+  it rests on, or when it is contradicted by newer artifacts. Retirement
+  follows the stale-concept cleanup flow (reviewed PR plus a log entry); do
+  not silently delete.
 
 ## OKF primary references
 

@@ -234,7 +234,9 @@ max-public-methods = 40
 include = [
   "src/aims",
   "tools",
+  ".agents/skills/aims-okf-curator/scripts",
   ".agents/skills/market-analysis/scripts",
+  ".agents/skills/qualitative-analysis/scripts",
   ".agents/skills/update-cfd-instruments/scripts",
 ]
 exclude = ["build", ".venv", ".claude", "tests"]

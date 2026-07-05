@@ -204,6 +204,26 @@ jobs:
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_history.py \
             --input "data/history/${STEM}.json"
+      # Deterministic stance evaluation (#97): derives forward returns from
+      # committed analysis artifacts only, joins them with any accumulated
+      # qualitative stances (safe empty state before those exist), and
+      # refreshes the public evaluation page. Daily interval only — the
+      # forward-return chain is defined over daily bars.
+      - name: Evaluate qualitative stances
+        if: steps.symbols.outputs.symbols != '' && env.INTERVAL == 'd'
+        env:
+          STEM: ${{ steps.date.outputs.stem }}
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
+            --input "data/analysis/${STEM}.json" \
+            --analysis-dir data/analysis \
+            --qualitative-dir data/qualitative \
+            --output data/performance \
+            --page-output content/evaluation/_index.md
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/validate_performance.py \
+            --input "data/performance/${STEM}.json"
       - name: Validate calendars
         if: steps.symbols.outputs.symbols != ''
         run: |
@@ -252,6 +272,17 @@ jobs:
               --analysis "data/analysis/${STEM}.json" \
               --evidence "data/evidence/${STEM}.json"
           fi
+      # Citation-validity sampling (#97): probes a bounded, deterministic
+      # sample of recent evidence citation URLs so link rot surfaces in the
+      # workflow log. Warning only — the script always exits 0 and nothing
+      # downstream consumes the outcome.
+      - name: Check citation links (warning only)
+        if: steps.symbols.outputs.symbols != '' && env.QUALITATIVE_ENABLED == 'true' && env.SKIP_QUALITATIVE != 'true'
+        continue-on-error: true
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/check_citation_links.py \
+            --evidence-dir data/evidence
       - name: Generate Hugo report
         if: steps.symbols.outputs.symbols != ''
         env:
@@ -309,7 +340,8 @@ jobs:
           gh auth setup-git
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
-          git add data/analysis/ data/history/ content/results/
+          git add data/analysis/ data/history/ data/performance/ \
+            content/results/ content/evaluation/
           # Evidence and qualitative artifacts (shadow mode) travel in the
           # same analysis PR; the directories exist only when the
           # qualitative steps ran.
@@ -377,6 +409,9 @@ jobs:
           fi
           if [ "$QUALITATIVE_OUTCOME" = "failure" ]; then
             ARGS+=(--qualitative-failed)
+          fi
+          if [ -f "data/performance/${STEM}.json" ]; then
+            ARGS+=(--performance "data/performance/${STEM}.json")
           fi
           uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
             "${ARGS[@]}"

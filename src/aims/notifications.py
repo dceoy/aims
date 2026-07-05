@@ -84,6 +84,35 @@ def _qualitative_summary(qualitative: dict[str, Any]) -> str:
     return summary
 
 
+def _performance_summary(performance: dict[str, Any]) -> str | None:
+    """Trailing directional hit-rate line, or None with no matured data.
+
+    Informational association only — never presented as a track record; the
+    evaluation page carries the full disclaimer.
+    """
+    horizons = performance.get("stance_evaluation", {}).get("horizons", {})
+    parts: list[str] = []
+    matured_total = 0
+    for name in sorted(horizons, key=lambda key: int(key.removesuffix("d"))):
+        stances = horizons[name].get("stances", {})
+        hits = 0.0
+        count = 0
+        for stance in ("supportive", "conflicting"):
+            bucket = stances.get(stance, {})
+            rate = bucket.get("hit_rate")
+            if isinstance(rate, (int, float)):
+                hits += float(rate) * int(bucket.get("count", 0))
+                count += int(bucket.get("count", 0))
+        if count:
+            matured_total += count
+            parts.append(f"{name} {hits / count:.0%} (n={count})")
+        else:
+            parts.append(f"{name} n/a")
+    if not matured_total:
+        return None
+    return "; ".join(parts)
+
+
 def build_success_payload(
     artifact: dict[str, Any],
     report_url: str = "",
@@ -93,6 +122,7 @@ def build_success_payload(
     events: list[CalendarEvent] | None = None,
     qualitative: dict[str, Any] | None = None,
     qualitative_failed: bool = False,
+    performance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -167,6 +197,13 @@ def build_success_payload(
             "type": "mrkdwn",
             "text": ("*⚠️ AI commentary:* step failed; quantitative report unaffected"),
         })
+    if performance is not None:
+        hit_rates = _performance_summary(performance)
+        if hit_rates is not None:
+            fields.append({
+                "type": "mrkdwn",
+                "text": f"*AI stance hit rate:* {hit_rates}",
+            })
 
     coverage_raw = meta.get("coverage")
     if isinstance(coverage_raw, dict):
@@ -325,6 +362,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Add a warning that the qualitative step failed (fail-open)",
     )
+    parser.add_argument(
+        "--performance",
+        type=str,
+        default=None,
+        help="Stance-evaluation artifact for the trailing hit-rate line",
+    )
     return parser.parse_args(argv)
 
 
@@ -377,6 +420,14 @@ def main(argv: list[str] | None = None) -> int:
             except (FileNotFoundError, json.JSONDecodeError) as exc:
                 print(f"ERROR: invalid qualitative artifact: {exc}")
                 return 1
+        performance = None
+        if args.performance:
+            try:
+                with open(args.performance, encoding="utf-8") as fh:  # noqa: PTH123
+                    performance = json.load(fh)
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                print(f"ERROR: invalid performance artifact: {exc}")
+                return 1
         payload = build_success_payload(
             artifact,
             report_url,
@@ -385,6 +436,7 @@ def main(argv: list[str] | None = None) -> int:
             events=events,
             qualitative=qualitative,
             qualitative_failed=args.qualitative_failed,
+            performance=performance,
         )
 
     try:

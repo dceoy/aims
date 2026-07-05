@@ -604,3 +604,107 @@ def test_sample_payloads(ns: ModuleType) -> None:
     assert "text" in ns.SAMPLE_SUCCESS_PAYLOAD
     assert isinstance(ns.SAMPLE_FAILURE_PAYLOAD, dict)
     assert "text" in ns.SAMPLE_FAILURE_PAYLOAD
+
+
+# ── performance / stance hit-rate line (#97) ────────────────────────────────────
+
+
+def _perf(horizons: dict[str, Any]) -> dict[str, Any]:
+    return {"stance_evaluation": {"horizons": horizons}}
+
+
+def _bucket(count: int, hit_rate: float | None) -> dict[str, Any]:
+    return {"count": count, "hit_rate": hit_rate}
+
+
+def test_performance_summary_reports_blended_hit_rate(ns: ModuleType) -> None:
+    performance = _perf({
+        "1d": {
+            "stances": {
+                "supportive": _bucket(2, 1.0),
+                "conflicting": _bucket(2, 0.5),
+                "neutral": _bucket(1, None),
+            }
+        },
+        "20d": {
+            "stances": {
+                "supportive": _bucket(0, None),
+                "conflicting": _bucket(0, None),
+                "neutral": _bucket(0, None),
+            }
+        },
+    })
+    assert ns._performance_summary(performance) == "1d 75% (n=4); 20d n/a"
+
+
+def test_performance_summary_none_when_no_matured_data(ns: ModuleType) -> None:
+    performance = _perf({
+        "1d": {
+            "stances": {
+                "supportive": _bucket(0, None),
+                "conflicting": _bucket(0, None),
+                "neutral": _bucket(0, None),
+            }
+        }
+    })
+    assert ns._performance_summary(performance) is None
+
+
+def test_build_success_payload_adds_hit_rate_field(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    performance = _perf({"1d": {"stances": {"supportive": _bucket(1, 1.0)}}})
+    payload = ns.build_success_payload(fixture_artifact, performance=performance)
+    texts = [f["text"] for f in payload["blocks"][1]["fields"]]
+    assert any("AI stance hit rate:" in t for t in texts)
+
+
+def test_build_success_payload_omits_hit_rate_when_empty(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    performance = _perf({"1d": {"stances": {"supportive": _bucket(0, None)}}})
+    payload = ns.build_success_payload(fixture_artifact, performance=performance)
+    texts = [f["text"] for f in payload["blocks"][1]["fields"]]
+    assert not any("AI stance hit rate:" in t for t in texts)
+
+
+def test_main_success_with_performance(ns: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    with FIXTURE_PATH.open() as fh:
+        artifact_path.write_text(json.dumps(json.load(fh)))
+    perf_path = tmp_path / "performance.json"
+    perf_path.write_text(
+        json.dumps(_perf({"1d": {"stances": {"supportive": _bucket(1, 1.0)}}}))
+    )
+    mock_response = MagicMock()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+    with (
+        patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
+        patch("urllib.request.urlopen", return_value=mock_response),
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--performance",
+            str(perf_path),
+        ])
+    assert result == 0
+
+
+def test_main_reports_invalid_performance(ns: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    with FIXTURE_PATH.open() as fh:
+        artifact_path.write_text(json.dumps(json.load(fh)))
+    perf_path = tmp_path / "performance.json"
+    perf_path.write_text("{")
+    with patch.dict(
+        "os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--performance",
+            str(perf_path),
+        ])
+    assert result == 1

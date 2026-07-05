@@ -23,7 +23,7 @@ from aims.calendars import (
 )
 from aims.market_analysis import artifact_interval_suffix
 
-_Alignment = Literal["left", "right", "center"]
+MarkdownAlignment = Literal["left", "right", "center"]
 
 _DEFAULT_OUTPUT_DIR: Final[Path] = Path("content/results")
 
@@ -262,7 +262,7 @@ def _section_upcoming_events(
             f"{header}\n\n_No scheduled events for covered instruments in the"
             f" next {window_days} days._"
         )
-    table = _format_markdown_table(
+    table = format_markdown_table(
         ["Date", "Event", "Applies To"], rows, ["left", "left", "left"]
     )
     preamble = (
@@ -454,7 +454,7 @@ def _section_signal_history(history: dict[str, Any] | None) -> str:
                 else "n/a"
             )
             table_rows.append([sym, rank_str, score_str])
-        delta_table = _format_markdown_table(
+        delta_table = format_markdown_table(
             ["Symbol", "Rank Δ", "Score Δ"],
             table_rows,
             ["left", "right", "right"],
@@ -464,15 +464,15 @@ def _section_signal_history(history: dict[str, Any] | None) -> str:
     return f"{header}\n\n" + "\n".join(lines)
 
 
-def _format_markdown_table(
+def format_markdown_table(
     headers: list[str],
     rows: list[list[str]],
-    alignments: list[_Alignment],
+    alignments: list[MarkdownAlignment],
 ) -> str:
     """Format a markdown table with column padding matching Prettier."""
     widths = [max(len(row[i]) for row in [headers, *rows]) for i in range(len(headers))]
 
-    def _pad_cell(value: str, width: int, align: _Alignment) -> str:
+    def _pad_cell(value: str, width: int, align: MarkdownAlignment) -> str:
         if align == "right":
             inner = value.rjust(width)
         elif align == "center":
@@ -481,7 +481,7 @@ def _format_markdown_table(
             inner = value.ljust(width)
         return f" {inner} "
 
-    def _pad_sep(width: int, align: _Alignment) -> str:
+    def _pad_sep(width: int, align: MarkdownAlignment) -> str:
         if align == "right":
             inner = "-" * (width - 1) + ":" if width > 1 else ":"
         elif align == "center":
@@ -537,7 +537,7 @@ def _instrument_scores_table(instruments: list[dict[str, Any]]) -> str:
         "Risk Gates",
         "Explanation",
     ]
-    alignments: list[_Alignment] = [
+    alignments: list[MarkdownAlignment] = [
         "right",
         "left",
         "right",
@@ -562,7 +562,7 @@ def _instrument_scores_table(instruments: list[dict[str, Any]]) -> str:
             gates_str,
             explanation,
         ])
-    return _format_markdown_table(table_headers, rows, alignments)
+    return format_markdown_table(table_headers, rows, alignments)
 
 
 def _asset_class_label(asset_class: str) -> str:
@@ -592,13 +592,13 @@ def _section_data_freshness(
 
     if freshness:
         table_headers = ["Symbol", "Latest Bar"]
-        alignments: list[_Alignment] = ["left", "left"]
+        alignments: list[MarkdownAlignment] = ["left", "left"]
         table_rows = [[sym, freshness[sym]] for sym in sorted(freshness)]
         stale_symbols = []
         for sym, val in table_rows:
             if val == "n/a":
                 stale_symbols.append(sym)
-        parts.append(_format_markdown_table(table_headers, table_rows, alignments))
+        parts.append(format_markdown_table(table_headers, table_rows, alignments))
         if stale_symbols:
             stale_joined = ", ".join(sorted(stale_symbols))
             n = len(stale_symbols)
@@ -651,7 +651,7 @@ def _section_symbol_details(instruments: list[dict[str, Any]]) -> str:
         table_rows = [
             [key, _fmt_feature(key, features.get(key))] for key in _FEATURE_KEYS
         ]
-        table = _format_markdown_table(
+        table = format_markdown_table(
             ["Feature", "Value"], table_rows, ["left", "right"]
         )
         subsections.append(f"### {label} (score {score:.1f})\n\n{table}")

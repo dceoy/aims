@@ -258,21 +258,34 @@ jobs:
       # refreshes the public evaluation page. Daily interval only — the
       # forward-return chain is defined over daily bars. Runs after the
       # qualitative-analysis step so that today's own qualitative artifact
-      # (if generated) is already on disk and included in this run's
+      # (if generated) is already on disk and can be included in this run's
       # evaluation inputs instead of appearing only on the next scheduled
-      # run.
+      # run. Same trust boundary as report rendering and Slack notification:
+      # the same-run qualitative artifact is only trusted once the
+      # qualitative step's own outcome confirms generation and validation
+      # both succeeded; otherwise it is explicitly excluded by date even if
+      # a file is present on disk (that step is continue-on-error). Historical
+      # committed qualitative artifacts are never affected by this exclusion.
       - name: Evaluate qualitative stances
         if: steps.symbols.outputs.symbols != '' && env.INTERVAL == 'd'
         env:
+          DATE: ${{ steps.date.outputs.date }}
           STEM: ${{ steps.date.outputs.stem }}
+          QUALITATIVE_OUTCOME: ${{ steps.qualitative.outcome }}
         run: |
+          ARGS=(
+            --input "data/analysis/${STEM}.json"
+            --analysis-dir data/analysis
+            --qualitative-dir data/qualitative
+            --output data/performance
+            --page-output content/evaluation/_index.md
+          )
+          if [ "$QUALITATIVE_OUTCOME" != "success" ]; then
+            ARGS+=(--exclude-qualitative-date "${DATE}")
+          fi
           uv run python \
             .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
-            --input "data/analysis/${STEM}.json" \
-            --analysis-dir data/analysis \
-            --qualitative-dir data/qualitative \
-            --output data/performance \
-            --page-output content/evaluation/_index.md
+            "${ARGS[@]}"
           uv run python \
             .agents/skills/qualitative-analysis/scripts/validate_performance.py \
             --input "data/performance/${STEM}.json"

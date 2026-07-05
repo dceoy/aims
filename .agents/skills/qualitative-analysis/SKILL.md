@@ -91,14 +91,26 @@ uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
 
 ## Stance evaluation (#97)
 
-The daily workflow runs `evaluate_stances.py` after score history: it joins
-accumulated ungated stances with forward returns reconstructed purely from
-committed analysis artifacts, writes the validated
+The daily workflow runs `evaluate_stances.py` after the qualitative-analysis
+step: it joins accumulated ungated stances with forward returns reconstructed
+purely from committed analysis artifacts, writes the validated
 `data/performance/<date>.json` artifact, and regenerates the public
 `content/evaluation/_index.md` page. Everything is deterministic and safe in
 the empty state (no qualitative artifacts yet → zero counts plus a warning).
 Results are informational association only — never presented as an
-investable track record. `check_citation_links.py` additionally samples
+investable track record.
+
+**Trust boundary:** the qualitative-analysis step is `continue-on-error`, so
+a same-run `data/qualitative/<stem>.json` file can exist on disk even after a
+failed or unvalidated run. The workflow passes
+`--exclude-qualitative-date "${DATE}"` to `evaluate_stances.py` whenever
+`steps.qualitative.outcome != 'success'`, so that date is excluded from
+evaluation (with a recorded warning) regardless of whether the file is
+present — the same trust boundary already used for report rendering and
+Slack notification (`steps.qualitative.outcome == 'success'`). Historical,
+already-validated qualitative artifacts are never affected.
+
+`check_citation_links.py` additionally samples
 recent evidence URLs and logs link-rot warnings (never a gate).
 
 ## Changing the prompt or model

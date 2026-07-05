@@ -18,6 +18,15 @@ Results measure informational association only — never an investable or
 executable track record. The disclaimer is embedded in every artifact and
 rendered prominently on the evaluation page.
 
+Trust boundary: the daily workflow's qualitative-analysis step is
+``continue-on-error``, so a same-run ``data/qualitative/<stem>.json`` file
+can exist on disk even after a failed or unvalidated run.
+``--exclude-qualitative-date`` lets the caller exclude that date from
+evaluation regardless of whether the file is present, mirroring the trust
+boundary already used for report rendering and Slack notifications
+(``steps.qualitative.outcome == 'success'``). Historical, already-validated
+artifacts are never affected by this flag.
+
 Usage:
     uv run .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
         --input data/analysis/2026-07-04.json \
@@ -316,11 +325,18 @@ def build_artifact(
     as_of: str,
     interval: str,
     horizons: tuple[int, ...] = DEFAULT_HORIZONS,
+    extra_warnings: tuple[str, ...] = (),
 ) -> dict[str, Any]:
-    """Assemble the versioned, schema-validated stance-evaluation artifact."""
+    """Assemble the versioned, schema-validated stance-evaluation artifact.
+
+    *extra_warnings* carries warnings from outside the join itself — e.g. a
+    same-run qualitative artifact excluded by the caller's trust boundary —
+    merged in sorted alongside the evaluation's own warnings.
+    """
     stance_evaluation, warnings = evaluate_stances(
         qualitative_artifacts, analyses, horizons
     )
+    all_warnings = sorted([*warnings, *extra_warnings])
     return {
         "version": PERFORMANCE_VERSION,
         "metadata": {
@@ -341,7 +357,7 @@ def build_artifact(
             "disclaimer": DISCLAIMER,
         },
         "stance_evaluation": stance_evaluation,
-        "warnings": warnings,
+        "warnings": all_warnings,
     }
 
 
@@ -500,6 +516,41 @@ def _load(path: Path) -> dict[str, Any]:
     return value
 
 
+def _load_qualitative_artifacts(
+    qualitative_dir: Path,
+    as_of: str,
+    exclude_dates: frozenset[str],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Load committed daily qualitative artifacts up to *as_of*.
+
+    Dates in *exclude_dates* are skipped even when a file is present on
+    disk: the daily workflow's qualitative-analysis step is
+    ``continue-on-error``, so a same-run file can exist after a failed or
+    unvalidated run. Historical, already-validated artifacts are never
+    affected by this trust boundary since only the caller-specified dates
+    (in practice, at most today's) are ever excluded.
+    """
+    artifacts: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    if not qualitative_dir.is_dir():
+        return artifacts, warnings
+    for path in sorted(qualitative_dir.glob("*.json")):
+        artifact = _load(path)
+        if _qualitative_interval(artifact) != "d":
+            continue
+        when = _qualitative_date(artifact)
+        if when > as_of:
+            continue
+        if when in exclude_dates:
+            warnings.append(
+                f"{when}: excluded a same-run qualitative artifact because"
+                " the qualitative-analysis step did not report success"
+            )
+            continue
+        artifacts.append(artifact)
+    return artifacts, warnings
+
+
 def generate(
     input_path: Path,
     analysis_dir: Path,
@@ -508,6 +559,7 @@ def generate(
     *,
     horizons: tuple[int, ...] = DEFAULT_HORIZONS,
     page_output: Path | None = None,
+    exclude_qualitative_dates: frozenset[str] = frozenset(),
 ) -> Path:
     """Build, write, and optionally render the stance-evaluation artifact."""
     current = _load(input_path)
@@ -522,18 +574,17 @@ def generate(
         artifact = _load(path)
         if _analysis_interval(artifact) == "d" and _artifact_date(artifact) <= as_of:
             analyses.append(artifact)
-    qualitative_artifacts = []
-    if qualitative_dir.is_dir():
-        for path in sorted(qualitative_dir.glob("*.json")):
-            artifact = _load(path)
-            if (
-                _qualitative_interval(artifact) == "d"
-                and _qualitative_date(artifact) <= as_of
-            ):
-                qualitative_artifacts.append(artifact)
+    qualitative_artifacts, load_warnings = _load_qualitative_artifacts(
+        qualitative_dir, as_of, exclude_qualitative_dates
+    )
 
     artifact = build_artifact(
-        qualitative_artifacts, analyses, as_of=as_of, interval="d", horizons=horizons
+        qualitative_artifacts,
+        analyses,
+        as_of=as_of,
+        interval="d",
+        horizons=horizons,
+        extra_warnings=tuple(load_warnings),
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / f"{as_of}.json"
@@ -575,6 +626,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         help="Optional Hugo page path (e.g. content/evaluation/_index.md)",
     )
+    parser.add_argument(
+        "--exclude-qualitative-date",
+        dest="exclude_qualitative_dates",
+        action="append",
+        default=[],
+        help=(
+            "Qualitative artifact date (YYYY-MM-DD) to exclude even if present"
+            " on disk, e.g. when the same-run qualitative-analysis step did not"
+            " report success (repeatable)"
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -588,6 +650,7 @@ def main(argv: list[str] | None = None) -> int:
             args.output,
             horizons=tuple(args.horizons),
             page_output=args.page_output,
+            exclude_qualitative_dates=frozenset(args.exclude_qualitative_dates),
         )
     except (FileNotFoundError, json.JSONDecodeError, ValueError) as exc:
         print(f"ERROR: {exc}")

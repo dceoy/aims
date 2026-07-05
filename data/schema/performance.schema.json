@@ -42,6 +42,7 @@
     "gating": "Stance entries carrying non-empty qualitative_gates were withheld from rendering and are excluded from evaluation (counted in excluded_gated). unmatched counts entries whose symbol has no chained bar for the stance date.",
     "pending": "Stances newer than the horizon (not enough subsequent committed bars) are counted as pending and mature in later runs; the artifact is regenerated from scratch daily.",
     "empty_state": "With no qualitative artifacts, the artifact is still written with zero counts and a warning — safe empty-state behavior until production stance data accumulates.",
+    "trust_boundary": "The daily workflow's qualitative-analysis step is continue-on-error, so a same-run data/qualitative/<stem>.json file can exist on disk after a failed or unvalidated run. The caller (the workflow, via evaluate_stances.py --exclude-qualitative-date) excludes that date from the join regardless of file presence unless the step reported success; the excluded date is recorded in warnings. Historical, already-validated qualitative artifacts are never affected.",
     "disclaimer": "Embedded verbatim in every artifact and rendered prominently on the evaluation page: results measure informational association only, never an investable or executable track record."
   }
 }

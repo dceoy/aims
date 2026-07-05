@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from aims import performance
+from aims import performance, validate_performance
 
 GOLDEN = Path(__file__).resolve().parent / "golden"
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -326,11 +326,109 @@ def test_render_page_caps_warning_list() -> None:
     assert "… and 5 more" in rendered
 
 
-# ── CLI ──────────────────────────────────────────────────────────────────────
+def test_build_artifact_merges_and_sorts_extra_warnings() -> None:
+    analyses = _chain({"AAA": 0.01}, 2)
+    qualitative = [_qualitative("2024-01-01", [("AAA", "supportive", "high", [])])]
+    artifact = performance.build_artifact(
+        qualitative,
+        analyses,
+        as_of="2024-01-02",
+        interval="d",
+        extra_warnings=("zzz-extra", "aaa-extra"),
+    )
+    assert "zzz-extra" in artifact["warnings"]
+    assert "aaa-extra" in artifact["warnings"]
+    assert artifact["warnings"] == sorted(artifact["warnings"])
+
+
+def test_build_artifact_default_extra_warnings_is_empty() -> None:
+    analyses = _chain({"AAA": 0.01}, 2)
+    qualitative = [_qualitative("2024-01-01", [("AAA", "supportive", "high", [])])]
+    artifact = performance.build_artifact(
+        qualitative, analyses, as_of="2024-01-02", interval="d"
+    )
+    assert artifact["warnings"] == sorted(artifact["warnings"])
+
+
+# ── trust boundary: excluding a same-run qualitative artifact ───────────────
 
 
 def _write(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def test_load_qualitative_artifacts_excludes_given_date_with_warning(
+    tmp_path: Path,
+) -> None:
+    qdir = tmp_path / "qualitative"
+    qdir.mkdir()
+    _write(
+        qdir / "2024-01-01.json",
+        _qualitative("2024-01-01", [("AAA", "supportive", "high", [])]),
+    )
+    _write(
+        qdir / "2024-01-05.json",
+        _qualitative("2024-01-05", [("AAA", "supportive", "high", [])]),
+    )
+    artifacts, warnings = performance._load_qualitative_artifacts(
+        qdir, "2024-01-05", frozenset({"2024-01-05"})
+    )
+    assert [a["metadata"]["analysis_date"] for a in artifacts] == ["2024-01-01"]
+    assert warnings == [
+        (
+            "2024-01-05: excluded a same-run qualitative artifact because the"
+            " qualitative-analysis step did not report success"
+        )
+    ]
+
+
+def test_load_qualitative_artifacts_no_exclusions_by_default(tmp_path: Path) -> None:
+    qdir = tmp_path / "qualitative"
+    qdir.mkdir()
+    _write(
+        qdir / "2024-01-01.json",
+        _qualitative("2024-01-01", [("AAA", "supportive", "high", [])]),
+    )
+    artifacts, warnings = performance._load_qualitative_artifacts(
+        qdir, "2024-01-01", frozenset()
+    )
+    assert len(artifacts) == 1
+    assert warnings == []
+
+
+def test_load_qualitative_artifacts_missing_dir(tmp_path: Path) -> None:
+    artifacts, warnings = performance._load_qualitative_artifacts(
+        tmp_path / "absent", "2024-01-01", frozenset()
+    )
+    assert artifacts == []
+    assert warnings == []
+
+
+def test_load_qualitative_artifacts_skips_future_and_non_daily(
+    tmp_path: Path,
+) -> None:
+    qdir = tmp_path / "qualitative"
+    qdir.mkdir()
+    _write(
+        qdir / "2024-01-01.json",
+        _qualitative("2024-01-01", [("AAA", "supportive", "high", [])]),
+    )
+    _write(
+        qdir / "2024-01-02-w.json",
+        _qualitative("2024-01-02", [("AAA", "supportive", "high", [])], "w"),
+    )
+    _write(
+        qdir / "2024-02-01.json",
+        _qualitative("2024-02-01", [("AAA", "supportive", "high", [])]),
+    )
+    artifacts, warnings = performance._load_qualitative_artifacts(
+        qdir, "2024-01-01", frozenset()
+    )
+    assert [a["metadata"]["analysis_date"] for a in artifacts] == ["2024-01-01"]
+    assert warnings == []
+
+
+# ── CLI ──────────────────────────────────────────────────────────────────────
 
 
 def test_main_writes_artifact_and_page(tmp_path: Path) -> None:
@@ -405,6 +503,82 @@ def test_main_without_page_or_qualitative_dir(tmp_path: Path) -> None:
     assert exit_code == 0
     written = json.loads((tmp_path / "performance" / "2024-01-01.json").read_text())
     assert written["metadata"]["inputs"]["qualitative_dates"] == []
+
+
+def _setup_analysis_chain(tmp_path: Path) -> Path:
+    analysis_dir = tmp_path / "analysis"
+    analysis_dir.mkdir()
+    for artifact in _chain({"AAA": 0.01}, 3):
+        when = artifact["metadata"]["generated_at"][:10]
+        _write(analysis_dir / f"{when}.json", artifact)
+    return analysis_dir
+
+
+def test_main_excludes_same_run_qualitative_date_but_keeps_historical(
+    tmp_path: Path,
+) -> None:
+    # Mirrors the workflow's continue-on-error qualitative step: a same-run
+    # file can exist on disk after a failed/unvalidated run, so it must be
+    # excluded by date while historical, already-validated artifacts stay in.
+    analysis_dir = _setup_analysis_chain(tmp_path)
+    qualitative_dir = tmp_path / "qualitative"
+    qualitative_dir.mkdir()
+    _write(
+        qualitative_dir / "2024-01-01.json",
+        _qualitative("2024-01-01", [("AAA", "supportive", "high", [])]),
+    )
+    _write(
+        qualitative_dir / "2024-01-03.json",
+        _qualitative("2024-01-03", [("AAA", "conflicting", "low", [])]),
+    )
+    exit_code = performance.main([
+        "--input",
+        str(analysis_dir / "2024-01-03.json"),
+        "--analysis-dir",
+        str(analysis_dir),
+        "--qualitative-dir",
+        str(qualitative_dir),
+        "--output",
+        str(tmp_path / "performance"),
+        "--exclude-qualitative-date",
+        "2024-01-03",
+    ])
+    assert exit_code == 0
+    written = json.loads((tmp_path / "performance" / "2024-01-03.json").read_text())
+    assert written["metadata"]["inputs"]["qualitative_dates"] == ["2024-01-01"]
+    assert any(
+        "2024-01-03: excluded a same-run qualitative artifact" in warning
+        for warning in written["warnings"]
+    )
+    assert validate_performance.validate_artifact(written) == []
+
+
+def test_main_includes_same_run_qualitative_date_when_not_excluded(
+    tmp_path: Path,
+) -> None:
+    # When the qualitative step succeeds, the workflow omits the exclusion
+    # flag entirely, so today's own artifact is evaluated like any other.
+    analysis_dir = _setup_analysis_chain(tmp_path)
+    qualitative_dir = tmp_path / "qualitative"
+    qualitative_dir.mkdir()
+    _write(
+        qualitative_dir / "2024-01-03.json",
+        _qualitative("2024-01-03", [("AAA", "supportive", "high", [])]),
+    )
+    exit_code = performance.main([
+        "--input",
+        str(analysis_dir / "2024-01-03.json"),
+        "--analysis-dir",
+        str(analysis_dir),
+        "--qualitative-dir",
+        str(qualitative_dir),
+        "--output",
+        str(tmp_path / "performance"),
+    ])
+    assert exit_code == 0
+    written = json.loads((tmp_path / "performance" / "2024-01-03.json").read_text())
+    assert written["metadata"]["inputs"]["qualitative_dates"] == ["2024-01-03"]
+    assert validate_performance.validate_artifact(written) == []
 
 
 def test_main_rejects_non_daily_input(tmp_path: Path, capsys: Any) -> None:

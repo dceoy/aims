@@ -204,26 +204,6 @@ jobs:
         run: |
           uv run python .agents/skills/market-analysis/scripts/validate_history.py \
             --input "data/history/${STEM}.json"
-      # Deterministic stance evaluation (#97): derives forward returns from
-      # committed analysis artifacts only, joins them with any accumulated
-      # qualitative stances (safe empty state before those exist), and
-      # refreshes the public evaluation page. Daily interval only — the
-      # forward-return chain is defined over daily bars.
-      - name: Evaluate qualitative stances
-        if: steps.symbols.outputs.symbols != '' && env.INTERVAL == 'd'
-        env:
-          STEM: ${{ steps.date.outputs.stem }}
-        run: |
-          uv run python \
-            .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
-            --input "data/analysis/${STEM}.json" \
-            --analysis-dir data/analysis \
-            --qualitative-dir data/qualitative \
-            --output data/performance \
-            --page-output content/evaluation/_index.md
-          uv run python \
-            .agents/skills/qualitative-analysis/scripts/validate_performance.py \
-            --input "data/performance/${STEM}.json"
       - name: Validate calendars
         if: steps.symbols.outputs.symbols != ''
         run: |
@@ -272,6 +252,30 @@ jobs:
               --analysis "data/analysis/${STEM}.json" \
               --evidence "data/evidence/${STEM}.json"
           fi
+      # Deterministic stance evaluation (#97): derives forward returns from
+      # committed analysis artifacts only, joins them with any accumulated
+      # qualitative stances (safe empty state before those exist), and
+      # refreshes the public evaluation page. Daily interval only — the
+      # forward-return chain is defined over daily bars. Runs after the
+      # qualitative-analysis step so that today's own qualitative artifact
+      # (if generated) is already on disk and included in this run's
+      # evaluation inputs instead of appearing only on the next scheduled
+      # run.
+      - name: Evaluate qualitative stances
+        if: steps.symbols.outputs.symbols != '' && env.INTERVAL == 'd'
+        env:
+          STEM: ${{ steps.date.outputs.stem }}
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
+            --input "data/analysis/${STEM}.json" \
+            --analysis-dir data/analysis \
+            --qualitative-dir data/qualitative \
+            --output data/performance \
+            --page-output content/evaluation/_index.md
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/validate_performance.py \
+            --input "data/performance/${STEM}.json"
       # Citation-validity sampling (#97): probes a bounded, deterministic
       # sample of recent evidence citation URLs so link rot surfaces in the
       # workflow log. Warning only — the script always exits 0 and nothing

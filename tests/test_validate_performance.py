@@ -62,6 +62,35 @@ def test_config_must_be_object(artifact: dict[str, Any]) -> None:
     assert "metadata.config must be a JSON object" in validate_artifact(artifact)
 
 
+def test_config_requires_return_consistency_tolerance(
+    artifact: dict[str, Any],
+) -> None:
+    del artifact["metadata"]["config"]["return_consistency_tolerance"]
+    assert (
+        "metadata.config.return_consistency_tolerance must be a non-negative"
+        " number" in validate_artifact(artifact)
+    )
+
+
+@pytest.mark.parametrize("tolerance", [-0.001, "0.001", True])
+def test_config_rejects_bad_return_consistency_tolerance(
+    artifact: dict[str, Any], tolerance: Any
+) -> None:
+    artifact["metadata"]["config"]["return_consistency_tolerance"] = tolerance
+    assert (
+        "metadata.config.return_consistency_tolerance must be a non-negative"
+        " number" in validate_artifact(artifact)
+    )
+
+
+def test_config_accepts_zero_tolerance(artifact: dict[str, Any]) -> None:
+    artifact["metadata"]["config"]["return_consistency_tolerance"] = 0
+    assert (
+        "metadata.config.return_consistency_tolerance must be a non-negative"
+        " number" not in validate_artifact(artifact)
+    )
+
+
 def test_inputs_must_be_object(artifact: dict[str, Any]) -> None:
     artifact["metadata"]["inputs"] = "x"
     assert "metadata.inputs must be a JSON object" in validate_artifact(artifact)

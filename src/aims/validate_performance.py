@@ -146,6 +146,16 @@ def _validate_metadata(metadata: Any) -> tuple[list[str], list[int]]:
             errors.append("metadata.config.horizons must be unique positive integers")
         else:
             horizons = [int(h) for h in raw]
+        tolerance = config.get("return_consistency_tolerance")
+        if (
+            not isinstance(tolerance, (int, float))
+            or isinstance(tolerance, bool)
+            or tolerance < 0
+        ):
+            errors.append(
+                "metadata.config.return_consistency_tolerance must be a"
+                " non-negative number"
+            )
     elif "config" in metadata:
         errors.append("metadata.config must be a JSON object")
     inputs = metadata.get("inputs")

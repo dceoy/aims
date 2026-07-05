@@ -19,6 +19,7 @@ This document covers data sources, scoring methodology, report generation, the p
 9. [Manual recovery](#9-manual-recovery)
 10. [AI qualitative analysis layer (design)](#10-ai-qualitative-analysis-layer-design)
 11. [AI qualitative analysis layer (operations)](#11-ai-qualitative-analysis-layer-operations)
+12. [Stance evaluation, accountability, and OKF theme curation](#12-stance-evaluation-accountability-and-okf-theme-curation)
 
 ---
 
@@ -522,6 +523,30 @@ uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
 
 Commit the artifacts through a reviewed PR.
 
+### Regenerate the stance-evaluation artifact and page
+
+Deterministic; needs only committed analysis and qualitative artifacts (no API key, no price fetch). See [§12](#12-stance-evaluation-accountability-and-okf-theme-curation).
+
+```sh
+uv run .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
+    --input data/analysis/YYYY-MM-DD.json \
+    --analysis-dir data/analysis \
+    --qualitative-dir data/qualitative \
+    --output data/performance \
+    --page-output content/evaluation/_index.md
+uv run .agents/skills/qualitative-analysis/scripts/validate_performance.py \
+    --input data/performance/YYYY-MM-DD.json
+```
+
+### Run the OKF theme curation pass
+
+```sh
+uv run .agents/skills/aims-okf-curator/scripts/curate_themes.py \
+    --qualitative-dir data/qualitative --concepts-dir okf/concepts
+```
+
+Review the printed proposal, then promote or retire through a reviewed OKF PR (never auto-merged). See [§12](#12-stance-evaluation-accountability-and-okf-theme-curation).
+
 ### Refresh event calendars manually
 
 Trigger **Actions → Update event calendars → Run workflow** (earnings only), or run `update_calendars.py` locally. Macro events are hand-maintained — see [§11](#11-ai-qualitative-analysis-layer-operations).
@@ -631,4 +656,44 @@ Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering win
 
 Shadow mode is the default state: with `ANTHROPIC_API_KEY` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#6-github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
 
-Cost controls: one Claude call per run (`claude-opus-4-8`, pinned in `aims.qualitative.MODEL_ID`), input bounded by the evidence caps, output capped at 8192 tokens, 300-second request timeout, one SDK-level retry for 429/5xx, and one regeneration retry. Expected order of magnitude per [§10](#10-ai-qualitative-analysis-layer-design): roughly $0.20–0.45 per run (≈$10–20/month); record measured figures here after the first shadow-mode week. Changing the model or the committed prompt (`.agents/skills/qualitative-analysis/prompts/qualitative_v1.md`, version + SHA-256 recorded in every artifact) requires the #97 regression harness once it exists.
+Cost controls: one Claude call per run (`claude-opus-4-8`, pinned in `aims.qualitative.MODEL_ID`), input bounded by the evidence caps, output capped at 8192 tokens, 300-second request timeout, one SDK-level retry for 429/5xx, and one regeneration retry. Expected order of magnitude per [§10](#10-ai-qualitative-analysis-layer-design): roughly $0.20–0.45 per run (≈$10–20/month); record measured figures here after the first shadow-mode week. Changing the model or the committed prompt (`.agents/skills/qualitative-analysis/prompts/qualitative_v1.md`, version + SHA-256 recorded in every artifact) requires the [§12](#12-stance-evaluation-accountability-and-okf-theme-curation) regression harness.
+
+---
+
+## 12. Stance evaluation, accountability, and OKF theme curation
+
+Phase 4 of the roadmap (#98): measure whether AI commentary adds information, guard prompt/model changes, and promote durable themes into the knowledge layer. Everything here is deterministic, dependency-light, and reuses the existing schema-validator and skill-wrapper patterns. **None of it asserts an investable or executable track record** — outputs frame informational association only, with disclaimers kept prominent.
+
+> **Disclaimer:** Stance-evaluation figures measure whether published AI stances lined up with subsequent price moves in committed data. They are not an investable or executable track record, exclude fees/slippage/financing/order timing, rest on small overlapping samples, and are not investment advice.
+
+### Stance evaluation (#97)
+
+`evaluate_stances.py` (delegating to `src/aims/performance.py`) joins per-instrument stances from committed `data/qualitative/*.json` artifacts with realized forward returns and writes the schema-validated `data/performance/<date>.json` artifact plus the public `content/evaluation/_index.md` page. It runs in the daily workflow after score history (daily interval only).
+
+- **Forward returns without price fetches.** Returns are reconstructed by chaining each symbol's trailing `ret_1d` feature across analysis artifacts, keyed by the per-symbol bar date in `metadata.data_freshness`. Weekend/holiday artifacts that repeat a bar collapse into one entry. The chain self-checks against any later `ret_5d` feature (compounded trailing-five product must match within `return_consistency_tolerance`); a window that fails is skipped as `broken_chain`, never scored with wrong numbers. This keeps the evaluator deterministic and consistent with the quantitative source of truth instead of introducing a parallel price store.
+- **Hit definition.** `supportive` hits when the forward return is positive; `conflicting` hits when it is negative (a conflicting stance on a top-ranked instrument predicting underperformance); `neutral` is tracked but never scored directionally. Per horizon (default 1d/5d/20d): stance counts, hit rates, average returns, and confidence calibration (hit rate of directional stances grouped by stated confidence — higher confidence should mean higher hit rate).
+- **Gating and empty state.** Stances withheld by the #93 gates are excluded (`excluded_gated`); stances without a matching chained bar are `unmatched`; stances newer than a horizon are `pending` and mature in later runs. With no qualitative artifacts on `main` yet, the artifact and page render a safe empty state with a warning rather than fabricated numbers — the committed `data/performance/2026-07-04.json` and `content/evaluation/_index.md` are exactly that empty state and fill in as artifacts accumulate. Format reference: `data/schema/performance.schema.json`.
+- **Trust boundary for the same-run qualitative artifact.** The "Run qualitative analysis (shadow mode)" step is `continue-on-error`, so `data/qualitative/<stem>.json` can exist on disk for today's date even after a failed or unvalidated run — the same condition that already keeps report rendering and Slack notification from trusting it (`steps.qualitative.outcome == 'success'`). `evaluate_stances.py` extends the same boundary: the workflow passes `--exclude-qualitative-date "${DATE}"` whenever `steps.qualitative.outcome != 'success'`, so that date is excluded from the join (recorded as a warning in the artifact) regardless of whether the file is present, while every historical, already-validated qualitative artifact on `main` is still evaluated normally.
+- **Slack.** When present, `notify_slack.py --performance` appends a trailing `AI stance hit rate:` line (blended supportive+conflicting per horizon); it is omitted until matured observations exist.
+
+### Prompt/model regression harness (#97)
+
+A prompt edit or model swap can silently change output quality with no code diff. `prompt_regression.py` (in `src/aims/prompt_regression.py`) recomputes the validator and the #93 gates over a `(qualitative, analysis, evidence)` triple and asserts **structural and gate metrics** — validator cleanliness, market-narrative rendering, instrument gate pass rate (≥ 0.6), citation coverage (= 1.0), and stance-distribution sanity — **never exact prose**, so wording changes alone cannot fail it. Results are recorded in `data/performance/prompt_regressions.json` keyed by the prompt file's SHA-256 and the pinned model ID (schema: `data/schema/prompt_regression.schema.json`).
+
+**Before adopting any change to `prompts/qualitative_v1.md`, `PROMPT_VERSION`, or `MODEL_ID`:** run the harness (over freshly generated candidate artifacts, or the committed fixtures when no API key is available) with `--record data/performance/prompt_regressions.json` and commit the updated file. A CI test (`tests/test_prompt_regression.py::test_committed_prompt_and_model_have_a_recorded_passing_entry`) fails when the committed prompt/model has no recorded passing entry, so an unreviewed prompt change cannot merge. There is **no automatic prompt tuning or optimization loop** — the harness measures and records; adoption stays a reviewed human decision. See the `qualitative-analysis` skill doc for the exact command.
+
+### Citation link-rot sampling (#97)
+
+`check_citation_links.py` (in `src/aims/link_check.py`) probes a bounded, deterministic sample of recent evidence citation URLs over HTTP (HEAD, falling back to GET) so dead sources surface in the workflow log. It is **a warning, not a gate**: it always exits 0, writes no artifact (network results are non-deterministic and stay out of committed data), and runs `continue-on-error` in the daily workflow. Persistent rot on a source means editing or removing its row in `data/mappings/evidence_sources.csv` per [§11](#11-ai-qualitative-analysis-layer-operations).
+
+### OKF theme curation (#96)
+
+Durable themes surfaced by the daily qualitative artifacts belong in the OKF knowledge layer, not the point-in-time reports. `curate_themes.py` (in `src/aims/okf_curation.py`, behind the `aims-okf-curator` skill) runs a **monthly** deterministic pass over `data/qualitative/*.json`: it clusters recurring theme titles by token overlap, prints promotion candidates that recur on **≥3 distinct dates spanning ≥14 days** (with dated artifact and evidence citations plus a ready-to-edit concept skeleton), lists supporting per-instrument stance streaks, and flags retirement candidates among existing `qualitative-theme`-tagged concepts (unseen for **>60 days**).
+
+Its output is a **proposal for human review only** — it never writes to `okf/`. Promotion and retirement follow the standard OKF flow: edit a draft into `okf/concepts/theme-<slug>.md` (carry the `qualitative-theme` tag and a `theme_tokens` front-matter list so future passes assess recurrence; cite dated artifacts; numeric facts stay pointers into `data/analysis/` and are never asserted as truth in prose), record the pass — including "no promotions" — in `okf/logs/log.md`, regenerate shadow content (`tools/okf_hugo_adapter.py --clean` then `--check`), build with `hugo --gc --minify`, and open a reviewed PR. **OKF changes are never auto-merged.** Cadence and criteria are documented in `.agents/skills/aims-okf-curator/SKILL.md`.
+
+**Current state (accumulation limitation):** shadow mode has not yet committed qualitative artifacts to `main`, so both the stance-evaluation artifact and the first curation pass are recorded empty states. The machinery, schemas, fixtures, and tests are complete; the "at least one promoted theme" and populated evaluation-summary milestones fill in once artifacts accumulate. This limitation is recorded rather than worked around.
+
+### Go/no-go checkpoint (#98)
+
+After roughly one quarter of enabled rendering, review this section's stance hit rates and confidence calibration, gate withhold rates, and realized API cost, then record a continue / adjust / retire decision on issue #98. A layer that measures as plausible-sounding noise is retired, not maintained.

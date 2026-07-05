@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS prompt-regression history",
+  "description": "Schema reference for validate_prompt_regression.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies. Written by aims.prompt_regression to data/performance/prompt_regressions.json (#97): prompt/model version history recorded alongside measured structural results.",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "entries"],
+  "required_entry_keys": [
+    "analysis_date",
+    "artifact",
+    "artifact_provenance",
+    "model_id",
+    "prompt_version",
+    "prompt_sha256",
+    "metrics",
+    "checks",
+    "passed"
+  ],
+  "required_artifact_provenance_keys": [
+    "model_id",
+    "prompt_version",
+    "prompt_sha256"
+  ],
+  "notes": {
+    "purpose": "Every prompt or model change must run through aims.prompt_regression before adoption; a CI test asserts that the committed prompt file's SHA-256 plus the pinned model ID have a recorded passing entry, so a prompt edit without a recorded harness run fails CI.",
+    "keying": "model_id, prompt_version, and prompt_sha256 describe the configuration under test (the committed constants in aims.qualitative and the committed prompt file); artifact_provenance echoes what the evaluated artifact itself was generated with — they differ when the harness runs over committed fixtures instead of freshly generated candidates.",
+    "metrics": "Structural and gate metrics only (validator error count, gate pass rates, stance/confidence distributions, citation coverage, structure counts) — never exact prose, so wording changes alone cannot fail the harness.",
+    "checks": "Named boolean assertions with thresholds (validation_clean, market_narrative_rendered, instrument_gate_pass_rate, citation_coverage, stance_distribution_sane); 'passed' must equal the conjunction of all checks.",
+    "determinism": "Entries are inserted or replaced by their (prompt_version, prompt_sha256, model_id, analysis_date, artifact) key and kept sorted, so re-running the harness on the same inputs is idempotent.",
+    "non_goals": "No automatic prompt tuning or optimization loops; the harness measures and records, adoption stays a reviewed human decision."
+  }
+}

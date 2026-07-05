@@ -20,14 +20,19 @@ them, and any failure here publishes the quantitative report unchanged.
 All scripts are in `.agents/skills/qualitative-analysis/scripts/` and delegate
 to `src/aims/`.
 
-| Script                    | Purpose                                                                |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `fetch_evidence.py`       | Build `data/evidence/<stem>.json` from yfinance news + macro feeds     |
-| `validate_evidence.py`    | Validate an evidence bundle against `data/schema/evidence.schema.json` |
-| `update_calendars.py`     | Refresh `data/calendars/earnings.json` from yfinance earnings dates    |
-| `validate_calendar.py`    | Validate a calendar file against `data/schema/calendar.schema.json`    |
-| `qualitative_analysis.py` | One Claude API call → validated, gated qualitative artifact            |
-| `validate_qualitative.py` | Validate a qualitative artifact (shape, enums, caps, grounding)        |
+| Script                          | Purpose                                                                 |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| `fetch_evidence.py`             | Build `data/evidence/<stem>.json` from yfinance news + macro feeds      |
+| `validate_evidence.py`          | Validate an evidence bundle against `data/schema/evidence.schema.json`  |
+| `update_calendars.py`           | Refresh `data/calendars/earnings.json` from yfinance earnings dates     |
+| `validate_calendar.py`          | Validate a calendar file against `data/schema/calendar.schema.json`     |
+| `qualitative_analysis.py`       | One Claude API call → validated, gated qualitative artifact             |
+| `validate_qualitative.py`       | Validate a qualitative artifact (shape, enums, caps, grounding)         |
+| `evaluate_stances.py`           | Deterministic stance-vs-forward-return evaluation (`data/performance/`) |
+| `validate_performance.py`       | Validate a stance-evaluation artifact                                   |
+| `check_citation_links.py`       | Sample recent citation URLs; warn on link rot (never a gate)            |
+| `prompt_regression.py`          | Structural regression harness for prompt/model changes                  |
+| `validate_prompt_regression.py` | Validate `data/performance/prompt_regressions.json`                     |
 
 ## Usage
 
@@ -78,11 +83,59 @@ uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
 - **Provenance:** the prompt is the committed file
   `prompts/qualitative_v1.md`; its version and SHA-256, the model ID, and
   SHA-256 hashes of all inputs are recorded in artifact metadata. Changing
-  the prompt or model requires the #97 regression harness once it exists.
+  the prompt or model requires the #97 regression harness (below).
 - **Fail-open:** missing `ANTHROPIC_API_KEY` or an empty evidence bundle
   skips the step (exit 0); API errors or persistent validation failures exit
   non-zero without writing an artifact. The daily workflow treats all of
   these as non-fatal and publishes the quantitative report unchanged.
 
+## Stance evaluation (#97)
+
+The daily workflow runs `evaluate_stances.py` after the qualitative-analysis
+step: it joins accumulated ungated stances with forward returns reconstructed
+purely from committed analysis artifacts, writes the validated
+`data/performance/<date>.json` artifact, and regenerates the public
+`content/evaluation/_index.md` page. Everything is deterministic and safe in
+the empty state (no qualitative artifacts yet → zero counts plus a warning).
+Results are informational association only — never presented as an
+investable track record.
+
+**Trust boundary:** the qualitative-analysis step is `continue-on-error`, so
+a same-run `data/qualitative/<stem>.json` file can exist on disk even after a
+failed or unvalidated run. The workflow passes
+`--exclude-qualitative-date "${DATE}"` to `evaluate_stances.py` whenever
+`steps.qualitative.outcome != 'success'`, so that date is excluded from
+evaluation (with a recorded warning) regardless of whether the file is
+present — the same trust boundary already used for report rendering and
+Slack notification (`steps.qualitative.outcome == 'success'`). Historical,
+already-validated qualitative artifacts are never affected.
+
+`check_citation_links.py` additionally samples
+recent evidence URLs and logs link-rot warnings (never a gate).
+
+## Changing the prompt or model
+
+Adoption is a reviewed human decision; there is no automatic prompt tuning.
+Before merging any change to `prompts/qualitative_v1.md`, to
+`aims.qualitative.PROMPT_VERSION`, or to `aims.qualitative.MODEL_ID`:
+
+```sh
+# 1. Generate candidate artifacts with the edited prompt/model from
+#    committed inputs (or use the committed fixtures when no API key is
+#    available), then run the harness and record the results:
+uv run .agents/skills/qualitative-analysis/scripts/prompt_regression.py \
+    --artifact tests/fixtures/qualitative_2024-01-01.json \
+    --analysis tests/fixtures/analysis_2024-01-01_mapped.json \
+    --evidence tests/fixtures/evidence_2024-01-01.json \
+    --record data/performance/prompt_regressions.json
+```
+
+The harness asserts structural and gate metrics (validator cleanliness,
+market-narrative rendering, instrument gate pass rate ≥ 0.6, citation
+coverage = 1.0, stance-distribution sanity) — never exact prose — and
+records the run keyed by the prompt file's SHA-256 and the pinned model ID.
+Commit the updated `prompt_regressions.json` together with the change: a CI
+test fails when the committed prompt/model has no recorded passing entry.
+
 Operational details (secrets, shadow mode, gate thresholds, costs,
-troubleshooting, recovery) are in OPERATIONS.md §10–§11.
+troubleshooting, recovery) are in OPERATIONS.md §10–§12.

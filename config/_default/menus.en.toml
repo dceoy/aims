@@ -7,3 +7,8 @@
   name = "Knowledge"
   pageRef = "knowledge"
   weight = 20
+
+[[main]]
+  name = "Evaluation"
+  pageRef = "evaluation"
+  weight = 30

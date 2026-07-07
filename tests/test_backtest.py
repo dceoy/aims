@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 import aims.backtest as _aims_bt
 import aims.market_analysis as _aims_ma
+from aims.validate_backtest import validate_artifact
 
 
 @pytest.fixture(scope="module")
@@ -61,6 +62,54 @@ def test_helpers_and_validation(modules: tuple[ModuleType, ModuleType]) -> None:
         backtest.run_backtest({}, horizons=(1, 1))
 
 
+# ── Spearman rank correlation helpers ───────────────────────────────────────────
+
+
+def test_ranks_handles_ties_by_averaging(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    assert backtest._ranks([10.0, 20.0, 20.0, 30.0]) == [1.0, 2.5, 2.5, 4.0]
+
+
+def test_spearman_perfect_positive_and_negative_correlation(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    assert backtest._spearman([1.0, 2.0, 3.0], [10.0, 20.0, 30.0]) == pytest.approx(1.0)
+    assert backtest._spearman([1.0, 2.0, 3.0], [30.0, 20.0, 10.0]) == pytest.approx(
+        -1.0
+    )
+
+
+def test_spearman_requires_at_least_two_pairs(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    assert backtest._spearman([], []) is None
+    assert backtest._spearman([1.0], [2.0]) is None
+
+
+def test_spearman_none_when_no_variance(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    assert backtest._spearman([1.0, 1.0], [1.0, 2.0]) is None
+    assert backtest._spearman([1.0, 2.0], [1.0, 1.0]) is None
+
+
+def test_corr_key_is_order_independent(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    assert backtest._corr_key("ret_1d", "ret_5d") == backtest._corr_key(
+        "ret_5d", "ret_1d"
+    )
+
+
+# ── run_backtest metrics ─────────────────────────────────────────────────────────
+
+
 def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
     ma, backtest = modules
     data = {"UP": _bars(ma, "UP", 2.0), "DOWN": _bars(ma, "DOWN", -0.5)}
@@ -77,6 +126,50 @@ def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
     assert empty["observations"] == 0
     assert empty["date_range"] == {"start": None, "end": None}
     assert empty["metrics"]["1d"]["top_k"]["average_return"] is None
+    empty_diagnostics = empty["feature_diagnostics"]
+    assert empty_diagnostics["features"] == list(backtest._FEATURES)
+    assert empty_diagnostics["information_coefficient"]["1d"]["ret_1d"] == {
+        "mean": None,
+        "n": 0,
+    }
+    assert empty_diagnostics["feature_correlation"]["ret_1d"]["ret_1d"] == 1.0
+    assert empty_diagnostics["feature_correlation"]["ret_1d"]["ret_5d"] is None
+
+
+# ── feature_diagnostics ──────────────────────────────────────────────────────────
+
+
+def test_run_backtest_feature_diagnostics_ic_sign(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    # UP always leads DOWN on both short-term momentum and forward returns,
+    # so the cross-sectional Spearman correlation is +1 every observed date.
+    data = {"UP": _bars(ma, "UP", 2.0), "DOWN": _bars(ma, "DOWN", -0.5)}
+    result = backtest.run_backtest(data, horizons=(1,), top_k=1, min_history=60)
+    ic = result["feature_diagnostics"]["information_coefficient"]["1d"]["ret_1d"]
+    assert ic["mean"] == pytest.approx(1.0)
+    assert ic["n"] == result["observations"]
+    corr = result["feature_diagnostics"]["feature_correlation"]
+    assert corr["ret_1d"]["ret_5d"] == pytest.approx(1.0)
+    assert corr["ret_5d"]["ret_1d"] == pytest.approx(1.0)
+
+
+def test_run_backtest_feature_diagnostics_three_symbols(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    # Three distinct slopes give non-degenerate rank variance every date,
+    # exercising the >2-point Spearman path (not just a +-1 coin flip).
+    data = {
+        "HIGH": _bars(ma, "HIGH", 3.0),
+        "MID": _bars(ma, "MID", 1.0),
+        "LOW": _bars(ma, "LOW", -1.0),
+    }
+    result = backtest.run_backtest(data, horizons=(1,), min_history=60)
+    ic = result["feature_diagnostics"]["information_coefficient"]["1d"]["ret_1d"]
+    assert ic["mean"] == pytest.approx(1.0)
+    assert ic["n"] == result["observations"]
     no_daily = backtest.run_backtest(data, horizons=(5,), min_history=60)
     assert no_daily["max_drawdown"] is None
 
@@ -166,9 +259,12 @@ def test_main_writes_artifact(
     path = next(output.glob("*.json"))
     content = path.read_text()
     artifact = json.loads(content)
+    assert artifact["schema_version"] == backtest.BACKTEST_VERSION
     assert artifact["scoring_version"] == ma.SCORING_VERSION
     assert artifact["config"]["forward_horizons"] == [1, 5]
     assert artifact["date_range"] == {"start": "2024-02-29", "end": "2024-03-09"}
+    assert "feature_diagnostics" in artifact
+    assert validate_artifact(artifact) == []
     assert (
         backtest.main([
             "--symbols",

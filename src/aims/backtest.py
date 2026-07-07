@@ -5,21 +5,62 @@ from __future__ import annotations
 import argparse
 import json
 from collections import defaultdict
+from dataclasses import fields
 from pathlib import Path
 from typing import Any, Final
 
 from aims.market_analysis import (
     SCORING_VERSION,
+    InstrumentFeatures,
     OhlcvBar,
     load_ohlcv,
     score_instruments,
 )
 
 DEFAULT_HORIZONS: Final[tuple[int, ...]] = (1, 5, 20, 60)
+BACKTEST_VERSION: Final[str] = "1.1.0"
+
+_FEATURES: Final[tuple[str, ...]] = tuple(f.name for f in fields(InstrumentFeatures))
 
 
 def _mean(values: list[float]) -> float | None:
     return sum(values) / len(values) if values else None
+
+
+def _ranks(values: list[float]) -> list[float]:
+    """Return 1-indexed ranks, averaging ties."""
+    order = sorted(range(len(values)), key=lambda i: values[i])
+    ranks = [0.0] * len(values)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and values[order[j + 1]] == values[order[i]]:
+            j += 1
+        avg_rank = (i + j) / 2 + 1
+        for k in range(i, j + 1):
+            ranks[order[k]] = avg_rank
+        i = j + 1
+    return ranks
+
+
+def _spearman(xs: list[float], ys: list[float]) -> float | None:
+    """Spearman rank correlation (Pearson on ranks); None if degenerate."""
+    n = len(xs)
+    if n < 2:
+        return None
+    rx, ry = _ranks(xs), _ranks(ys)
+    mean_rx, mean_ry = sum(rx) / n, sum(ry) / n
+    cov = sum((a - mean_rx) * (b - mean_ry) for a, b in zip(rx, ry, strict=True)) / n
+    var_x = sum((a - mean_rx) ** 2 for a in rx) / n
+    var_y = sum((b - mean_ry) ** 2 for b in ry) / n
+    if var_x == 0 or var_y == 0:
+        return None
+    return cov / (var_x * var_y) ** 0.5
+
+
+def _corr_key(feat_a: str, feat_b: str) -> tuple[str, str]:
+    ia, ib = _FEATURES.index(feat_a), _FEATURES.index(feat_b)
+    return (feat_a, feat_b) if ia < ib else (feat_b, feat_a)
 
 
 def _drawdown(returns: list[float]) -> float | None:
@@ -70,6 +111,10 @@ def run_backtest(
     previous: set[str] | None = None
     observations = 0
     observed_dates: list[str] = []
+    feature_ic: dict[int, dict[str, list[float]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    feature_corr: dict[tuple[str, str], list[float]] = defaultdict(list)
 
     for date in dates:
         window = {
@@ -88,12 +133,27 @@ def run_backtest(
         ]
         if not scores:
             continue
+        for i, feat_a in enumerate(_FEATURES):
+            for feat_b in _FEATURES[i + 1 :]:
+                pairs = [
+                    (getattr(s.features, feat_a), getattr(s.features, feat_b))
+                    for s in scores
+                ]
+                valid = [(a, b) for a, b in pairs if a is not None and b is not None]
+                if len(valid) < 2:
+                    continue
+                rho = _spearman([a for a, _ in valid], [b for _, b in valid])
+                if rho is not None:
+                    feature_corr[feat_a, feat_b].append(rho)
         selected = scores[:top_k]
         selected_symbols = {s.symbol for s in selected}
         date_observed = False
         top_k_observed = False
         for horizon in horizons:
             horizon_returns = []
+            horizon_feature_pairs: dict[str, list[tuple[float, float]]] = defaultdict(
+                list
+            )
             for rank_index, score in enumerate(scores):
                 index = positions[score.symbol][date]
                 if index + horizon >= len(data[score.symbol]):
@@ -103,10 +163,20 @@ def run_backtest(
                 close = data[score.symbol][index].close
                 forward = data[score.symbol][index + horizon].close / close - 1.0
                 bucket_returns[horizon][bucket].append(forward)
+                for feat in _FEATURES:
+                    value = getattr(score.features, feat)
+                    if value is not None:
+                        horizon_feature_pairs[feat].append((value, forward))
                 if score in selected:
                     top_returns[horizon].append(forward)
                     top_hits[horizon].append(forward > 0)
                     horizon_returns.append(forward)
+            for feat, pairs in horizon_feature_pairs.items():
+                if len(pairs) < 2:
+                    continue
+                rho = _spearman([p[0] for p in pairs], [p[1] for p in pairs])
+                if rho is not None:
+                    feature_ic[horizon][feat].append(rho)
             if horizon == 1 and horizon_returns:
                 daily_top_returns.append(sum(horizon_returns) / len(horizon_returns))
             top_k_observed = top_k_observed or bool(horizon_returns)
@@ -138,6 +208,30 @@ def run_backtest(
                 "hit_rate": _mean([float(hit) for hit in top_hits[horizon]]),
             },
         }
+    feature_diagnostics = {
+        "features": list(_FEATURES),
+        "information_coefficient": {
+            f"{horizon}d": {
+                feat: {
+                    "mean": _mean(feature_ic[horizon][feat]),
+                    "n": len(feature_ic[horizon][feat]),
+                }
+                for feat in _FEATURES
+            }
+            for horizon in horizons
+        },
+        "feature_correlation": {
+            feat_a: {
+                feat_b: (
+                    1.0
+                    if feat_a == feat_b
+                    else _mean(feature_corr.get(_corr_key(feat_a, feat_b), []))
+                )
+                for feat_b in _FEATURES
+            }
+            for feat_a in _FEATURES
+        },
+    }
     return {
         "observations": observations,
         "date_range": {
@@ -147,6 +241,7 @@ def run_backtest(
         "metrics": metrics,
         "turnover": _mean(turnovers),
         "max_drawdown": _drawdown(daily_top_returns),
+        "feature_diagnostics": feature_diagnostics,
     }
 
 
@@ -194,7 +289,7 @@ def main(argv: list[str] | None = None) -> int:
     if start is None or end is None:
         parser.error("no backtest observations for the requested configuration")
     artifact = {
-        "schema_version": "1.0.0",
+        "schema_version": BACKTEST_VERSION,
         "scoring_version": SCORING_VERSION,
         "config": {
             "symbols": list(symbols),

@@ -407,6 +407,21 @@ jobs:
           uv run python \
             .agents/skills/qualitative-analysis/scripts/validate_performance.py \
             --input "data/performance/${STEM}.json"
+      # Realized top-5 signal performance (#82): rebuilt in full from every
+      # committed daily analysis artifact, including today's, which is
+      # already on disk at this point in the job. Independent of the
+      # qualitative steps above, so it always runs for daily intervals.
+      - name: Track signal performance
+        if: steps.symbols.outputs.symbols != '' && env.INTERVAL == 'd'
+        run: |
+          uv run python \
+            .agents/skills/market-analysis/scripts/track_signal_performance.py \
+            --analysis-dir data/analysis \
+            --output data/performance/signals.json \
+            --page-output content/performance/_index.md
+          uv run python \
+            .agents/skills/market-analysis/scripts/validate_signal_performance.py \
+            --input data/performance/signals.json
       # Citation-validity sampling (#97): probes a bounded, deterministic
       # sample of recent evidence citation URLs so link rot surfaces in the
       # workflow log. Warning only — the script always exits 0 and nothing
@@ -476,7 +491,7 @@ jobs:
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
           git add data/analysis/ data/history/ data/performance/ \
-            content/results/ content/evaluation/
+            content/results/ content/evaluation/ content/performance/
           # Evidence and qualitative artifacts (shadow mode) travel in the
           # same analysis PR; the directories exist only when the
           # qualitative steps ran.
@@ -547,6 +562,9 @@ jobs:
           fi
           if [ -f "data/performance/${STEM}.json" ]; then
             ARGS+=(--performance "data/performance/${STEM}.json")
+          fi
+          if [ -f "data/performance/signals.json" ]; then
+            ARGS+=(--signal-performance "data/performance/signals.json")
           fi
           uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
             "${ARGS[@]}"

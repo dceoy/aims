@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS signal-performance artifact",
+  "description": "Schema reference for validate_signal_performance.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies. Cumulative accountability artifact for the quantitative pipeline (#82): realized forward returns of each daily analysis artifact's top-5 reliable, tradable instruments vs. an equal-weight benchmark over the same artifact's reliable universe.",
+  "artifact_version": "1.0.0",
+  "required_top_keys": ["version", "metadata", "signal_evaluation", "warnings"],
+  "required_metadata_keys": [
+    "generated_at",
+    "as_of",
+    "git_commit",
+    "config",
+    "inputs",
+    "disclaimer"
+  ],
+  "required_config_keys": ["top_k", "horizons", "return_consistency_tolerance"],
+  "required_inputs_keys": ["analysis_dates"],
+  "required_signal_evaluation_keys": ["dates_evaluated", "horizons"],
+  "required_horizon_keys": [
+    "count",
+    "top5_average_return",
+    "benchmark_average_return",
+    "excess_return",
+    "hit_rate",
+    "pending",
+    "incomplete",
+    "by_asset_class",
+    "by_regime"
+  ],
+  "required_bucket_keys": [
+    "count",
+    "top5_average_return",
+    "benchmark_average_return",
+    "excess_return",
+    "hit_rate"
+  ],
+  "notes": {
+    "single_cumulative_file": "Unlike the dated data/performance/<date>.json stance-evaluation artifacts (#97), this is one file (data/performance/signals.json) rebuilt in full from every committed daily data/analysis/ artifact on each run.",
+    "determinism": "Derived exclusively from committed data/analysis/ files — no live price fetches. Rebuilding from the same inputs is byte-identical.",
+    "slot_observations": "Each of a date's top-5 (rank order by score among is_reliable && tradable != false instruments) is one 'slot observation': its own realized forward return, tagged with its asset_class and that date's metadata.market_regime.label (or 'Unavailable'), paired with that date's equal-weight benchmark average over the full reliable universe (best-effort: symbols whose forward return is not yet resolvable are simply excluded from the benchmark average, not the whole date). by_asset_class and by_regime group the flat pool of slot observations across all dates, so a breakdown bucket's average never depends on every top-5 slot that date already being resolved in that same group.",
+    "top5_definition": "tradable=false instruments (#76) are informational-only and excluded from top-5 selection here, matching the report's Top Opportunities section and Slack's top-signal lines.",
+    "forward_returns": "Per-symbol forward returns are compounded from the trailing ret_1d feature chained across analysis artifacts (aims.performance.build_bar_series/forward_return, shared with the #97 stance-evaluation loop), keyed by the per-symbol bar date in metadata.data_freshness. Wherever a later artifact carries ret_5d, the compounded product of the trailing five chained ret_1d values must reproduce it within config.return_consistency_tolerance; a mismatch marks the affected links broken.",
+    "pending_vs_incomplete": "pending counts top-5 slots whose forward horizon has not matured yet (not enough subsequent committed bars); incomplete counts slots dropped for any other reason (no chained bar for the artifact's bar date, a broken bar chain, or no benchmark average available that date/horizon).",
+    "hit_definition": "A slot 'hits' when its realized return exceeds that date's benchmark average return.",
+    "empty_state": "With no daily analysis artifacts, generate() raises rather than writing an empty artifact — data/analysis/ always has at least one committed artifact once the daily pipeline has run.",
+    "disclaimer": "Embedded verbatim in every artifact and rendered prominently on the signal-performance page: results measure informational association only, never an investable or executable track record."
+  }
+}

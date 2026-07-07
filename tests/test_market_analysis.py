@@ -798,6 +798,111 @@ def test_get_git_commit_oserror(ma: ModuleType, mocker: MockerFixture) -> None:
     assert ma._get_git_commit() == "unknown"
 
 
+# ── check_price_consistency ─────────────────────────────────────────────────────
+
+
+def test_check_price_consistency_no_divergence(ma: ModuleType) -> None:
+    primary = {"spx": _make_bars(ma, "^GSPC", [100.0, 101.0, 102.0])}
+    secondary = {"spx": _make_bars(ma, "^SPX", [100.0, 101.0, 102.0])}
+    results = ma.check_price_consistency(primary, secondary)
+    assert results == [
+        {
+            "canonical_id": "spx",
+            "bars_compared": 3,
+            "max_divergence": 0.0,
+            "warned": False,
+            "escalated": False,
+        }
+    ]
+
+
+def test_check_price_consistency_warns_below_escalation(ma: ModuleType) -> None:
+    primary = {"spx": _make_bars(ma, "^GSPC", [100.0])}
+    secondary = {"spx": _make_bars(ma, "^SPX", [99.0])}
+    results = ma.check_price_consistency(primary, secondary)
+    assert results[0]["warned"] is True
+    assert results[0]["escalated"] is False
+
+
+def test_check_price_consistency_escalates_large_divergence(ma: ModuleType) -> None:
+    primary = {"spx": _make_bars(ma, "^GSPC", [110.0])}
+    secondary = {"spx": _make_bars(ma, "^SPX", [100.0])}
+    results = ma.check_price_consistency(primary, secondary)
+    assert results[0]["escalated"] is True
+    assert results[0]["warned"] is True
+
+
+def test_check_price_consistency_limits_to_last_n_bars(ma: ModuleType) -> None:
+    primary = {
+        "spx": _make_bars(ma, "^GSPC", [100.0, 100.0, 100.0, 100.0, 100.0, 200.0])
+    }
+    secondary = {"spx": _make_bars(ma, "^SPX", [100.0, 100.0, 100.0, 100.0, 100.0])}
+    # The divergent bar (index 5) has no counterpart in secondary, and only
+    # the last 5 bars are compared, so no divergence should be flagged.
+    results = ma.check_price_consistency(primary, secondary, bars=5)
+    assert results[0]["max_divergence"] == 0.0
+
+
+def test_check_price_consistency_no_common_canonical_ids(ma: ModuleType) -> None:
+    primary = {"spx": _make_bars(ma, "^GSPC", [100.0])}
+    secondary = {"ndx": _make_bars(ma, "^NDX", [100.0])}
+    assert ma.check_price_consistency(primary, secondary) == []
+
+
+def test_check_price_consistency_no_common_dates(ma: ModuleType) -> None:
+    primary = {
+        "spx": _make_bars(ma, "^GSPC", [100.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    }
+    secondary = {
+        "spx": _make_bars(ma, "^SPX", [100.0], start=datetime(2023, 2, 2, tzinfo=UTC))
+    }
+    results = ma.check_price_consistency(primary, secondary)
+    assert results == [
+        {
+            "canonical_id": "spx",
+            "bars_compared": 0,
+            "max_divergence": None,
+            "warned": False,
+            "escalated": False,
+        }
+    ]
+
+
+def test_check_price_consistency_ignores_zero_secondary_close(ma: ModuleType) -> None:
+    primary = {"spx": _make_bars(ma, "^GSPC", [100.0])}
+    secondary = {"spx": _make_bars(ma, "^SPX", [0.0])}
+    results = ma.check_price_consistency(primary, secondary)
+    assert results[0]["max_divergence"] is None
+    assert results[0]["warned"] is False
+
+
+# ── score_instruments extra_risk_gates ──────────────────────────────────────────
+
+
+def test_score_instruments_applies_extra_risk_gates(ma: ModuleType) -> None:
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments(
+        {"A": bars},
+        reference_time=ref,
+        extra_risk_gates={"A": [ma.RISK_GATE_PROVIDER_DIVERGENCE]},
+    )
+    assert ma.RISK_GATE_PROVIDER_DIVERGENCE in scores[0].risk_gates
+    assert scores[0].is_reliable is False
+
+
+def test_score_instruments_extra_risk_gates_deduplicates(ma: ModuleType) -> None:
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments(
+        {"A": bars},
+        reference_time=ref,
+        stale_days=0,
+        extra_risk_gates={"A": [ma.RISK_GATE_STALE]},
+    )
+    assert scores[0].risk_gates.count(ma.RISK_GATE_STALE) == 1
+
+
 # ── generate_artifact / save_artifact ─────────────────────────────────────────
 
 
@@ -934,6 +1039,29 @@ def test_generate_artifact_includes_market_regime(
     regime = artifact["metadata"]["market_regime"]
     assert regime["label"] in {"Bullish", "Bearish", "Neutral", "Unavailable"}
     assert "thresholds" in regime
+
+
+def test_generate_artifact_includes_price_consistency_when_given(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    report = {"primary_provider": "yfinance", "results": []}
+    artifact = ma.generate_artifact(scores, {"A": bars}, {}, price_consistency=report)
+    assert artifact["metadata"]["price_consistency"] == report
+
+
+def test_generate_artifact_omits_price_consistency_by_default(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    artifact = ma.generate_artifact(scores, {"A": bars}, {})
+    assert "price_consistency" not in artifact["metadata"]
 
 
 def test_generate_artifact_empty_data_source(
@@ -2906,3 +3034,234 @@ def test_cmd_generate_mapping_display_meta_load_error(
 
     # display_meta falls back to None; generate still succeeds
     assert ma._cmd_generate(Args()) == 0
+
+
+# ── _load_price_consistency / --price-consistency wiring ───────────────────────
+
+
+def test_load_price_consistency_derives_extra_risk_gates(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    report = {
+        "results": [
+            {"canonical_id": "spx", "escalated": True},
+            {"canonical_id": "dji", "escalated": False},
+        ]
+    }
+    path = tmp_path / "consistency.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+    display_meta = {"^SPX": {"canonical_id": "spx"}, "^DJI": {"canonical_id": "dji"}}
+    loaded, extra_gates = ma._load_price_consistency(path, display_meta)
+    assert loaded == report
+    assert extra_gates == {"^SPX": [ma.RISK_GATE_PROVIDER_DIVERGENCE]}
+
+
+def test_load_price_consistency_no_escalation_yields_no_gates(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    report = {"results": [{"canonical_id": "spx", "escalated": False}]}
+    path = tmp_path / "consistency.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+    loaded, extra_gates = ma._load_price_consistency(
+        path, {"^SPX": {"canonical_id": "spx"}}
+    )
+    assert loaded == report
+    assert extra_gates == {}
+
+
+def test_load_price_consistency_without_display_meta(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    report = {"results": [{"canonical_id": "spx", "escalated": True}]}
+    path = tmp_path / "consistency.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+    loaded, extra_gates = ma._load_price_consistency(path, None)
+    assert loaded == report
+    assert extra_gates == {}
+
+
+def test_cmd_generate_applies_price_consistency_escalation(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    mapping_path = _write_mini_mapping(tmp_path)
+    for sym in ("^SPX", "^DJI"):
+        bars = _make_bars(ma, sym, [float(100 + i) for i in range(70)])
+        ma.save_ohlcv(bars, tmp_path)
+    consistency_path = tmp_path / "consistency.json"
+    consistency_path.write_text(
+        json.dumps({"results": [{"canonical_id": "spx", "escalated": True}]}),
+        encoding="utf-8",
+    )
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-01"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+        price_consistency = str(consistency_path)
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-07-01.json").read_text())
+    assert "price_consistency" in artifact["metadata"]
+    spx_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^SPX")
+    assert ma.RISK_GATE_PROVIDER_DIVERGENCE in spx_inst["risk_gates"]
+    assert spx_inst["is_reliable"] is False
+    dji_inst = next(i for i in artifact["instruments"] if i["symbol"] == "^DJI")
+    assert ma.RISK_GATE_PROVIDER_DIVERGENCE not in dji_inst["risk_gates"]
+
+
+def test_cmd_generate_missing_price_consistency_file_warns_and_continues(
+    ma: ModuleType,
+    mocker: MockerFixture,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "E", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "E"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        price_consistency = str(tmp_path / "missing.json")
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    assert "WARNING: failed to load price consistency report" in capsys.readouterr().out
+
+
+# ── consistency subcommand ───────────────────────────────────────────────────────
+
+
+def test_cmd_consistency_writes_report(
+    ma: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+    primary_dir = tmp_path / "primary"
+    secondary_dir = tmp_path / "secondary"
+    ma.save_ohlcv(_make_bars(ma, "^SPX", [100.0, 101.0]), primary_dir)
+    ma.save_ohlcv(_make_bars(ma, "^SPX", [110.0, 111.0]), secondary_dir)
+    output_path = tmp_path / "out" / "consistency.json"
+
+    class Args:
+        mapping = str(mapping_path)
+        interval = "d"
+        primary_provider = "stooq"
+        secondary_provider = "stooq"
+        primary_data_dir = str(primary_dir)
+        secondary_data_dir = str(secondary_dir)
+        output = str(output_path)
+
+    assert ma._cmd_consistency(Args()) == 0
+    report = json.loads(output_path.read_text())
+    assert report["primary_provider"] == "stooq"
+    assert report["results"][0]["canonical_id"] == "spx"
+    assert report["results"][0]["escalated"] is True
+    out = capsys.readouterr().out
+    assert "1 compared" in out
+    assert "1 escalated" in out
+
+
+def test_cmd_consistency_skips_symbols_without_local_data(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+    primary_dir = tmp_path / "primary"
+    secondary_dir = tmp_path / "secondary"
+    ma.save_ohlcv(_make_bars(ma, "^SPX", [100.0]), primary_dir)
+    # secondary_dir has no data at all for any symbol.
+
+    class Args:
+        mapping = str(mapping_path)
+        interval = "d"
+        primary_provider = "stooq"
+        secondary_provider = "stooq"
+        primary_data_dir = str(primary_dir)
+        secondary_data_dir = str(secondary_dir)
+        output = str(tmp_path / "out.json")
+
+    assert ma._cmd_consistency(Args()) == 0
+    report = json.loads((tmp_path / "out.json").read_text())
+    assert report["results"] == []
+
+
+def test_cmd_consistency_skips_rows_with_blank_canonical_id(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    mapping_path = tmp_path / "mappings.csv"
+    mapping_path.write_text(
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,"
+        "tradable,notes\n"
+        ",Unlabeled,equity_index,,,,stooq,^UNLABELED,d,true,\n",
+        encoding="utf-8",
+    )
+    primary_dir = tmp_path / "primary"
+    ma.save_ohlcv(_make_bars(ma, "^UNLABELED", [100.0]), primary_dir)
+
+    class Args:
+        mapping = str(mapping_path)
+        interval = "d"
+        primary_provider = "stooq"
+        secondary_provider = "stooq"
+        primary_data_dir = str(primary_dir)
+        secondary_data_dir = str(primary_dir)
+        output = str(tmp_path / "out.json")
+
+    assert ma._cmd_consistency(Args()) == 0
+    report = json.loads((tmp_path / "out.json").read_text())
+    assert report["results"] == []
+
+
+def test_cmd_consistency_mapping_load_error(
+    ma: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    class Args:
+        mapping = str(tmp_path / "missing.csv")
+        interval = "d"
+        primary_provider = "stooq"
+        secondary_provider = "yfinance"
+        primary_data_dir = str(tmp_path)
+        secondary_data_dir = str(tmp_path)
+        output = str(tmp_path / "out.json")
+
+    assert ma._cmd_consistency(Args()) == 1
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_main_consistency_subcommand(ma: ModuleType, tmp_path: Path) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+    primary_dir = tmp_path / "primary"
+    secondary_dir = tmp_path / "secondary"
+    ma.save_ohlcv(_make_bars(ma, "^SPX", [100.0]), primary_dir)
+    ma.save_ohlcv(_make_bars(ma, "^SPX", [100.0]), secondary_dir)
+    output_path = tmp_path / "consistency.json"
+    exit_code = ma.main([
+        "consistency",
+        "--mapping",
+        str(mapping_path),
+        "--primary-provider",
+        "stooq",
+        "--secondary-provider",
+        "stooq",
+        "--primary-data-dir",
+        str(primary_dir),
+        "--secondary-data-dir",
+        str(secondary_dir),
+        "--output",
+        str(output_path),
+    ])
+    assert exit_code == 0
+    assert output_path.exists()

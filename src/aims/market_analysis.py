@@ -74,6 +74,11 @@ RISK_GATE_INSUFFICIENT: Final[str] = "insufficient_history"
 RISK_GATE_MISSING_BARS: Final[str] = "missing_bars"
 RISK_GATE_MALFORMED: Final[str] = "malformed_input"
 RISK_GATE_MISSING_DATA: Final[str] = "missing_data"
+RISK_GATE_PROVIDER_DIVERGENCE: Final[str] = "provider_divergence"
+
+_CONSISTENCY_BARS: Final[int] = 5
+_CONSISTENCY_WARN_THRESHOLD: Final[float] = 0.005
+_CONSISTENCY_ESCALATE_THRESHOLD: Final[float] = 0.02
 
 _OHLCV_FIELDS: Final[tuple[str, ...]] = (
     "symbol",
@@ -925,6 +930,58 @@ def _build_explanation(
     return "; ".join(parts)
 
 
+def check_price_consistency(
+    primary: dict[str, list[OhlcvBar]],
+    secondary: dict[str, list[OhlcvBar]],
+    *,
+    bars: int = _CONSISTENCY_BARS,
+    warn_threshold: float = _CONSISTENCY_WARN_THRESHOLD,
+    escalate_threshold: float = _CONSISTENCY_ESCALATE_THRESHOLD,
+) -> list[dict[str, Any]]:
+    """Compare closes between two providers' data, keyed by canonical_id.
+
+    Callers remap each provider's provider_symbol-keyed OHLCV to
+    canonical_id first (e.g. via ``instrument_display_map``), since the two
+    providers generally use different symbol conventions for the same
+    instrument. Only canonical_ids present in both series are compared, on
+    up to the last *bars* dates common to both. A bad adjusted close from
+    either source should not silently flow into scoring, so this flags
+    divergence rather than picking a "correct" value.
+    """
+    results: list[dict[str, Any]] = []
+    for canonical_id in sorted(set(primary) & set(secondary)):
+        primary_by_date = {b.timestamp.date(): b.close for b in primary[canonical_id]}
+        secondary_by_date = {
+            b.timestamp.date(): b.close for b in secondary[canonical_id]
+        }
+        common_dates = sorted(set(primary_by_date) & set(secondary_by_date))[-bars:]
+        if not common_dates:
+            results.append({
+                "canonical_id": canonical_id,
+                "bars_compared": 0,
+                "max_divergence": None,
+                "warned": False,
+                "escalated": False,
+            })
+            continue
+        divergences = [
+            abs(primary_by_date[d] - secondary_by_date[d]) / secondary_by_date[d]
+            for d in common_dates
+            if secondary_by_date[d]
+        ]
+        max_divergence = max(divergences) if divergences else None
+        results.append({
+            "canonical_id": canonical_id,
+            "bars_compared": len(common_dates),
+            "max_divergence": max_divergence,
+            "warned": max_divergence is not None and max_divergence > warn_threshold,
+            "escalated": (
+                max_divergence is not None and max_divergence > escalate_threshold
+            ),
+        })
+    return results
+
+
 def score_instruments(
     data: dict[str, list[OhlcvBar]],
     *,
@@ -932,6 +989,7 @@ def score_instruments(
     stale_days: int = _STALE_DAYS,
     min_history: int = _MIN_HISTORY,
     max_gap_days: int = _MAX_GAP_DAYS,
+    extra_risk_gates: dict[str, list[str]] | None = None,
 ) -> list[InstrumentScore]:
     if not data:
         return []
@@ -954,6 +1012,9 @@ def score_instruments(
     for idx, symbol in enumerate(symbols):
         feats = features_map[symbol]
         gates = _collect_risk_gates(reports[symbol], feats)
+        for gate in (extra_risk_gates or {}).get(symbol, []):
+            if gate not in gates:
+                gates.append(gate)
         rank_values = _compute_rank_values(feature_cols, idx)
         combined = sum(rank_values) / len(rank_values)
         scores.append(
@@ -1080,6 +1141,7 @@ def generate_artifact(
     missing_symbols: list[str] | None = None,
     coverage: dict[str, Any] | None = None,
     instrument_metadata: dict[str, dict[str, str]] | None = None,
+    price_consistency: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
     generated_at = (
@@ -1153,6 +1215,8 @@ def generate_artifact(
     }
     if coverage is not None:
         artifact_metadata["coverage"] = coverage
+    if price_consistency is not None:
+        artifact_metadata["price_consistency"] = price_consistency
     return {
         "version": ARTIFACT_VERSION,
         "metadata": artifact_metadata,
@@ -1401,6 +1465,29 @@ def _trim_bars_at_or_after(
     }
 
 
+def _load_price_consistency(
+    path: Path, display_meta: dict[str, dict[str, str]] | None
+) -> tuple[dict[str, Any], dict[str, list[str]]]:
+    """Load a consistency report and derive per-symbol escalation gates.
+
+    Returns (report, extra_risk_gates); *extra_risk_gates* maps a provider
+    symbol to ``[RISK_GATE_PROVIDER_DIVERGENCE]`` when its canonical_id was
+    flagged as escalated and *display_meta* can resolve it back to a
+    provider symbol used in this run's data.
+    """
+    with path.open(encoding="utf-8") as fh:
+        report: dict[str, Any] = json.load(fh)
+    escalated_ids = {
+        r["canonical_id"] for r in report.get("results", []) if r.get("escalated")
+    }
+    extra_risk_gates: dict[str, list[str]] = {}
+    if escalated_ids and display_meta:
+        for symbol, meta in display_meta.items():
+            if meta.get("canonical_id") in escalated_ids:
+                extra_risk_gates[symbol] = [RISK_GATE_PROVIDER_DIVERGENCE]
+    return report, extra_risk_gates
+
+
 def _cmd_generate(args: argparse.Namespace) -> int:
     provider_name: str = (
         getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
@@ -1428,6 +1515,17 @@ def _cmd_generate(args: argparse.Namespace) -> int:
             display_meta = instrument_display_map(rows, provider_name, args.interval)
         except (OSError, csv.Error):
             display_meta = None
+
+    price_consistency_report: dict[str, Any] | None = None
+    extra_risk_gates: dict[str, list[str]] = {}
+    price_consistency_arg: str | None = getattr(args, "price_consistency", None)
+    if price_consistency_arg:
+        try:
+            price_consistency_report, extra_risk_gates = _load_price_consistency(
+                Path(price_consistency_arg), display_meta
+            )
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            print(f"WARNING: failed to load price consistency report: {exc}")
 
     coverage_policy = CoveragePolicy(
         min_success_ratio=args.min_success_ratio,
@@ -1506,6 +1604,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         stale_days=thresholds.stale_days,
         min_history=thresholds.min_history,
         max_gap_days=thresholds.max_gap_days,
+        extra_risk_gates=extra_risk_gates or None,
     )
     artifact = generate_artifact(
         results,
@@ -1515,6 +1614,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         missing_symbols=missing or None,
         coverage=coverage_metadata,
         instrument_metadata=display_meta,
+        price_consistency=price_consistency_report,
     )
     path = save_artifact(artifact, Path(args.output))
     print(f"artifact saved to {path}")
@@ -1525,6 +1625,59 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         for violation in coverage_result.violations:
             print(f"ERROR: coverage gate failed: {violation}")
         return 1
+    return 0
+
+
+def _cmd_consistency(args: argparse.Namespace) -> int:
+    try:
+        rows = load_instrument_mappings(Path(args.mapping))
+    except (FileNotFoundError, csv.Error) as exc:
+        print(f"ERROR: {exc}")
+        return 1
+
+    primary_meta = instrument_display_map(rows, args.primary_provider, args.interval)
+    secondary_meta = instrument_display_map(
+        rows, args.secondary_provider, args.interval
+    )
+
+    def _load_by_canonical_id(
+        meta: dict[str, dict[str, str]], data_dir: str
+    ) -> dict[str, list[OhlcvBar]]:
+        loaded: dict[str, list[OhlcvBar]] = {}
+        for symbol, info in meta.items():
+            canonical_id = info.get("canonical_id")
+            if not canonical_id:
+                continue
+            try:
+                loaded[canonical_id] = load_ohlcv(symbol, args.interval, Path(data_dir))
+            except FileNotFoundError:
+                continue
+        return loaded
+
+    primary_data = _load_by_canonical_id(primary_meta, args.primary_data_dir)
+    secondary_data = _load_by_canonical_id(secondary_meta, args.secondary_data_dir)
+    results = check_price_consistency(primary_data, secondary_data)
+    report = {
+        "primary_provider": args.primary_provider,
+        "secondary_provider": args.secondary_provider,
+        "tolerance": {
+            "warn": _CONSISTENCY_WARN_THRESHOLD,
+            "escalate": _CONSISTENCY_ESCALATE_THRESHOLD,
+        },
+        "bars_checked": _CONSISTENCY_BARS,
+        "results": results,
+    }
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    warned = sum(1 for r in results if r["warned"] and not r["escalated"])
+    escalated = sum(1 for r in results if r["escalated"])
+    print(
+        f"consistency report written to {output_path}"
+        f" ({len(results)} compared, {warned} warned, {escalated} escalated)"
+    )
     return 0
 
 
@@ -1642,6 +1795,40 @@ def main(argv: list[str] | None = None) -> int:
         dest="fetch_status",
         help="Path to fetch-status JSON from the current fetch run",
     )
+    p_gen.add_argument(
+        "--price-consistency",
+        default=None,
+        dest="price_consistency",
+        help="Path to a consistency report from the 'consistency' subcommand",
+    )
+
+    p_cons = sub.add_parser(
+        "consistency",
+        help="Compare closes between two providers for the same instruments",
+    )
+    p_cons.add_argument(
+        "--mapping",
+        required=True,
+        help="Path to canonical_instrument_mappings.csv",
+    )
+    p_cons.add_argument("--interval", default=_DEFAULT_INTERVAL)
+    p_cons.add_argument(
+        "--primary-provider",
+        required=True,
+        dest="primary_provider",
+        choices=sorted(KNOWN_PROVIDERS),
+    )
+    p_cons.add_argument(
+        "--secondary-provider",
+        required=True,
+        dest="secondary_provider",
+        choices=sorted(KNOWN_PROVIDERS),
+    )
+    p_cons.add_argument("--primary-data-dir", required=True, dest="primary_data_dir")
+    p_cons.add_argument(
+        "--secondary-data-dir", required=True, dest="secondary_data_dir"
+    )
+    p_cons.add_argument("--output", required=True)
 
     args = parser.parse_args(argv)
 
@@ -1653,6 +1840,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_score(args)
     if args.command == "init-fetch-status":
         return _cmd_init_fetch_status(args)
+    if args.command == "consistency":
+        return _cmd_consistency(args)
     return _cmd_generate(args)
 
 

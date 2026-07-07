@@ -170,7 +170,7 @@ def test_build_earnings_calendar_filters_horizon_and_records_failures() -> None:
         updated_at="2024-01-01",
         fetch_fn=fetch,
     )
-    assert failed == ["MSFT"]
+    assert failed == [("MSFT", "ConnectionError: no data")]
     assert [e["date"] for e in calendar["events"]] == ["2024-01-15"]
     assert calendar["events"][0]["canonical_ids"] == ["aapl"]
     assert calendar["metadata"]["updated_at"] == "2024-01-01"
@@ -226,31 +226,40 @@ def test_main_no_equities(tmp_path: Path, capsys: pytest.CaptureFixture[str]) ->
     assert "no equity instruments" in capsys.readouterr().out
 
 
-def test_main_success(
-    tmp_path: Path, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]
-) -> None:
+def _write_mapping(tmp_path: Path, *symbols: str) -> Path:
     mapping = tmp_path / "map.csv"
-    mapping.write_text(
+    header = (
         "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
         "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable\n"
-        "aapl,Apple Inc.,equity,,,,yfinance,AAPL,d,true\n",
-        encoding="utf-8",
     )
+    rows = "".join(
+        f"{symbol.lower()},{symbol},equity,,,,yfinance,{symbol},d,true\n"
+        for symbol in symbols
+    )
+    mapping.write_text(header + rows, encoding="utf-8")
+    return mapping
+
+
+def _calendar_stub(events: list[dict[str, str]] | None = None) -> dict[str, object]:
+    return {
+        "version": cal.CALENDAR_VERSION,
+        "metadata": {
+            "calendar_id": "earnings",
+            "updated_at": "2024-01-01",
+            "source": "test",
+        },
+        "events": events or [],
+    }
+
+
+def test_main_success_with_partial_failure(
+    tmp_path: Path, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]
+) -> None:
+    mapping = _write_mapping(tmp_path, "AAPL", "MSFT")
     mocker.patch.object(
         cal,
         "build_earnings_calendar",
-        return_value=(
-            {
-                "version": cal.CALENDAR_VERSION,
-                "metadata": {
-                    "calendar_id": "earnings",
-                    "updated_at": "2024-01-01",
-                    "source": "test",
-                },
-                "events": [],
-            },
-            ["AAPL"],
-        ),
+        return_value=(_calendar_stub(), [("AAPL", "ImportError: lxml missing")]),
     )
     rc = cal.main([
         "--mapping",
@@ -262,5 +271,34 @@ def test_main_success(
     ])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "WARNING: earnings fetch failed for AAPL" in out
+    assert "WARNING: earnings fetch failed for AAPL: ImportError: lxml missing" in out
     assert (tmp_path / "out.json").exists()
+
+
+def test_main_all_symbols_failed_exits_nonzero_without_writing(
+    tmp_path: Path, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]
+) -> None:
+    mapping = _write_mapping(tmp_path, "AAPL", "MSFT")
+    mocker.patch.object(
+        cal,
+        "build_earnings_calendar",
+        return_value=(
+            _calendar_stub(),
+            [
+                ("AAPL", "ImportError: lxml missing"),
+                ("MSFT", "ImportError: lxml missing"),
+            ],
+        ),
+    )
+    rc = cal.main([
+        "--mapping",
+        str(mapping),
+        "--start-date",
+        "2024-01-01",
+        "--output",
+        str(tmp_path / "out.json"),
+    ])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "ERROR: all 2 earnings fetches failed" in out
+    assert not (tmp_path / "out.json").exists()

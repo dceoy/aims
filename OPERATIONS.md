@@ -213,6 +213,8 @@ The market regime label is derived from breadth: the share of reliable instrumen
 | Bearish     | ≤ 35%                                  |
 | Unavailable | No reliable instruments with MA20 data |
 
+The label is computed once, at artifact generation time, and stored as `metadata.market_regime` (`{label, positive_count, reliable_count, breadth, thresholds}`) — the authoritative, auditable source for the regime shown in reports and Slack notifications. Both consumers call `regime_from_artifact()` (`src/aims/reports.py`), which reads the stored value and only recomputes it from reliable-instrument MA20 breadth as a fallback for artifacts generated before this field existed (schema version < 1.1.0). This is informational only: it never modifies scores, ranks, or risk gates.
+
 ### Scoring version
 
 `SCORING_VERSION = "1.0.0"` in `src/aims/market_analysis.py`. Increment this when the feature set or scoring logic changes in a way that makes old and new scores incomparable.

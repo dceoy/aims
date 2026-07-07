@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AIMS analysis artifact",
   "description": "Schema reference for validate_analysis.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies.",
-  "artifact_version": "1.0.0",
+  "artifact_version": "1.1.0",
   "required_top_keys": ["version", "metadata", "instruments"],
   "required_metadata_keys": [
     "generated_at",
@@ -11,8 +11,17 @@
     "data_freshness",
     "scoring_version",
     "config",
-    "coverage"
+    "coverage",
+    "market_regime"
   ],
+  "required_market_regime_keys": [
+    "label",
+    "positive_count",
+    "reliable_count",
+    "breadth",
+    "thresholds"
+  ],
+  "market_regime_labels": ["Bullish", "Bearish", "Neutral", "Unavailable"],
   "required_config_keys": [
     "interval",
     "stale_days",
@@ -31,7 +40,8 @@
   "notes": {
     "data_source": "Sorted comma-separated provider names, e.g. 'stooq' or 'csv,stooq'.",
     "data_freshness": "Object mapping symbol to latest bar date (YYYY-MM-DD) or 'n/a' if no bars.",
-    "rank": "Display rank after reliability-aware ordering: reliable instruments (is_reliable=true) rank first by score descending; unreliable instruments follow."
+    "rank": "Display rank after reliability-aware ordering: reliable instruments (is_reliable=true) rank first by score descending; unreliable instruments follow.",
+    "market_regime": "Computed once at generation time from the share of reliable instruments trading above their 20-day moving average (breadth). 'breadth' is null and 'label' is 'Unavailable' when no reliable instrument has MA20 data. Reports and notifications read this field as the source of truth; artifacts predating schema 1.1.0 lack it and are labeled by on-the-fly recomputation for backward compatibility."
   },
   "required_instrument_keys": [
     "symbol",

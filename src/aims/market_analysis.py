@@ -65,7 +65,11 @@ _FETCH_STATUS_FAILED: Final[str] = "failed"
 _FETCH_STATUS_PENDING: Final[str] = "pending"
 
 SCORING_VERSION: Final[str] = "1.0.0"
-ARTIFACT_VERSION: Final[str] = "1.1.0"
+ARTIFACT_VERSION: Final[str] = "1.2.0"
+
+_ATR_PERIOD: Final[int] = 14
+DEFAULT_RISK_TARGET_ANNUAL_VOL: Final[float] = 0.10
+DEFAULT_STOP_ATR_MULTIPLE: Final[float] = 2.0
 
 _BULLISH_BREADTH: Final[float] = 0.65
 _BEARISH_BREADTH: Final[float] = 0.35
@@ -918,6 +922,73 @@ def compute_features(bars: list[OhlcvBar]) -> InstrumentFeatures:
     )
 
 
+# ── Risk context ───────────────────────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class RiskContext:
+    """Volatility-targeted sizing and ATR stop-distance hints (#83).
+
+    Purely informational: derived from already-fetched OHLCV data but never
+    fed into ``score_instruments`` or risk-gate suppression.
+    """
+
+    atr_14: float | None
+    atr_14_pct: float | None
+    vol_target_multiplier: float | None
+    stop_distance: float | None
+    stop_distance_pct: float | None
+
+
+def _true_range(prev_close: float, high: float, low: float) -> float:
+    return max(high - low, abs(high - prev_close), abs(low - prev_close))
+
+
+def compute_atr(bars: list[OhlcvBar], n: int = _ATR_PERIOD) -> float | None:
+    """Average True Range over the trailing *n* bars, or ``None`` if too few."""
+    if len(bars) < n + 1:
+        return None
+    trs = [
+        _true_range(bars[i - 1].close, bars[i].high, bars[i].low)
+        for i in range(len(bars) - n, len(bars))
+    ]
+    return sum(trs) / n
+
+
+def compute_risk_context(
+    bars: list[OhlcvBar],
+    features: InstrumentFeatures,
+    *,
+    risk_target_annual_vol: float = DEFAULT_RISK_TARGET_ANNUAL_VOL,
+    stop_atr_multiple: float = DEFAULT_STOP_ATR_MULTIPLE,
+) -> RiskContext:
+    """Derive ATR(14), a vol-target size multiplier, and an ATR stop distance.
+
+    ``vol_target_multiplier`` is ``risk_target_annual_vol / vol_20d`` (a
+    scale-down factor when realized volatility exceeds the target, scale-up
+    when below it); ``stop_distance`` is ``stop_atr_multiple * atr_14``. Any
+    input that can't be computed (short history, zero/missing volatility or
+    price) yields ``None`` for the fields that depend on it rather than
+    raising, matching the rest of this module's missing-data handling.
+    """
+    atr = compute_atr(bars)
+    last_close = bars[-1].close if bars else None
+    atr_pct = atr / last_close if atr is not None and last_close else None
+    vol = features.vol_20d
+    vol_target_multiplier = risk_target_annual_vol / vol if vol else None
+    stop_distance = atr * stop_atr_multiple if atr is not None else None
+    stop_distance_pct = (
+        stop_distance / last_close if stop_distance is not None and last_close else None
+    )
+    return RiskContext(
+        atr_14=atr,
+        atr_14_pct=atr_pct,
+        vol_target_multiplier=vol_target_multiplier,
+        stop_distance=stop_distance,
+        stop_distance_pct=stop_distance_pct,
+    )
+
+
 # ── Scoring ────────────────────────────────────────────────────────────────────
 
 
@@ -932,6 +1003,7 @@ class InstrumentScore:
     risk_gates: list[str]
     is_reliable: bool
     explanation: str
+    risk_context: RiskContext
 
 
 def _percentile_rank(values: list[float | None], idx: int) -> float:
@@ -1046,6 +1118,8 @@ def score_instruments(
     min_history: int = _MIN_HISTORY,
     max_gap_days: int = _MAX_GAP_DAYS,
     extra_risk_gates: dict[str, list[str]] | None = None,
+    risk_target_annual_vol: float = DEFAULT_RISK_TARGET_ANNUAL_VOL,
+    stop_atr_multiple: float = DEFAULT_STOP_ATR_MULTIPLE,
 ) -> list[InstrumentScore]:
     if not data:
         return []
@@ -1082,6 +1156,12 @@ def score_instruments(
                 risk_gates=gates,
                 is_reliable=not bool(gates),
                 explanation=_build_explanation(symbol, feats, gates),
+                risk_context=compute_risk_context(
+                    data[symbol],
+                    feats,
+                    risk_target_annual_vol=risk_target_annual_vol,
+                    stop_atr_multiple=stop_atr_multiple,
+                ),
             )
         )
 
@@ -1154,6 +1234,16 @@ def _features_to_dict(feats: InstrumentFeatures) -> dict[str, float | None]:
         "mdd_60d": feats.mdd_60d,
         "rsi_14": feats.rsi_14,
         "zscore_20d": feats.zscore_20d,
+    }
+
+
+def _risk_context_to_dict(rc: RiskContext) -> dict[str, float | None]:
+    return {
+        "atr_14": rc.atr_14,
+        "atr_14_pct": rc.atr_14_pct,
+        "vol_target_multiplier": rc.vol_target_multiplier,
+        "stop_distance": rc.stop_distance,
+        "stop_distance_pct": rc.stop_distance_pct,
     }
 
 
@@ -1230,6 +1320,7 @@ def generate_artifact(
             "risk_gates": s.risk_gates,
             "explanation": s.explanation,
             "features": _features_to_dict(s.features),
+            "risk_context": _risk_context_to_dict(s.risk_context),
         }
         _apply_instrument_metadata(entry, s.symbol)
         return entry
@@ -1247,6 +1338,13 @@ def generate_artifact(
         rsi_14=None,
         zscore_20d=None,
     )
+    empty_risk_context = RiskContext(
+        atr_14=None,
+        atr_14_pct=None,
+        vol_target_multiplier=None,
+        stop_distance=None,
+        stop_distance_pct=None,
+    )
     next_rank = max((s.rank for s in scores), default=0) + 1
     for sym in sorted(missing_symbols or []):
         entry: dict[str, Any] = {
@@ -1257,6 +1355,7 @@ def generate_artifact(
             "risk_gates": [RISK_GATE_MISSING_DATA],
             "explanation": f"Suppressed: {RISK_GATE_MISSING_DATA}",
             "features": _features_to_dict(empty_feats),
+            "risk_context": _risk_context_to_dict(empty_risk_context),
         }
         _apply_instrument_metadata(entry, sym)
         instruments.append(entry)
@@ -1659,6 +1758,8 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         return 1
 
     config = build_config_dict(policy)
+    config["risk_target_annual_vol"] = DEFAULT_RISK_TARGET_ANNUAL_VOL
+    config["stop_atr_multiple"] = DEFAULT_STOP_ATR_MULTIPLE
     analysis_date: str | None = getattr(args, "analysis_date", None) or None
     reference_time: datetime | None = None
     if analysis_date:

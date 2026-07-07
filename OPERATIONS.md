@@ -181,6 +181,20 @@ output is informational and is not investment advice.
 
 Each feature value is converted to a cross-sectional percentile rank across all instruments in the universe for that run. Features where "lower is better" are inverted (100 minus percentile). The composite score is the unweighted mean of all ten feature ranks, ranging from 0 to 100.
 
+### Volatility-targeted sizing and ATR stop context (#83)
+
+Each reliable instrument's artifact entry also carries a `risk_context` block — informational sizing/stop hints computed from the same fetched OHLCV bars, stored separately from `features` and never fed into `score_instruments` or risk-gate suppression:
+
+| Field                   | Formula                                                                                                                                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `atr_14`                | 14-bar Average True Range (Wilder's true range, simple mean, not Wilder's smoothing), in price units                                                                                                     |
+| `atr_14_pct`            | `atr_14 / latest_close`                                                                                                                                                                                  |
+| `vol_target_multiplier` | `metadata.config.risk_target_annual_vol / features.vol_20d` — a notional scale factor for a configurable per-position annualized-volatility target (default 10%); `null` when `vol_20d` is `null` or `0` |
+| `stop_distance`         | `metadata.config.stop_atr_multiple * atr_14` (default multiple: 2.0), in price units                                                                                                                     |
+| `stop_distance_pct`     | `stop_distance / latest_close`                                                                                                                                                                           |
+
+All five fields are `null` together when there are fewer than 15 bars (ATR needs 14 true-range observations plus the prior close); `vol_target_multiplier` is independently `null` whenever `vol_20d` is unavailable, even if ATR itself is computable. The two config values are recorded in every artifact's `metadata.config` so a report or downstream reader never has to guess which target/multiple produced a given number. Rendered in the report's "Risk Context" table with the disclaimer that this is not account-level advice, margin-call simulation, or broker integration — it ignores account size, existing exposure, and execution costs. See `data/schema/analysis.schema.json`'s `risk_context` note for the JSON shape.
+
 ### Risk gates
 
 Instruments that fail quality checks are included in output but marked `is_reliable: false` and ranked below reliable instruments. They appear in the "Instruments to Avoid" section of the report.

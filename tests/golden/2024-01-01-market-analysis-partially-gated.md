@@ -116,6 +116,15 @@ Data source: **stooq**
 | rsi_14     |  55.0 |
 | zscore_20d |   0.7 |
 
+## Risk Context
+
+| Instrument                          | ATR(14) | ATR % of price | Vol-target multiplier | Stop distance | Stop distance % |
+| ----------------------------------- | ------: | -------------: | --------------------: | ------------: | --------------: |
+| S&P 500 / ^SPX                      |     n/a |            n/a |                   n/a |           n/a |             n/a |
+| Dow Jones Industrial Average / ^DJI |     n/a |            n/a |                   n/a |           n/a |             n/a |
+
+> Volatility-targeted sizing and ATR-based stop distances are informational sizing/stop hints derived from historical price action, not investment advice, account-level guidance, or margin-call simulation. They ignore account size, existing exposure, broker margin rules, and execution costs.
+
 ## Methodology
 
 Instruments are scored and ranked cross-sectionally using the following features:

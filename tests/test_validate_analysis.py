@@ -20,6 +20,14 @@ def va() -> ModuleType:
     return _aims_va
 
 
+VALID_RISK_CONTEXT: dict[str, Any] = {
+    "atr_14": 1.5,
+    "atr_14_pct": 0.015,
+    "vol_target_multiplier": 0.8,
+    "stop_distance": 3.0,
+    "stop_distance_pct": 0.03,
+}
+
 VALID_INSTRUMENT: dict[str, Any] = {
     "symbol": "AAPL.US",
     "rank": 1,
@@ -28,6 +36,7 @@ VALID_INSTRUMENT: dict[str, Any] = {
     "risk_gates": [],
     "explanation": "Strong momentum.",
     "features": {"ret_1d": 0.01},
+    "risk_context": VALID_RISK_CONTEXT,
 }
 
 VALID_REGIME: dict[str, Any] = {
@@ -39,7 +48,7 @@ VALID_REGIME: dict[str, Any] = {
 }
 
 VALID_ARTIFACT: dict[str, Any] = {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "metadata": {
         "generated_at": "2024-01-01T00:00:00+00:00",
         "git_commit": "abc1234",
@@ -55,6 +64,8 @@ VALID_ARTIFACT: dict[str, Any] = {
                 "min_success_ratio": 0.8,
                 "max_missing_symbols": 1,
             },
+            "risk_target_annual_vol": 0.10,
+            "stop_atr_multiple": 2.0,
         },
         "coverage": {
             "attempted_count": 1,
@@ -222,6 +233,45 @@ def test_validate_tradable_must_be_boolean(va: ModuleType) -> None:
     data = {**VALID_ARTIFACT, "instruments": [inst]}
     errors = va.validate_artifact(data)
     assert any("tradable must be a boolean" in e for e in errors)
+
+
+def test_validate_risk_context_null_rejected(va: ModuleType) -> None:
+    inst = {**VALID_INSTRUMENT, "risk_context": None}
+    data = {**VALID_ARTIFACT, "instruments": [inst]}
+    errors = va.validate_artifact(data)
+    assert any("risk_context must not be null" in e for e in errors)
+
+
+def test_validate_risk_context_must_be_object(va: ModuleType) -> None:
+    inst = {**VALID_INSTRUMENT, "risk_context": []}
+    data = {**VALID_ARTIFACT, "instruments": [inst]}
+    errors = va.validate_artifact(data)
+    assert any("risk_context must be a JSON object" in e for e in errors)
+
+
+def test_validate_risk_context_missing_key(va: ModuleType) -> None:
+    bad_rc = {k: v for k, v in VALID_RISK_CONTEXT.items() if k != "atr_14"}
+    inst = {**VALID_INSTRUMENT, "risk_context": bad_rc}
+    data = {**VALID_ARTIFACT, "instruments": [inst]}
+    errors = va.validate_artifact(data)
+    assert any("risk_context missing required key: 'atr_14'" in e for e in errors)
+
+
+def test_validate_risk_context_null_fields_accepted(va: ModuleType) -> None:
+    all_null = dict.fromkeys(VALID_RISK_CONTEXT)
+    inst = {**VALID_INSTRUMENT, "risk_context": all_null}
+    data = {**VALID_ARTIFACT, "instruments": [inst]}
+    assert va.validate_artifact(data) == []
+
+
+def test_validate_risk_context_field_wrong_type(va: ModuleType) -> None:
+    inst = {
+        **VALID_INSTRUMENT,
+        "risk_context": {**VALID_RISK_CONTEXT, "atr_14": "1.5"},
+    }
+    data = {**VALID_ARTIFACT, "instruments": [inst]}
+    errors = va.validate_artifact(data)
+    assert any("risk_context.atr_14 must be null or a number" in e for e in errors)
 
 
 # ── data_freshness validation ──────────────────────────────────────────────────

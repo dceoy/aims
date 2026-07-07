@@ -331,12 +331,12 @@ def build_artifact(
 
     *extra_warnings* carries warnings from outside the join itself — e.g. a
     same-run qualitative artifact excluded by the caller's trust boundary —
-    merged in sorted alongside the evaluation's own warnings.
+    merged in deduplicated and sorted alongside the evaluation's own warnings.
     """
     stance_evaluation, warnings = evaluate_stances(
         qualitative_artifacts, analyses, horizons
     )
-    all_warnings = sorted([*warnings, *extra_warnings])
+    all_warnings = sorted({*warnings, *extra_warnings})
     return {
         "version": PERFORMANCE_VERSION,
         "metadata": {

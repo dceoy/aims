@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Any, Final
 
-ARTIFACT_VERSION: Final[str] = "1.1.0"
+ARTIFACT_VERSION: Final[str] = "1.2.0"
 DEFAULT_INPUT: Final[Path] = Path("data/analysis")
 
 _REQUIRED_TOP: Final[tuple[str, ...]] = ("version", "metadata", "instruments")
@@ -45,6 +45,8 @@ _REQUIRED_CONFIG: Final[tuple[str, ...]] = (
     "max_gap_days",
     "min_history",
     "coverage_policy",
+    "risk_target_annual_vol",
+    "stop_atr_multiple",
 )
 _REQUIRED_COVERAGE: Final[tuple[str, ...]] = (
     "attempted_count",
@@ -64,6 +66,14 @@ _REQUIRED_INST: Final[tuple[str, ...]] = (
     "risk_gates",
     "explanation",
     "features",
+    "risk_context",
+)
+_REQUIRED_RISK_CONTEXT: Final[tuple[str, ...]] = (
+    "atr_14",
+    "atr_14_pct",
+    "vol_target_multiplier",
+    "stop_distance",
+    "stop_distance_pct",
 )
 
 
@@ -180,6 +190,24 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
             tradable = inst.get("tradable")
             if tradable is not None and not isinstance(tradable, bool):
                 errors.append(f"instrument[{idx}]: tradable must be a boolean")
+            risk_context = inst.get("risk_context")
+            if risk_context is None:
+                errors.append(f"instrument[{idx}]: risk_context must not be null")
+            elif not isinstance(risk_context, dict):
+                errors.append(f"instrument[{idx}]: risk_context must be a JSON object")
+            else:
+                errors.extend(
+                    f"instrument[{idx}].risk_context missing required key: {key!r}"
+                    for key in _REQUIRED_RISK_CONTEXT
+                    if key not in risk_context
+                )
+                errors.extend(
+                    f"instrument[{idx}].risk_context.{key} must be null or a number"
+                    for key in _REQUIRED_RISK_CONTEXT
+                    if key in risk_context
+                    and risk_context[key] is not None
+                    and not isinstance(risk_context[key], (int, float))
+                )
 
     return errors
 

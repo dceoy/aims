@@ -705,6 +705,62 @@ def _section_symbol_details(instruments: list[dict[str, Any]]) -> str:
     return f"{header}\n\n" + "\n\n".join(subsections)
 
 
+_RISK_CONTEXT_DISCLAIMER: Final[str] = (
+    "Volatility-targeted sizing and ATR-based stop distances are informational"
+    " sizing/stop hints derived from historical price action, not investment"
+    " advice, account-level guidance, or margin-call simulation. They ignore"
+    " account size, existing exposure, broker margin rules, and execution"
+    " costs."
+)
+
+
+def _fmt_price(value: float | None) -> str:
+    return f"{value:.4f}" if value is not None else "n/a"
+
+
+def _fmt_multiplier(value: float | None) -> str:
+    return f"{value:.2f}x" if value is not None else "n/a"
+
+
+def _section_risk_context(instruments: list[dict[str, Any]]) -> str:
+    header = "## Risk Context"
+    reliable = sorted(
+        [i for i in instruments if i.get("is_reliable")],
+        key=lambda i: int(i.get("rank", 0)),
+    )
+    if not reliable:
+        return f"{header}\n\n_No reliable instruments to display._"
+    table_headers = [
+        "Instrument",
+        "ATR(14)",
+        "ATR % of price",
+        "Vol-target multiplier",
+        "Stop distance",
+        "Stop distance %",
+    ]
+    alignments: list[MarkdownAlignment] = [
+        "left",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+    ]
+    rows: list[list[str]] = []
+    for inst in reliable:
+        rc = inst.get("risk_context") or {}
+        rows.append([
+            _instrument_label(inst),
+            _fmt_price(rc.get("atr_14")),
+            _format_vol(rc.get("atr_14_pct")),
+            _fmt_multiplier(rc.get("vol_target_multiplier")),
+            _fmt_price(rc.get("stop_distance")),
+            _format_vol(rc.get("stop_distance_pct")),
+        ])
+    table = format_markdown_table(table_headers, rows, alignments)
+    return f"{header}\n\n{table}\n\n> {_RISK_CONTEXT_DISCLAIMER}"
+
+
 def _section_methodology(scoring_version: str, git_commit: str) -> str:
     header = "## Methodology"
     feature_list = (
@@ -815,6 +871,7 @@ def generate_report(
         _section_instrument_scores(instruments),
         _section_data_freshness(data_source, freshness),
         _section_symbol_details(instruments),
+        _section_risk_context(instruments),
         _section_methodology(scoring_version, git_commit),
         _section_disclaimer(),
     ])

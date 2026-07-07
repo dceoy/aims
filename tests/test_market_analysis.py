@@ -555,6 +555,80 @@ def test_compute_features_full(ma: ModuleType) -> None:
     assert feats.zscore_20d is not None
 
 
+# ── ATR / risk context (#83) ────────────────────────────────────────────────────
+
+
+def test_compute_atr_insufficient(ma: ModuleType) -> None:
+    bars = _make_bars(ma, "X", [float(100 + i) for i in range(14)])
+    assert ma.compute_atr(bars) is None
+
+
+def test_compute_atr_flat_bars_is_zero(ma: ModuleType) -> None:
+    bars = _make_bars(ma, "X", [100.0] * 15)
+    assert ma.compute_atr(bars) == pytest.approx(0.0)
+
+
+def test_compute_atr_matches_hand_calculation(ma: ModuleType) -> None:
+    # With high=low=close (the _make_bars default), true range collapses to
+    # the absolute close-to-close change, so ATR(14) is the mean absolute
+    # daily change over the trailing 14 bars.
+    closes = [float(100 + i) for i in range(15)]
+    bars = _make_bars(ma, "X", closes)
+    assert ma.compute_atr(bars) == pytest.approx(1.0)
+
+
+def _risk_context_bars(ma: ModuleType, closes: list[float]) -> list[object]:
+    return _make_bars(ma, "X", closes)
+
+
+def test_compute_risk_context_full(ma: ModuleType) -> None:
+    closes = [float(100 + i) for i in range(21)]
+    bars = _risk_context_bars(ma, closes)
+    feats = ma.compute_features(bars)
+    rc = ma.compute_risk_context(
+        bars, feats, risk_target_annual_vol=0.10, stop_atr_multiple=2.0
+    )
+    last_close = closes[-1]
+    assert rc.atr_14 == pytest.approx(1.0)
+    assert rc.atr_14_pct == pytest.approx(1.0 / last_close)
+    assert feats.vol_20d is not None
+    assert rc.vol_target_multiplier == pytest.approx(0.10 / feats.vol_20d)
+    assert rc.stop_distance == pytest.approx(2.0)
+    assert rc.stop_distance_pct == pytest.approx(2.0 / last_close)
+
+
+def test_compute_risk_context_insufficient_history(ma: ModuleType) -> None:
+    bars = _risk_context_bars(ma, [float(100 + i) for i in range(5)])
+    feats = ma.compute_features(bars)
+    rc = ma.compute_risk_context(bars, feats)
+    assert rc.atr_14 is None
+    assert rc.atr_14_pct is None
+    assert rc.stop_distance is None
+    assert rc.stop_distance_pct is None
+    # vol_target_multiplier depends only on features.vol_20d, not ATR.
+    assert rc.vol_target_multiplier is None
+
+
+def test_compute_risk_context_zero_volatility(ma: ModuleType) -> None:
+    bars = _risk_context_bars(ma, [100.0] * 21)
+    feats = ma.compute_features(bars)
+    assert feats.vol_20d == pytest.approx(0.0)
+    rc = ma.compute_risk_context(bars, feats)
+    assert rc.vol_target_multiplier is None
+
+
+def test_compute_risk_context_empty_bars(ma: ModuleType) -> None:
+    feats = _empty_features(ma)
+    rc = ma.compute_risk_context([], feats)
+    assert rc == ma.RiskContext(
+        atr_14=None,
+        atr_14_pct=None,
+        vol_target_multiplier=None,
+        stop_distance=None,
+        stop_distance_pct=None,
+    )
+
+
 # ── _percentile_rank ──────────────────────────────────────────────────────────
 
 
@@ -970,7 +1044,7 @@ def test_generate_artifact_structure(ma: ModuleType, mocker: MockerFixture) -> N
     ref = bars[-1].timestamp + timedelta(days=1)
     scores = ma.score_instruments({"A": bars}, reference_time=ref)
     artifact = ma.generate_artifact(scores, {"A": bars}, {"stale_days": 5})
-    assert artifact["version"] == "1.1.0"
+    assert artifact["version"] == "1.2.0"
     assert "metadata" in artifact
     assert "instruments" in artifact
     meta = artifact["metadata"]
@@ -1033,6 +1107,13 @@ def _score(
         rsi_14=None,
         zscore_20d=None,
     )
+    risk_context = ma.RiskContext(
+        atr_14=None,
+        atr_14_pct=None,
+        vol_target_multiplier=None,
+        stop_distance=None,
+        stop_distance_pct=None,
+    )
     return ma.InstrumentScore(
         symbol=symbol,
         rank=1,
@@ -1041,6 +1122,7 @@ def _score(
         risk_gates=[] if is_reliable else ["stale_data"],
         is_reliable=is_reliable,
         explanation="x",
+        risk_context=risk_context,
     )
 
 
@@ -1178,7 +1260,7 @@ def test_save_artifact_path_contains_date(
     path = ma.save_artifact(artifact, tmp_path)
     assert path.suffix == ".json"
     loaded = json.loads(path.read_text())
-    assert loaded["version"] == "1.1.0"
+    assert loaded["version"] == "1.2.0"
 
 
 def test_save_artifact_no_generated_at(ma: ModuleType, tmp_path: Path) -> None:

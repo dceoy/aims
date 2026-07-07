@@ -933,6 +933,65 @@ def test_section_symbol_details_null_features(gr: ModuleType) -> None:
     assert "n/a" in result
 
 
+# ── _section_risk_context (#83) ─────────────────────────────────────────────────
+
+
+def test_section_risk_context_empty(gr: ModuleType) -> None:
+    result = gr._section_risk_context([])
+    assert "No reliable instruments" in result
+
+
+def test_section_risk_context_no_reliable(gr: ModuleType) -> None:
+    result = gr._section_risk_context([
+        {"symbol": "BAD", "rank": 1, "score": 20.0, "is_reliable": False}
+    ])
+    assert "No reliable instruments" in result
+
+
+def test_section_risk_context_renders_values(gr: ModuleType) -> None:
+    instruments = [
+        {
+            "symbol": "AAPL",
+            "rank": 1,
+            "score": 70.0,
+            "is_reliable": True,
+            "risk_context": {
+                "atr_14": 1.5,
+                "atr_14_pct": 0.015,
+                "vol_target_multiplier": 0.8,
+                "stop_distance": 3.0,
+                "stop_distance_pct": 0.03,
+            },
+        }
+    ]
+    result = gr._section_risk_context(instruments)
+    assert "## Risk Context" in result
+    assert "AAPL" in result
+    assert "1.5000" in result
+    assert "1.5%" in result
+    assert "0.80x" in result
+    assert "3.0000" in result
+    assert "3.0%" in result
+    assert "informational sizing/stop hints" in result
+
+
+def test_section_risk_context_missing_field_renders_na(gr: ModuleType) -> None:
+    instruments = [
+        {"symbol": "X", "rank": 1, "score": 50.0, "is_reliable": True},
+    ]
+    result = gr._section_risk_context(instruments)
+    assert "n/a" in result
+
+
+def test_section_risk_context_sorted_by_rank(gr: ModuleType) -> None:
+    instruments = [
+        {"symbol": "SYM_SECOND", "rank": 2, "score": 60.0, "is_reliable": True},
+        {"symbol": "SYM_FIRST", "rank": 1, "score": 70.0, "is_reliable": True},
+    ]
+    result = gr._section_risk_context(instruments)
+    assert result.index("SYM_FIRST") < result.index("SYM_SECOND")
+
+
 # ── delta table in _section_signal_history tests ────────────────────────────────
 
 

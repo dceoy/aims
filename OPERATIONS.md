@@ -254,6 +254,16 @@ The composite score averages 10 feature percentile ranks, and 8 of the 10 are co
 
 No ML-fitted or optimizer-fitted weights — hand-set weights justified by measured ICs, keeping the engine deterministic and dependency-light.
 
+### Backtest cost model, benchmark, and significance
+
+`run_backtest` reports gross top-k forward returns only by default; costs, a benchmark, and a significance test are opt-in and additive — they never change `score_instruments` or the composite score.
+
+- **Cost model**: each top-k forward-return observation is treated as an independent round-trip (this backtest reports cross-sectional forward returns per date, not a single compounding equity curve), so the cost is `2 × spread_bps` (entry + exit) plus `financing_rate_annual × horizon / 365` (holding-period financing), deducted once per observation. Per-instrument overrides come from an optional `--cost-mapping` CSV (`symbol,spread_bps,financing_rate_annual`); symbols absent from it use conservative placeholders (`DEFAULT_SPREAD_BPS = 10.0`, `DEFAULT_FINANCING_RATE_ANNUAL = 0.05` in `src/aims/backtest.py`) until real broker spread/financing data is wired in. `metrics[h].top_k.average_return` stays gross; `net_average_return` is net of this cost.
+- **Benchmark**: `metrics[h].benchmark.average_return` is the equal-weight average forward return across the _entire_ reliable universe that date (all score buckets pooled), not just the top-k selection. `top_k.excess_return` / `net_excess_return` are the gross/net top-k average minus this benchmark, per horizon.
+- **Significance**: a deterministic moving-block bootstrap (`_moving_block_bootstrap_ci`, seeded, block-resampled to preserve short-range autocorrelation) on the mean daily net excess return, computed at the finest configured horizon (most daily observations to resample). Reported at `significance` with `{horizon, mean_net_excess_return, confidence, confidence_interval, block_size, iterations, seed, n}`; `confidence_interval` is `null` with fewer than two observations.
+- **Regime breakdown**: `regime_breakdown.regimes` buckets the same per-date net top-k and benchmark averages (at the significance horizon) by that date's breadth-based market regime label (`market_regime_metadata`, the same MA20-breadth measure persisted in daily analysis artifacts, #77) — showing whether the strategy's edge concentrates in a particular regime.
+- **Limitations**: overlapping forward horizons (e.g. daily observations at a 20-day horizon) overstate the effective independent sample size; the bootstrap partially compensates via block resampling but this is not a substitute for a longer out-of-sample window. The cost model has no order-book simulation, intraday slippage, or portfolio-level margin constraints.
+
 ### Assumptions and limitations
 
 - Scores are cross-sectional: they reflect relative, not absolute, performance. A score of 80 in a falling market still means that instrument fell less than most others.

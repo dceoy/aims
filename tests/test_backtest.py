@@ -107,6 +107,73 @@ def test_corr_key_is_order_independent(
     )
 
 
+# ── cost model ───────────────────────────────────────────────────────────────────
+
+
+def test_load_instrument_costs(
+    modules: tuple[ModuleType, ModuleType], tmp_path: Path
+) -> None:
+    _, backtest = modules
+    path = tmp_path / "costs.csv"
+    path.write_text(
+        "symbol,spread_bps,financing_rate_annual\nAAPL,5,0.03\n", encoding="utf-8"
+    )
+    costs = backtest.load_instrument_costs(path)
+    assert costs == {"AAPL": backtest.InstrumentCost(5.0, 0.03)}
+
+
+def test_round_trip_cost(modules: tuple[ModuleType, ModuleType]) -> None:
+    _, backtest = modules
+    cost = backtest.InstrumentCost(spread_bps=10.0, financing_rate_annual=0.1)
+    # 2 * 10bps + 0.1 * (10/365)
+    assert backtest._round_trip_cost(cost, 10) == pytest.approx(
+        0.002 + 0.1 * (10 / 365)
+    )
+
+
+# ── moving-block bootstrap ───────────────────────────────────────────────────────
+
+
+def test_moving_block_bootstrap_ci_requires_two_values(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    assert (
+        backtest._moving_block_bootstrap_ci([], block_size=5, iterations=100, seed=0)
+        is None
+    )
+    assert (
+        backtest._moving_block_bootstrap_ci([0.1], block_size=5, iterations=100, seed=0)
+        is None
+    )
+
+
+def test_moving_block_bootstrap_ci_deterministic_and_brackets_mean(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    values = [0.01, 0.02, -0.01, 0.015, 0.005, 0.0, 0.03, -0.005, 0.01, 0.02]
+    ci_a = backtest._moving_block_bootstrap_ci(
+        values, block_size=3, iterations=200, seed=42
+    )
+    ci_b = backtest._moving_block_bootstrap_ci(
+        values, block_size=3, iterations=200, seed=42
+    )
+    assert ci_a == ci_b
+    assert ci_a is not None
+    assert ci_a["low"] <= ci_a["high"]
+
+
+def test_moving_block_bootstrap_ci_block_size_capped_at_n(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    ci = backtest._moving_block_bootstrap_ci(
+        [0.1, 0.2], block_size=100, iterations=50, seed=0
+    )
+    assert ci is not None
+
+
 # ── run_backtest metrics ─────────────────────────────────────────────────────────
 
 
@@ -134,6 +201,94 @@ def test_run_backtest_metrics(modules: tuple[ModuleType, ModuleType]) -> None:
     }
     assert empty_diagnostics["feature_correlation"]["ret_1d"]["ret_1d"] == 1.0
     assert empty_diagnostics["feature_correlation"]["ret_1d"]["ret_5d"] is None
+
+
+# ── net-of-cost, benchmark, significance, regime breakdown ─────────────────────
+
+
+def test_run_backtest_benchmark_and_net_of_cost(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    data = {"UP": _bars(ma, "UP", 2.0), "DOWN": _bars(ma, "DOWN", -0.5)}
+    cost = backtest.InstrumentCost(spread_bps=10.0, financing_rate_annual=0.05)
+    result = backtest.run_backtest(
+        data,
+        horizons=(1,),
+        top_k=1,
+        min_history=60,
+        costs={"UP": cost, "DOWN": cost},
+    )
+    top_k = result["metrics"]["1d"]["top_k"]
+    benchmark = result["metrics"]["1d"]["benchmark"]
+    # UP is always selected (top_k=1); benchmark averages UP and DOWN.
+    assert benchmark["count"] == top_k["count"] * 2
+    assert top_k["average_return"] > benchmark["average_return"]
+    assert top_k["excess_return"] == pytest.approx(
+        top_k["average_return"] - benchmark["average_return"]
+    )
+    expected_cost = backtest._round_trip_cost(cost, 1)
+    assert top_k["net_average_return"] == pytest.approx(
+        top_k["average_return"] - expected_cost
+    )
+    assert top_k["net_excess_return"] == pytest.approx(
+        top_k["net_average_return"] - benchmark["average_return"]
+    )
+
+
+def test_run_backtest_uses_default_cost_when_unmapped(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    data = {"UP": _bars(ma, "UP", 2.0), "DOWN": _bars(ma, "DOWN", -0.5)}
+    result = backtest.run_backtest(data, horizons=(1,), top_k=1, min_history=60)
+    top_k = result["metrics"]["1d"]["top_k"]
+    default_cost_amount = backtest._round_trip_cost(backtest.DEFAULT_COST, 1)
+    assert top_k["net_average_return"] == pytest.approx(
+        top_k["average_return"] - default_cost_amount
+    )
+
+
+def test_run_backtest_significance_and_regime_breakdown(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    ma, backtest = modules
+    data = {"UP": _bars(ma, "UP", 2.0), "DOWN": _bars(ma, "DOWN", -0.5)}
+    result = backtest.run_backtest(
+        data,
+        horizons=(1, 5),
+        top_k=1,
+        min_history=60,
+        bootstrap_iterations=200,
+        bootstrap_seed=7,
+    )
+    significance = result["significance"]
+    assert significance["horizon"] == 1
+    assert significance["n"] == result["observations"]
+    assert significance["iterations"] == 200
+    assert significance["seed"] == 7
+    assert significance["confidence_interval"] is not None
+    assert (
+        significance["confidence_interval"]["low"]
+        <= significance["confidence_interval"]["high"]
+    )
+
+    regime_breakdown = result["regime_breakdown"]
+    assert regime_breakdown["horizon"] == 1
+    regimes = regime_breakdown["regimes"]
+    assert regimes
+    total_count = sum(r["count"] for r in regimes.values())
+    assert total_count == result["observations"]
+
+
+def test_run_backtest_significance_none_without_enough_observations(
+    modules: tuple[ModuleType, ModuleType],
+) -> None:
+    _, backtest = modules
+    empty = backtest.run_backtest({}, horizons=(1,))
+    assert empty["significance"]["confidence_interval"] is None
+    assert empty["significance"]["n"] == 0
+    assert empty["regime_breakdown"]["regimes"] == {}
 
 
 # ── feature_diagnostics ──────────────────────────────────────────────────────────
@@ -281,6 +436,48 @@ def test_main_writes_artifact(
         == 0
     )
     assert path.read_text() == content
+
+
+def test_main_with_cost_mapping_and_bootstrap_args(
+    modules: tuple[ModuleType, ModuleType], tmp_path: Path
+) -> None:
+    ma, backtest = modules
+    prices = tmp_path / "prices"
+    for symbol, slope in (("UP", 2.0), ("DOWN", -0.5)):
+        ma.save_ohlcv(_bars(ma, symbol, slope), prices)
+    cost_mapping = tmp_path / "costs.csv"
+    cost_mapping.write_text(
+        "symbol,spread_bps,financing_rate_annual\nUP,5,0.03\n", encoding="utf-8"
+    )
+    output = tmp_path / "backtests"
+    assert (
+        backtest.main([
+            "--symbols",
+            "UP,DOWN",
+            "--data-dir",
+            str(prices),
+            "--output-dir",
+            str(output),
+            "--horizons",
+            "1",
+            "--top-k",
+            "1",
+            "--cost-mapping",
+            str(cost_mapping),
+            "--bootstrap-iterations",
+            "50",
+            "--bootstrap-block-size",
+            "3",
+            "--bootstrap-seed",
+            "1",
+        ])
+        == 0
+    )
+    artifact = json.loads(next(output.glob("*.json")).read_text())
+    assert artifact["significance"]["iterations"] == 50
+    assert artifact["significance"]["block_size"] == 3
+    assert artifact["significance"]["seed"] == 1
+    assert validate_artifact(artifact) == []
 
 
 def test_main_rejects_no_observations(

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AIMS walk-forward backtest artifact",
   "description": "Schema reference for validate_backtest.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies.",
-  "artifact_version": "1.1.0",
+  "artifact_version": "1.2.0",
   "required_top_keys": [
     "schema_version",
     "scoring_version",
@@ -12,7 +12,9 @@
     "metrics",
     "turnover",
     "max_drawdown",
-    "feature_diagnostics"
+    "feature_diagnostics",
+    "significance",
+    "regime_breakdown"
   ],
   "required_config_keys": [
     "symbols",
@@ -23,8 +25,11 @@
     "min_history"
   ],
   "notes": {
-    "metrics": "Object keyed by '{horizon}d' (e.g. '1d', '20d'); each value has score_buckets (bucket number -> {count, average_return}) and top_k ({count, average_return, hit_rate}).",
+    "metrics": "Object keyed by '{horizon}d' (e.g. '1d', '20d'); each value has score_buckets (bucket number -> {count, average_return}), benchmark (equal-weight universe average over the same date/horizon: {count, average_return}), and top_k ({count, average_return, net_average_return, hit_rate, excess_return, net_excess_return}). net_* and excess_return/net_excess_return were added in 1.2.0 (#80); average_return, hit_rate, and score_buckets predate them and stay gross/benchmark-agnostic.",
     "feature_diagnostics": "Added in 1.1.0 (#79): informational-only diagnostics, never used to adjust scores. 'features' lists the InstrumentFeatures field names in declaration order. 'information_coefficient' is keyed by '{horizon}d' -> feature -> {mean, n}, the mean daily cross-sectional Spearman rank correlation between that feature's value and the forward return at that horizon, averaged over the n dates with at least two valid (feature, forward-return) pairs; mean is null when n is 0. 'feature_correlation' is a symmetric feature x feature matrix of mean daily cross-sectional Spearman correlation between feature pairs (1.0 on the diagonal, null when never jointly observed).",
-    "scoring_version": "SCORING_VERSION is unaffected by feature_diagnostics; adopting a scoring v2 feature set based on measured ICs is a separate, evidence-gated decision (see OPERATIONS.md)."
+    "significance": "Added in 1.2.0 (#80): a deterministic moving-block bootstrap confidence interval on the mean daily net excess return (top_k net average minus benchmark average), computed at the finest configured horizon. {horizon, mean_net_excess_return, confidence, confidence_interval: {low, high} | null, block_size, iterations, seed, n}. confidence_interval is null with fewer than two daily observations.",
+    "regime_breakdown": "Added in 1.2.0 (#80): per-date net top_k and benchmark averages at the significance horizon, grouped by that date's breadth-based market_regime_metadata label (Bullish/Bearish/Neutral/Unavailable). {horizon, regimes: {label -> {count, top_k_net_average_return, benchmark_average_return, excess_return}}}.",
+    "cost_model": "top_k.net_* deduct a per-observation round-trip cost (2 x spread_bps + financing_rate_annual x horizon/365) using an optional --cost-mapping CSV (symbol, spread_bps, financing_rate_annual); symbols absent from it use DEFAULT_SPREAD_BPS/DEFAULT_FINANCING_RATE_ANNUAL placeholders in src/aims/backtest.py.",
+    "scoring_version": "SCORING_VERSION is unaffected by feature_diagnostics, significance, or regime_breakdown; adopting a scoring v2 feature set based on measured ICs is a separate, evidence-gated decision (see OPERATIONS.md)."
   }
 }

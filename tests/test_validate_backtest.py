@@ -32,7 +32,7 @@ def vb() -> ModuleType:
 
 def _valid() -> dict[str, Any]:
     return {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "scoring_version": "1.0.0",
         "config": {
             "symbols": ["A", "B"],
@@ -50,7 +50,15 @@ def _valid() -> dict[str, Any]:
                     "1": {"count": 5, "average_return": 0.01},
                     "2": {"count": 5, "average_return": -0.01},
                 },
-                "top_k": {"count": 10, "average_return": 0.01, "hit_rate": 0.9},
+                "benchmark": {"count": 10, "average_return": 0.0},
+                "top_k": {
+                    "count": 10,
+                    "average_return": 0.01,
+                    "net_average_return": 0.008,
+                    "hit_rate": 0.9,
+                    "excess_return": 0.01,
+                    "net_excess_return": 0.008,
+                },
             }
         },
         "turnover": 0.0,
@@ -65,6 +73,33 @@ def _valid() -> dict[str, Any]:
                     feat_b: 1.0 if feat_a == feat_b else 0.2 for feat_b in _FEATURES
                 }
                 for feat_a in _FEATURES
+            },
+        },
+        "significance": {
+            "horizon": 1,
+            "mean_net_excess_return": 0.008,
+            "confidence": 0.95,
+            "confidence_interval": {"low": 0.001, "high": 0.015},
+            "block_size": 5,
+            "iterations": 1000,
+            "seed": 0,
+            "n": 10,
+        },
+        "regime_breakdown": {
+            "horizon": 1,
+            "regimes": {
+                "Bullish": {
+                    "count": 6,
+                    "top_k_net_average_return": 0.01,
+                    "benchmark_average_return": 0.005,
+                    "excess_return": 0.005,
+                },
+                "Bearish": {
+                    "count": 4,
+                    "top_k_net_average_return": -0.01,
+                    "benchmark_average_return": -0.015,
+                    "excess_return": 0.005,
+                },
             },
         },
     }
@@ -269,6 +304,140 @@ def test_validate_feature_correlation_shape(vb: ModuleType) -> None:
     artifact = _valid()
     artifact["feature_diagnostics"]["feature_correlation"]["ret_1d"]["ret_5d"] = None
     assert vb.validate_artifact(artifact) == []
+
+
+def test_validate_metrics_benchmark_shape(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["metrics"]["1d"]["benchmark"] = []
+    errors = vb.validate_artifact(artifact)
+    assert any("benchmark must be an object" in e for e in errors)
+
+    artifact = _valid()
+    artifact["metrics"]["1d"]["benchmark"]["count"] = 1.5
+    errors = vb.validate_artifact(artifact)
+    assert any("benchmark.count must be an integer" in e for e in errors)
+
+    artifact = _valid()
+    artifact["metrics"]["1d"]["benchmark"]["average_return"] = "bad"
+    errors = vb.validate_artifact(artifact)
+    assert any("benchmark.average_return must be a number or null" in e for e in errors)
+
+    artifact = _valid()
+    artifact["metrics"]["1d"]["benchmark"]["average_return"] = None
+    assert vb.validate_artifact(artifact) == []
+
+
+def test_validate_top_k_net_and_excess_fields(vb: ModuleType) -> None:
+    for field in ("net_average_return", "excess_return", "net_excess_return"):
+        artifact = _valid()
+        artifact["metrics"]["1d"]["top_k"][field] = "bad"
+        errors = vb.validate_artifact(artifact)
+        assert any(f"top_k.{field} must be a number or null" in e for e in errors)
+
+        artifact = _valid()
+        artifact["metrics"]["1d"]["top_k"][field] = None
+        assert vb.validate_artifact(artifact) == []
+
+
+def test_validate_significance_must_be_object(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["significance"] = []
+    errors = vb.validate_artifact(artifact)
+    assert any("significance must be an object" in e for e in errors)
+
+
+def test_validate_significance_integer_fields(vb: ModuleType) -> None:
+    for field in ("horizon", "iterations", "block_size", "seed", "n"):
+        artifact = _valid()
+        artifact["significance"][field] = 1.5
+        errors = vb.validate_artifact(artifact)
+        assert any(f"significance.{field} must be an integer" in e for e in errors)
+
+
+def test_validate_significance_mean_and_confidence(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["significance"]["mean_net_excess_return"] = "bad"
+    errors = vb.validate_artifact(artifact)
+    assert any(
+        "significance.mean_net_excess_return must be a number or null" in e
+        for e in errors
+    )
+
+    artifact = _valid()
+    artifact["significance"]["mean_net_excess_return"] = None
+    assert vb.validate_artifact(artifact) == []
+
+    artifact = _valid()
+    artifact["significance"]["confidence"] = "bad"
+    errors = vb.validate_artifact(artifact)
+    assert any("significance.confidence must be a number" in e for e in errors)
+
+
+def test_validate_significance_confidence_interval_shape(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["significance"]["confidence_interval"] = "bad"
+    errors = vb.validate_artifact(artifact)
+    assert any(
+        "significance.confidence_interval must be an object" in e for e in errors
+    )
+
+    artifact = _valid()
+    artifact["significance"]["confidence_interval"] = {"low": "bad", "high": 0.01}
+    errors = vb.validate_artifact(artifact)
+    assert any(
+        "significance.confidence_interval.low must be a number" in e for e in errors
+    )
+
+    artifact = _valid()
+    artifact["significance"]["confidence_interval"] = None
+    assert vb.validate_artifact(artifact) == []
+
+
+def test_validate_regime_breakdown_must_be_object(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["regime_breakdown"] = []
+    errors = vb.validate_artifact(artifact)
+    assert any("regime_breakdown must be an object" in e for e in errors)
+
+
+def test_validate_regime_breakdown_horizon(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["regime_breakdown"]["horizon"] = 1.5
+    errors = vb.validate_artifact(artifact)
+    assert any("regime_breakdown.horizon must be an integer" in e for e in errors)
+
+
+def test_validate_regime_breakdown_regimes_shape(vb: ModuleType) -> None:
+    artifact = _valid()
+    artifact["regime_breakdown"]["regimes"] = []
+    errors = vb.validate_artifact(artifact)
+    assert any("regime_breakdown.regimes must be an object" in e for e in errors)
+
+    artifact = _valid()
+    artifact["regime_breakdown"]["regimes"]["Bullish"] = []
+    errors = vb.validate_artifact(artifact)
+    assert any("regimes['Bullish'] must be an object" in e for e in errors)
+
+    artifact = _valid()
+    artifact["regime_breakdown"]["regimes"]["Bullish"]["count"] = 1.5
+    errors = vb.validate_artifact(artifact)
+    assert any("regimes['Bullish'].count must be an integer" in e for e in errors)
+
+    for field in (
+        "top_k_net_average_return",
+        "benchmark_average_return",
+        "excess_return",
+    ):
+        artifact = _valid()
+        artifact["regime_breakdown"]["regimes"]["Bullish"][field] = "bad"
+        errors = vb.validate_artifact(artifact)
+        assert any(
+            f"regimes['Bullish'].{field} must be a number or null" in e for e in errors
+        )
+
+        artifact = _valid()
+        artifact["regime_breakdown"]["regimes"]["Bullish"][field] = None
+        assert vb.validate_artifact(artifact) == []
 
 
 def test_main_valid_file(

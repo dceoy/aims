@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
+import random
 from collections import defaultdict
-from dataclasses import fields
+from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any, Final
 
@@ -14,13 +16,95 @@ from aims.market_analysis import (
     InstrumentFeatures,
     OhlcvBar,
     load_ohlcv,
+    market_regime_metadata,
     score_instruments,
 )
 
 DEFAULT_HORIZONS: Final[tuple[int, ...]] = (1, 5, 20, 60)
-BACKTEST_VERSION: Final[str] = "1.1.0"
+BACKTEST_VERSION: Final[str] = "1.2.0"
 
 _FEATURES: Final[tuple[str, ...]] = tuple(f.name for f in fields(InstrumentFeatures))
+
+# Conservative placeholders used for any symbol absent from a cost mapping;
+# real per-instrument costs should come from broker spread/financing data
+# once available (data/cfd_instruments.csv already records 金利調整 flags).
+DEFAULT_SPREAD_BPS: Final[float] = 10.0
+DEFAULT_FINANCING_RATE_ANNUAL: Final[float] = 0.05
+
+
+@dataclass(frozen=True)
+class InstrumentCost:
+    """Per-instrument trading cost inputs for net-of-cost backtest metrics."""
+
+    spread_bps: float
+    financing_rate_annual: float
+
+
+DEFAULT_COST: Final[InstrumentCost] = InstrumentCost(
+    DEFAULT_SPREAD_BPS, DEFAULT_FINANCING_RATE_ANNUAL
+)
+
+
+def load_instrument_costs(path: Path) -> dict[str, InstrumentCost]:
+    """Load optional per-symbol cost overrides from a small CSV table.
+
+    Columns: symbol, spread_bps, financing_rate_annual. Symbols absent from
+    the table fall back to DEFAULT_COST in run_backtest.
+    """
+    costs: dict[str, InstrumentCost] = {}
+    with path.open(encoding="utf-8", newline="") as fh:
+        for row in csv.DictReader(fh):
+            costs[row["symbol"]] = InstrumentCost(
+                spread_bps=float(row["spread_bps"]),
+                financing_rate_annual=float(row["financing_rate_annual"]),
+            )
+    return costs
+
+
+def _round_trip_cost(cost: InstrumentCost, horizon: int) -> float:
+    """Round-trip spread plus *horizon*-day holding financing, as a return fraction.
+
+    Each forward-return observation is treated as an independent entry and
+    exit (this backtest reports cross-sectional forward returns per date,
+    not a single compounding equity curve), so the cost applies once per
+    observation rather than accumulating with daily rebalance turnover.
+    """
+    return 2.0 * (cost.spread_bps / 10_000.0) + cost.financing_rate_annual * (
+        horizon / 365.0
+    )
+
+
+def _moving_block_bootstrap_ci(
+    values: list[float],
+    *,
+    block_size: int,
+    iterations: int,
+    seed: int,
+    confidence: float = 0.95,
+) -> dict[str, float] | None:
+    """Deterministic moving-block bootstrap confidence interval on the mean.
+
+    Resampling contiguous blocks (rather than i.i.d. points) preserves
+    short-range autocorrelation in the daily excess-return series.
+    """
+    n = len(values)
+    if n < 2:
+        return None
+    block_size = max(1, min(block_size, n))
+    n_blocks = -(-n // block_size)  # ceil division
+    rng = random.Random(seed)  # noqa: S311 - statistical resampling, not cryptographic
+    means: list[float] = []
+    for _ in range(iterations):
+        sample: list[float] = []
+        for _ in range(n_blocks):
+            start = rng.randrange(0, n - block_size + 1)
+            sample.extend(values[start : start + block_size])
+        means.append(sum(sample[:n]) / n)
+    means.sort()
+    tail = (1.0 - confidence) / 2.0
+    low_index = int(tail * iterations)
+    high_index = min(iterations - 1, int((1.0 - tail) * iterations))
+    return {"low": means[low_index], "high": means[high_index]}
 
 
 def _mean(values: list[float]) -> float | None:
@@ -82,6 +166,10 @@ def run_backtest(
     top_k: int = 3,
     buckets: int = 4,
     min_history: int = 60,
+    costs: dict[str, InstrumentCost] | None = None,
+    bootstrap_iterations: int = 1000,
+    bootstrap_block_size: int = 5,
+    bootstrap_seed: int = 0,
 ) -> dict[str, Any]:
     """Score each available date without look-ahead and aggregate forward returns."""
     if (
@@ -105,6 +193,7 @@ def run_backtest(
         lambda: defaultdict(list)
     )
     top_returns: dict[int, list[float]] = defaultdict(list)
+    top_net_returns: dict[int, list[float]] = defaultdict(list)
     top_hits: dict[int, list[bool]] = defaultdict(list)
     daily_top_returns: list[float] = []
     turnovers: list[float] = []
@@ -115,6 +204,14 @@ def run_backtest(
         lambda: defaultdict(list)
     )
     feature_corr: dict[tuple[str, str], list[float]] = defaultdict(list)
+
+    # Primary horizon for the significance test and regime breakdown: the
+    # finest-grained horizon gives the most daily observations to resample.
+    primary_horizon = min(horizons)
+    daily_net_excess: list[float] = []
+    regime_labels: list[str] = []
+    regime_top_net: dict[str, list[float]] = defaultdict(list)
+    regime_benchmark: dict[str, list[float]] = defaultdict(list)
 
     for date in dates:
         window = {
@@ -147,10 +244,13 @@ def run_backtest(
                     feature_corr[feat_a, feat_b].append(rho)
         selected = scores[:top_k]
         selected_symbols = {s.symbol for s in selected}
+        regime_label = market_regime_metadata(scores)["label"]
         date_observed = False
         top_k_observed = False
         for horizon in horizons:
             horizon_returns = []
+            horizon_net_returns = []
+            horizon_universe_returns: list[float] = []
             horizon_feature_pairs: dict[str, list[tuple[float, float]]] = defaultdict(
                 list
             )
@@ -163,14 +263,19 @@ def run_backtest(
                 close = data[score.symbol][index].close
                 forward = data[score.symbol][index + horizon].close / close - 1.0
                 bucket_returns[horizon][bucket].append(forward)
+                horizon_universe_returns.append(forward)
                 for feat in _FEATURES:
                     value = getattr(score.features, feat)
                     if value is not None:
                         horizon_feature_pairs[feat].append((value, forward))
                 if score in selected:
+                    cost = (costs or {}).get(score.symbol, DEFAULT_COST)
+                    net_forward = forward - _round_trip_cost(cost, horizon)
                     top_returns[horizon].append(forward)
+                    top_net_returns[horizon].append(net_forward)
                     top_hits[horizon].append(forward > 0)
                     horizon_returns.append(forward)
+                    horizon_net_returns.append(net_forward)
             for feat, pairs in horizon_feature_pairs.items():
                 if len(pairs) < 2:
                     continue
@@ -179,6 +284,19 @@ def run_backtest(
                     feature_ic[horizon][feat].append(rho)
             if horizon == 1 and horizon_returns:
                 daily_top_returns.append(sum(horizon_returns) / len(horizon_returns))
+            if (
+                horizon == primary_horizon
+                and horizon_net_returns
+                and horizon_universe_returns
+            ):
+                net_avg = sum(horizon_net_returns) / len(horizon_net_returns)
+                benchmark_avg = sum(horizon_universe_returns) / len(
+                    horizon_universe_returns
+                )
+                daily_net_excess.append(net_avg - benchmark_avg)
+                regime_labels.append(regime_label)
+                regime_top_net[regime_label].append(net_avg)
+                regime_benchmark[regime_label].append(benchmark_avg)
             top_k_observed = top_k_observed or bool(horizon_returns)
         if date_observed:
             observations += 1
@@ -194,6 +312,12 @@ def run_backtest(
 
     metrics = {}
     for horizon in horizons:
+        universe_returns = [
+            value for values in bucket_returns[horizon].values() for value in values
+        ]
+        benchmark_avg = _mean(universe_returns)
+        top_k_avg = _mean(top_returns[horizon])
+        top_k_net_avg = _mean(top_net_returns[horizon])
         metrics[f"{horizon}d"] = {
             "score_buckets": {
                 str(bucket): {
@@ -202,10 +326,25 @@ def run_backtest(
                 }
                 for bucket, values in sorted(bucket_returns[horizon].items())
             },
+            "benchmark": {
+                "count": len(universe_returns),
+                "average_return": benchmark_avg,
+            },
             "top_k": {
                 "count": len(top_returns[horizon]),
-                "average_return": _mean(top_returns[horizon]),
+                "average_return": top_k_avg,
+                "net_average_return": top_k_net_avg,
                 "hit_rate": _mean([float(hit) for hit in top_hits[horizon]]),
+                "excess_return": (
+                    None
+                    if top_k_avg is None or benchmark_avg is None
+                    else top_k_avg - benchmark_avg
+                ),
+                "net_excess_return": (
+                    None
+                    if top_k_net_avg is None or benchmark_avg is None
+                    else top_k_net_avg - benchmark_avg
+                ),
             },
         }
     feature_diagnostics = {
@@ -232,6 +371,44 @@ def run_backtest(
             for feat_a in _FEATURES
         },
     }
+    ci = _moving_block_bootstrap_ci(
+        daily_net_excess,
+        block_size=bootstrap_block_size,
+        iterations=bootstrap_iterations,
+        seed=bootstrap_seed,
+    )
+    significance = {
+        "horizon": primary_horizon,
+        "mean_net_excess_return": _mean(daily_net_excess),
+        "confidence": 0.95,
+        "confidence_interval": ci,
+        "block_size": bootstrap_block_size,
+        "iterations": bootstrap_iterations,
+        "seed": bootstrap_seed,
+        "n": len(daily_net_excess),
+    }
+
+    def _regime_stats(label: str) -> dict[str, Any]:
+        net_avg = _mean(regime_top_net[label])
+        benchmark_avg = _mean(regime_benchmark[label])
+        excess = (
+            None
+            if net_avg is None or benchmark_avg is None
+            else net_avg - benchmark_avg
+        )
+        return {
+            "count": len(regime_top_net[label]),
+            "top_k_net_average_return": net_avg,
+            "benchmark_average_return": benchmark_avg,
+            "excess_return": excess,
+        }
+
+    regime_breakdown = {
+        "horizon": primary_horizon,
+        "regimes": {
+            label: _regime_stats(label) for label in sorted(set(regime_labels))
+        },
+    }
     return {
         "observations": observations,
         "date_range": {
@@ -242,6 +419,8 @@ def run_backtest(
         "turnover": _mean(turnovers),
         "max_drawdown": _drawdown(daily_top_returns),
         "feature_diagnostics": feature_diagnostics,
+        "significance": significance,
+        "regime_breakdown": regime_breakdown,
     }
 
 
@@ -266,6 +445,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--top-k", type=int, default=3)
     parser.add_argument("--buckets", type=int, default=4)
     parser.add_argument("--min-history", type=int, default=60)
+    parser.add_argument(
+        "--cost-mapping",
+        type=Path,
+        default=None,
+        help=(
+            "Optional CSV (symbol, spread_bps, financing_rate_annual) of"
+            " per-instrument cost overrides; unlisted symbols use"
+            f" conservative defaults ({DEFAULT_SPREAD_BPS} bps,"
+            f" {DEFAULT_FINANCING_RATE_ANNUAL:.0%} annual financing)"
+        ),
+    )
+    parser.add_argument("--bootstrap-iterations", type=int, default=1000)
+    parser.add_argument("--bootstrap-block-size", type=int, default=5)
+    parser.add_argument("--bootstrap-seed", type=int, default=0)
     args = parser.parse_args(argv)
     symbols = tuple(item.strip() for item in args.symbols.split(",") if item.strip())
     if not symbols:
@@ -275,12 +468,17 @@ def main(argv: list[str] | None = None) -> int:
             symbol: load_ohlcv(symbol, args.interval, args.data_dir)
             for symbol in symbols
         }
+        costs = load_instrument_costs(args.cost_mapping) if args.cost_mapping else None
         result = run_backtest(
             data,
             horizons=args.horizons,
             top_k=args.top_k,
             buckets=args.buckets,
             min_history=args.min_history,
+            costs=costs,
+            bootstrap_iterations=args.bootstrap_iterations,
+            bootstrap_block_size=args.bootstrap_block_size,
+            bootstrap_seed=args.bootstrap_seed,
         )
     except (FileNotFoundError, ValueError) as exc:
         parser.error(str(exc))

@@ -54,6 +54,14 @@ Pass `--provider <name>` to `init-fetch-status`, `fetch`, or `generate`. The def
 
 **Adding a future provider:** Subclass `MarketDataProvider` in `src/aims/market_analysis.py`, register it in `_PROVIDER_REGISTRY` with a `ProviderMetadata` entry listing its supported intervals and any known limitations, and mirror the entry in `src/aims/mappings.py`'s `_KNOWN_PROVIDERS` and `_PROVIDER_INTERVALS`. Update the `provider` input choices in `.github/workflows/daily-market-analysis.yml`. Add the new provider to the test suite to maintain 100% coverage.
 
+### Provider failover
+
+If the primary provider's fetch fails the coverage gate (`generate` returns non-zero), the daily workflow retries the full fetch-and-generate cycle with the other registered provider (`FALLBACK_PROVIDER`: `stooq` when the primary is `yfinance`, and vice versa) before failing the run. The fallback fetch writes into a separate `data/prices-fallback/` directory so it never mixes with the primary provider's local cache. If both providers fail the coverage gate, the job fails explicitly and the failure Slack notification fires. One provider's data always fills the whole artifact — the two are never mixed for a single run.
+
+### Cross-provider price consistency
+
+Every Monday, the daily workflow additionally fetches the secondary provider's data (into `data/prices-secondary/`, not committed) and runs `market_analysis.py consistency`, which compares closes for canonical instruments available from both providers over their last 5 common bars. Divergence above 0.5% is recorded as a warning; divergence above 2% is escalated. The report feeds into `generate --price-consistency`, which stores it at `metadata.price_consistency` and adds a `provider_divergence` risk gate (marking the instrument unreliable) to any escalated instrument. Escalated instruments are also called out in the Slack success notification. This check is weekly rather than daily to avoid doubling fetch volume on every run.
+
 ### CFD instrument master
 
 The canonical list of CFD products available at supported brokers is maintained in `data/cfd_instruments.csv`. It is refreshed weekly by the `update-cfd-instruments` workflow. The daily analysis workflow validates this file before running but does not modify it.

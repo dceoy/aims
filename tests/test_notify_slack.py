@@ -166,6 +166,45 @@ def test_build_success_payload_coverage_summary(
     assert "3/3" in fields_text
 
 
+def test_build_success_payload_price_consistency_escalated(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    artifact = {
+        **fixture_artifact,
+        "metadata": {
+            **fixture_artifact["metadata"],
+            "price_consistency": {
+                "results": [
+                    {"canonical_id": "spx", "escalated": True},
+                    {"canonical_id": "dji", "escalated": False},
+                ]
+            },
+        },
+    }
+    payload = ns.build_success_payload(artifact, "https://example.com/")
+    fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
+    assert "Provider divergence:" in fields_text
+    assert "spx" in fields_text
+    assert "dji" not in fields_text
+
+
+def test_build_success_payload_price_consistency_no_escalation(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    artifact = {
+        **fixture_artifact,
+        "metadata": {
+            **fixture_artifact["metadata"],
+            "price_consistency": {
+                "results": [{"canonical_id": "spx", "escalated": False}]
+            },
+        },
+    }
+    payload = ns.build_success_payload(artifact, "https://example.com/")
+    fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
+    assert "Provider divergence:" not in fields_text
+
+
 def test_build_success_payload_no_reliable(ns: ModuleType) -> None:
     artifact: dict[str, Any] = {
         "version": "1.0.0",

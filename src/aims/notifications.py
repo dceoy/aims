@@ -222,6 +222,19 @@ def build_success_payload(
                 ),
             })
 
+    consistency_raw = meta.get("price_consistency")
+    if isinstance(consistency_raw, dict):
+        escalated = sorted(
+            str(r.get("canonical_id"))
+            for r in consistency_raw.get("results", [])
+            if isinstance(r, dict) and r.get("escalated")
+        )
+        if escalated:
+            fields.append({
+                "type": "mrkdwn",
+                "text": f"*⚠️ Provider divergence:* {', '.join(escalated)}",
+            })
+
     if pr_url is not None:
         text = f"AIMS Market Analysis {date_str}: {regime} market. Analysis PR created."
         button_text = "View PR"

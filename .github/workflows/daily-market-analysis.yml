@@ -71,6 +71,10 @@ jobs:
       MIN_SUCCESS_RATIO: ${{ inputs.min_success_ratio || '0.8' }}
       MAX_MISSING_SYMBOLS: ${{ inputs.max_missing_symbols || '4' }}
       PROVIDER: ${{ inputs.provider || 'yfinance' }}
+      # Retried when the primary provider's coverage gate fails (#81); the
+      # other of the two registered providers with a daily symbol universe.
+      FALLBACK_PROVIDER: >-
+        ${{ (inputs.provider || 'yfinance') == 'stooq' && 'yfinance' || 'stooq' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
       # Qualitative steps run only when the optional ANTHROPIC_API_KEY secret
       # exists (mirroring SLACK_NOTIFICATIONS_ENABLED); without it the run is
@@ -120,6 +124,10 @@ jobs:
             STEM="${DATE}-${INTERVAL}"
           fi
           echo "stem=$STEM" >> "$GITHUB_OUTPUT"
+          # Cross-provider consistency check runs weekly (Monday) rather than
+          # daily to avoid doubling fetch volume every run.
+          echo "is_monday=$([ "$(date -u -d "$DATE" +%u)" = 1 ] && echo true || echo false)" \
+            >> "$GITHUB_OUTPUT"
       - name: Load symbols
         id: symbols
         env:
@@ -166,8 +174,107 @@ jobs:
               --fetch-status "${FETCH_STATUS}" \
               || echo "WARNING: fetch failed for $SYM; symbol will be marked missing in artifact"
           done
+      - name: Fetch market data (secondary provider, weekly consistency check)
+        if: steps.symbols.outputs.symbols != '' && steps.date.outputs.is_monday == 'true'
+        env:
+          DATE: ${{ steps.date.outputs.date }}
+        run: |
+          START=$(uv run python -c "
+          from datetime import datetime, timedelta
+          from aims.policy import fetch_window_days
+          d = datetime.strptime('${DATE}', '%Y-%m-%d')
+          window = fetch_window_days('${INTERVAL}')
+          print((d - timedelta(days=window)).strftime('%Y-%m-%d'))
+          ")
+          SECONDARY_SYMBOLS=$(uv run python -c "
+          from pathlib import Path
+          from aims.market_analysis import load_instrument_mappings, symbols_from_mappings
+          rows = load_instrument_mappings(Path('data/mappings/canonical_instrument_mappings.csv'))
+          print(','.join(symbols_from_mappings(rows, '${FALLBACK_PROVIDER}', '${INTERVAL}')))
+          ")
+          IFS=',' read -ra SYMS <<< "${SECONDARY_SYMBOLS}"
+          for SYM in "${SYMS[@]}"; do
+            uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+              fetch --symbol "$SYM" --start "$START" --end "$DATE" \
+              --interval "$INTERVAL" \
+              --provider "$FALLBACK_PROVIDER" \
+              --output "data/prices-secondary" \
+              || echo "WARNING: secondary-provider fetch failed for $SYM; excluded from consistency check"
+          done
+      - name: Cross-provider consistency check
+        if: steps.symbols.outputs.symbols != '' && steps.date.outputs.is_monday == 'true'
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+            consistency \
+            --mapping data/mappings/canonical_instrument_mappings.csv \
+            --interval "$INTERVAL" \
+            --primary-provider "$PROVIDER" \
+            --secondary-provider "$FALLBACK_PROVIDER" \
+            --primary-data-dir data/prices \
+            --secondary-data-dir data/prices-secondary \
+            --output "data/prices/consistency_${INTERVAL}.json"
       - name: Generate analysis artifact
+        id: generate_primary
         if: steps.symbols.outputs.symbols != ''
+        continue-on-error: true
+        env:
+          DATE: ${{ steps.date.outputs.date }}
+        run: |
+          ARGS=(
+            --mapping data/mappings/canonical_instrument_mappings.csv
+            --interval "$INTERVAL"
+            --analysis-date "${DATE}"
+            --provider "$PROVIDER"
+            --fetch-status "data/prices/fetch_status_${INTERVAL}.json"
+            --min-success-ratio "${MIN_SUCCESS_RATIO}"
+            --max-missing-symbols "${MAX_MISSING_SYMBOLS}"
+            --output data/analysis/
+          )
+          if [ -f "data/prices/consistency_${INTERVAL}.json" ]; then
+            ARGS+=(--price-consistency "data/prices/consistency_${INTERVAL}.json")
+          fi
+          uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+            generate "${ARGS[@]}"
+      - name: Fetch market data (fallback provider)
+        if: steps.symbols.outputs.symbols != '' && steps.generate_primary.outcome == 'failure'
+        env:
+          DATE: ${{ steps.date.outputs.date }}
+        run: |
+          START=$(uv run python -c "
+          from datetime import datetime, timedelta
+          from aims.policy import fetch_window_days
+          d = datetime.strptime('${DATE}', '%Y-%m-%d')
+          window = fetch_window_days('${INTERVAL}')
+          print((d - timedelta(days=window)).strftime('%Y-%m-%d'))
+          ")
+          FALLBACK_SYMBOLS=$(uv run python -c "
+          from pathlib import Path
+          from aims.market_analysis import load_instrument_mappings, symbols_from_mappings
+          rows = load_instrument_mappings(Path('data/mappings/canonical_instrument_mappings.csv'))
+          print(','.join(symbols_from_mappings(rows, '${FALLBACK_PROVIDER}', '${INTERVAL}')))
+          ")
+          FETCH_STATUS="data/prices-fallback/fetch_status_${INTERVAL}.json"
+          uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+            init-fetch-status \
+            --symbols "${FALLBACK_SYMBOLS}" \
+            --interval "$INTERVAL" \
+            --analysis-date "${DATE}" \
+            --provider "$FALLBACK_PROVIDER" \
+            --output "${FETCH_STATUS}"
+          IFS=',' read -ra SYMS <<< "${FALLBACK_SYMBOLS}"
+          for SYM in "${SYMS[@]}"; do
+            uv run python .agents/skills/market-analysis/scripts/market_analysis.py \
+              fetch --symbol "$SYM" --start "$START" --end "$DATE" \
+              --interval "$INTERVAL" \
+              --provider "$FALLBACK_PROVIDER" \
+              --fetch-status "${FETCH_STATUS}" \
+              --output "data/prices-fallback" \
+              || echo "WARNING: fallback fetch failed for $SYM; symbol will be marked missing"
+          done
+      - name: Generate analysis artifact (fallback provider)
+        id: generate_fallback
+        if: steps.symbols.outputs.symbols != '' && steps.generate_primary.outcome == 'failure'
+        continue-on-error: true
         env:
           DATE: ${{ steps.date.outputs.date }}
         run: |
@@ -176,11 +283,21 @@ jobs:
             --mapping data/mappings/canonical_instrument_mappings.csv \
             --interval "$INTERVAL" \
             --analysis-date "${DATE}" \
-            --provider "$PROVIDER" \
-            --fetch-status "data/prices/fetch_status_${INTERVAL}.json" \
+            --provider "$FALLBACK_PROVIDER" \
+            --data-dir data/prices-fallback \
+            --fetch-status "data/prices-fallback/fetch_status_${INTERVAL}.json" \
             --min-success-ratio "${MIN_SUCCESS_RATIO}" \
             --max-missing-symbols "${MAX_MISSING_SYMBOLS}" \
             --output data/analysis/
+      - name: Fail if both providers failed to generate a valid artifact
+        if: >
+          steps.symbols.outputs.symbols != ''
+          && steps.generate_primary.outcome == 'failure'
+          && steps.generate_fallback.outcome == 'failure'
+        run: |
+          echo "::error::Both primary ($PROVIDER) and fallback" \
+            "($FALLBACK_PROVIDER) providers failed the coverage gate."
+          exit 1
       - name: Validate artifact
         if: steps.symbols.outputs.symbols != ''
         env:

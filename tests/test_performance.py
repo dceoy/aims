@@ -312,7 +312,11 @@ def test_render_page_is_stable_across_json_round_trip() -> None:
 
 
 def test_committed_evaluation_page_is_regenerated_from_artifact() -> None:
-    committed = json.loads((REPO_ROOT / "data/performance/2026-07-04.json").read_text())
+    # Daily automation rewrites the page from the newest daily artifact, so
+    # derive it instead of pinning a date (weekly/monthly stems like
+    # 2026-07-04-w.json do not match the daily glob).
+    newest = max((REPO_ROOT / "data/performance").glob("????-??-??.json"))
+    committed = json.loads(newest.read_text())
     expected = (REPO_ROOT / "content/evaluation/_index.md").read_text()
     assert performance.render_page(committed) == expected
 
@@ -339,6 +343,27 @@ def test_build_artifact_merges_and_sorts_extra_warnings() -> None:
     assert "zzz-extra" in artifact["warnings"]
     assert "aaa-extra" in artifact["warnings"]
     assert artifact["warnings"] == sorted(artifact["warnings"])
+
+
+def test_build_artifact_deduplicates_repeated_conflict_warnings() -> None:
+    # Two later artifacts each revising the same bar emit the same conflict
+    # warning; the artifact must carry it once.
+    analyses = [
+        _analysis("2024-01-01", {"AAA": ("2024-01-01", 0.01, None)}),
+        _analysis("2024-01-02", {"AAA": ("2024-01-01", 0.05, None)}),
+        _analysis("2024-01-03", {"AAA": ("2024-01-01", 0.09, None)}),
+    ]
+    qualitative = [_qualitative("2024-01-01", [("AAA", "supportive", "high", [])])]
+    _, warnings = performance.build_bar_series(analyses)
+    assert len(warnings) == 2
+    artifact = performance.build_artifact(
+        qualitative, analyses, as_of="2024-01-03", interval="d"
+    )
+    conflict = (
+        "AAA: conflicting ret_1d for bar 2024-01-01 across analysis"
+        " artifacts; keeping the latest value"
+    )
+    assert artifact["warnings"].count(conflict) == 1
 
 
 def test_build_artifact_default_extra_warnings_is_empty() -> None:

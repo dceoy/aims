@@ -11,7 +11,9 @@ import pytest
 from aims.validate_performance import main, validate_artifact
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-COMMITTED = REPO_ROOT / "data/performance/2026-07-04.json"
+# Newest committed daily artifact; daily automation adds one per run, so the
+# validator must accept whatever is current rather than a pinned date.
+COMMITTED = max((REPO_ROOT / "data/performance").glob("????-??-??.json"))
 
 
 @pytest.fixture

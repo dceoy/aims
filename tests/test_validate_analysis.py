@@ -30,8 +30,16 @@ VALID_INSTRUMENT: dict[str, Any] = {
     "features": {"ret_1d": 0.01},
 }
 
+VALID_REGIME: dict[str, Any] = {
+    "label": "Bullish",
+    "positive_count": 1,
+    "reliable_count": 1,
+    "breadth": 1.0,
+    "thresholds": {"bullish": 0.65, "bearish": 0.35},
+}
+
 VALID_ARTIFACT: dict[str, Any] = {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "metadata": {
         "generated_at": "2024-01-01T00:00:00+00:00",
         "git_commit": "abc1234",
@@ -56,6 +64,7 @@ VALID_ARTIFACT: dict[str, Any] = {
             "passed": True,
             "violations": [],
         },
+        "market_regime": VALID_REGIME,
     },
     "instruments": [VALID_INSTRUMENT],
 }
@@ -310,6 +319,46 @@ def test_validate_coverage_null_rejected(va: ModuleType) -> None:
     }
     errors = va.validate_artifact(data)
     assert any("metadata.coverage must not be null" in e for e in errors)
+
+
+def test_validate_market_regime_null_rejected(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "market_regime": None},
+    }
+    errors = va.validate_artifact(data)
+    assert any("metadata.market_regime must not be null" in e for e in errors)
+
+
+def test_validate_market_regime_must_be_object(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "market_regime": []},
+    }
+    errors = va.validate_artifact(data)
+    assert any("metadata.market_regime must be a JSON object" in e for e in errors)
+
+
+def test_validate_market_regime_missing_key(va: ModuleType) -> None:
+    bad_regime = {k: v for k, v in VALID_REGIME.items() if k != "breadth"}
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {**VALID_ARTIFACT["metadata"], "market_regime": bad_regime},
+    }
+    errors = va.validate_artifact(data)
+    assert any("market_regime missing required key: 'breadth'" in e for e in errors)
+
+
+def test_validate_market_regime_unknown_label(va: ModuleType) -> None:
+    data = {
+        **VALID_ARTIFACT,
+        "metadata": {
+            **VALID_ARTIFACT["metadata"],
+            "market_regime": {**VALID_REGIME, "label": "Sideways"},
+        },
+    }
+    errors = va.validate_artifact(data)
+    assert any("market_regime.label" in e for e in errors)
 
 
 def test_validate_data_freshness_valid(va: ModuleType) -> None:

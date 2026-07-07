@@ -94,6 +94,10 @@ def market_regime(reliable: list[dict[str, Any]]) -> str:
     median stays near 50 regardless of market direction. Breadth — the share
     of reliable instruments trading above their 20-day moving average — is an
     absolute measure that distinguishes broad rallies from broad declines.
+
+    This recomputes the label from report-shaped instrument dicts; artifacts
+    generated after #77 carry the authoritative label in
+    ``metadata.market_regime`` instead — see :func:`regime_from_artifact`.
     """
     above, valid = _regime_breadth(reliable)
     if not valid:
@@ -104,6 +108,39 @@ def market_regime(reliable: list[dict[str, Any]]) -> str:
     if breadth <= _BEARISH_BREADTH:
         return "Bearish"
     return "Neutral"
+
+
+_REGIME_LABELS: Final[frozenset[str]] = frozenset({
+    "Bullish",
+    "Bearish",
+    "Neutral",
+    "Unavailable",
+})
+
+
+def regime_from_artifact(
+    artifact: dict[str, Any], reliable: list[dict[str, Any]]
+) -> tuple[str, int, int]:
+    """Return (label, above, valid), preferring the artifact's stored regime.
+
+    Artifacts generated before #77 (schema < 1.1.0) lack
+    ``metadata.market_regime``; fall back to recomputing it from breadth for
+    those so older committed artifacts keep rendering.
+    """
+    stored = artifact.get("metadata", {}).get("market_regime")
+    if (
+        isinstance(stored, dict)
+        and stored.get("label") in _REGIME_LABELS
+        and isinstance(stored.get("positive_count"), int)
+        and isinstance(stored.get("reliable_count"), int)
+    ):
+        return (
+            str(stored["label"]),
+            int(stored["positive_count"]),
+            int(stored["reliable_count"]),
+        )
+    above, valid = _regime_breadth(reliable)
+    return market_regime(reliable), above, valid
 
 
 def _build_front_matter(
@@ -124,7 +161,7 @@ def _build_front_matter(
 
     instruments = artifact.get("instruments", [])
     reliable = [i for i in instruments if i.get("is_reliable")]
-    regime = market_regime(reliable)
+    regime, _, _ = regime_from_artifact(artifact, reliable)
     n_reliable = len(reliable)
 
     all_symbols = sorted(str(i.get("symbol", "")) for i in instruments)
@@ -734,8 +771,7 @@ def generate_report(
     instruments = artifact.get("instruments", [])
     reliable = [i for i in instruments if i.get("is_reliable")]
     unreliable = [i for i in instruments if not i.get("is_reliable")]
-    regime = market_regime(reliable)
-    above, valid = _regime_breadth(reliable)
+    regime, above, valid = regime_from_artifact(artifact, reliable)
     total = len(instruments)
 
     # A qualitative artifact whose market narrative was withheld by the #93

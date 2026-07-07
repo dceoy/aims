@@ -504,6 +504,43 @@ def test_market_regime_zero_ma20_dist_not_above(gr: ModuleType) -> None:
     assert gr.market_regime([_reliable_inst(0.0)]) == "Bearish"
 
 
+# ── regime_from_artifact tests ──────────────────────────────────────────────────
+
+
+def test_regime_from_artifact_prefers_stored_metadata(gr: ModuleType) -> None:
+    artifact = {
+        "metadata": {
+            "market_regime": {
+                "label": "Bearish",
+                "positive_count": 1,
+                "reliable_count": 10,
+                "breadth": 0.1,
+                "thresholds": {"bullish": 0.65, "bearish": 0.35},
+            }
+        }
+    }
+    # Reliable instruments here would recompute as Bullish; the stored label
+    # must win so reports and notifications stay authoritative and auditable.
+    reliable = [_reliable_inst(0.05), _reliable_inst(0.05)]
+    assert gr.regime_from_artifact(artifact, reliable) == ("Bearish", 1, 10)
+
+
+def test_regime_from_artifact_falls_back_when_metadata_missing(
+    gr: ModuleType,
+) -> None:
+    # Artifacts generated before #77 lack metadata.market_regime.
+    reliable = [_reliable_inst(0.05)]
+    assert gr.regime_from_artifact({"metadata": {}}, reliable) == ("Bullish", 1, 1)
+
+
+def test_regime_from_artifact_falls_back_when_metadata_malformed(
+    gr: ModuleType,
+) -> None:
+    artifact = {"metadata": {"market_regime": {"label": "Bullish"}}}
+    reliable = [_reliable_inst(-0.05)]
+    assert gr.regime_from_artifact(artifact, reliable) == ("Bearish", 0, 1)
+
+
 # ── _format_pct tests ───────────────────────────────────────────────────────────
 
 

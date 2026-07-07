@@ -63,7 +63,10 @@ _FETCH_STATUS_FAILED: Final[str] = "failed"
 _FETCH_STATUS_PENDING: Final[str] = "pending"
 
 SCORING_VERSION: Final[str] = "1.0.0"
-ARTIFACT_VERSION: Final[str] = "1.0.0"
+ARTIFACT_VERSION: Final[str] = "1.1.0"
+
+_BULLISH_BREADTH: Final[float] = 0.65
+_BEARISH_BREADTH: Final[float] = 0.35
 
 RISK_GATE_STALE: Final[str] = "stale_data"
 RISK_GATE_HIGH_VOL: Final[str] = "high_volatility"
@@ -1037,6 +1040,37 @@ def _features_to_dict(feats: InstrumentFeatures) -> dict[str, float | None]:
     }
 
 
+def market_regime_metadata(scores: list[InstrumentScore]) -> dict[str, Any]:
+    """Label the market regime from MA20 breadth of reliable instruments.
+
+    Percentile-based composite scores are relative by construction, so their
+    median stays near 50 regardless of market direction. Breadth — the share
+    of reliable instruments trading above their 20-day moving average — is an
+    absolute measure that distinguishes broad rallies from broad declines.
+    Computed once at artifact generation so reports and notifications read a
+    single authoritative, auditable value instead of recomputing it.
+    """
+    reliable = [s for s in scores if s.is_reliable]
+    valid = [s for s in reliable if s.features.ma20_dist is not None]
+    positive = sum(1 for s in valid if (s.features.ma20_dist or 0) > 0)
+    breadth = positive / len(valid) if valid else None
+    if breadth is None:
+        label = "Unavailable"
+    elif breadth >= _BULLISH_BREADTH:
+        label = "Bullish"
+    elif breadth <= _BEARISH_BREADTH:
+        label = "Bearish"
+    else:
+        label = "Neutral"
+    return {
+        "label": label,
+        "positive_count": positive,
+        "reliable_count": len(valid),
+        "breadth": breadth,
+        "thresholds": {"bullish": _BULLISH_BREADTH, "bearish": _BEARISH_BREADTH},
+    }
+
+
 def generate_artifact(
     scores: list[InstrumentScore],
     data: dict[str, list[OhlcvBar]],
@@ -1115,6 +1149,7 @@ def generate_artifact(
         "data_freshness": freshness,
         "scoring_version": SCORING_VERSION,
         "config": config,
+        "market_regime": market_regime_metadata(scores),
     }
     if coverage is not None:
         artifact_metadata["coverage"] = coverage

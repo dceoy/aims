@@ -33,7 +33,7 @@ from aims.calendars import (
     load_calendar_events,
     upcoming_events,
 )
-from aims.reports import market_regime
+from aims.reports import regime_from_artifact
 
 _TIMEOUT: Final[int] = 15
 _MAX_EVENT_LINES: Final[int] = 3
@@ -131,7 +131,7 @@ def build_success_payload(
 
     instruments = artifact.get("instruments", [])
     reliable = [i for i in instruments if i.get("is_reliable")]
-    regime = market_regime(reliable)
+    regime, _, _ = regime_from_artifact(artifact, reliable)
 
     top3 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:3]
     signals = ", ".join(

@@ -807,7 +807,7 @@ def test_generate_artifact_structure(ma: ModuleType, mocker: MockerFixture) -> N
     ref = bars[-1].timestamp + timedelta(days=1)
     scores = ma.score_instruments({"A": bars}, reference_time=ref)
     artifact = ma.generate_artifact(scores, {"A": bars}, {"stale_days": 5})
-    assert artifact["version"] == "1.0.0"
+    assert artifact["version"] == "1.1.0"
     assert "metadata" in artifact
     assert "instruments" in artifact
     meta = artifact["metadata"]
@@ -855,6 +855,87 @@ def test_risk_gate_missing_data_constant(ma: ModuleType) -> None:
     assert ma.RISK_GATE_MISSING_DATA == "missing_data"
 
 
+def _score(
+    ma: ModuleType, symbol: str, *, ma20_dist: float | None, is_reliable: bool = True
+) -> object:
+    feats = ma.InstrumentFeatures(
+        ret_1d=None,
+        ret_5d=None,
+        ret_20d=None,
+        ret_60d=None,
+        ma20_dist=ma20_dist,
+        ma50_dist=None,
+        vol_20d=None,
+        mdd_60d=None,
+        rsi_14=None,
+        zscore_20d=None,
+    )
+    return ma.InstrumentScore(
+        symbol=symbol,
+        rank=1,
+        score=50.0,
+        features=feats,
+        risk_gates=[] if is_reliable else ["stale_data"],
+        is_reliable=is_reliable,
+        explanation="x",
+    )
+
+
+def test_market_regime_metadata_bullish(ma: ModuleType) -> None:
+    scores = [_score(ma, "A", ma20_dist=0.05), _score(ma, "B", ma20_dist=0.01)]
+    regime = ma.market_regime_metadata(scores)
+    assert regime == {
+        "label": "Bullish",
+        "positive_count": 2,
+        "reliable_count": 2,
+        "breadth": 1.0,
+        "thresholds": {"bullish": 0.65, "bearish": 0.35},
+    }
+
+
+def test_market_regime_metadata_bearish(ma: ModuleType) -> None:
+    scores = [_score(ma, "A", ma20_dist=-0.05), _score(ma, "B", ma20_dist=-0.01)]
+    regime = ma.market_regime_metadata(scores)
+    assert regime["label"] == "Bearish"
+    assert regime["breadth"] == 0.0
+
+
+def test_market_regime_metadata_neutral(ma: ModuleType) -> None:
+    scores = [_score(ma, "A", ma20_dist=0.05), _score(ma, "B", ma20_dist=-0.01)]
+    regime = ma.market_regime_metadata(scores)
+    assert regime["label"] == "Neutral"
+    assert regime["breadth"] == 0.5
+
+
+def test_market_regime_metadata_unavailable_without_ma20_data(ma: ModuleType) -> None:
+    scores = [_score(ma, "A", ma20_dist=None)]
+    regime = ma.market_regime_metadata(scores)
+    assert regime["label"] == "Unavailable"
+    assert regime["breadth"] is None
+    assert regime["reliable_count"] == 0
+
+
+def test_market_regime_metadata_ignores_unreliable_instruments(
+    ma: ModuleType,
+) -> None:
+    scores = [_score(ma, "A", ma20_dist=-0.05, is_reliable=False)]
+    regime = ma.market_regime_metadata(scores)
+    assert regime["label"] == "Unavailable"
+
+
+def test_generate_artifact_includes_market_regime(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    artifact = ma.generate_artifact(scores, {"A": bars}, {})
+    regime = artifact["metadata"]["market_regime"]
+    assert regime["label"] in {"Bullish", "Bearish", "Neutral", "Unavailable"}
+    assert "thresholds" in regime
+
+
 def test_generate_artifact_empty_data_source(
     ma: ModuleType, mocker: MockerFixture
 ) -> None:
@@ -888,7 +969,7 @@ def test_save_artifact_path_contains_date(
     path = ma.save_artifact(artifact, tmp_path)
     assert path.suffix == ".json"
     loaded = json.loads(path.read_text())
-    assert loaded["version"] == "1.0.0"
+    assert loaded["version"] == "1.1.0"
 
 
 def test_save_artifact_no_generated_at(ma: ModuleType, tmp_path: Path) -> None:

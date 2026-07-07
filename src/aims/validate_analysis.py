@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Any, Final
 
-ARTIFACT_VERSION: Final[str] = "1.0.0"
+ARTIFACT_VERSION: Final[str] = "1.1.0"
 DEFAULT_INPUT: Final[Path] = Path("data/analysis")
 
 _REQUIRED_TOP: Final[tuple[str, ...]] = ("version", "metadata", "instruments")
@@ -24,7 +24,21 @@ _REQUIRED_META: Final[tuple[str, ...]] = (
     "scoring_version",
     "config",
     "coverage",
+    "market_regime",
 )
+_REQUIRED_REGIME: Final[tuple[str, ...]] = (
+    "label",
+    "positive_count",
+    "reliable_count",
+    "breadth",
+    "thresholds",
+)
+_REGIME_LABELS: Final[frozenset[str]] = frozenset({
+    "Bullish",
+    "Bearish",
+    "Neutral",
+    "Unavailable",
+})
 _REQUIRED_CONFIG: Final[tuple[str, ...]] = (
     "interval",
     "stale_days",
@@ -121,6 +135,24 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
             passed = coverage.get("passed")
             if passed is not None and not isinstance(passed, bool):
                 errors.append("metadata.coverage.passed must be a boolean")
+
+        regime = metadata.get("market_regime")
+        if regime is None:
+            errors.append("metadata.market_regime must not be null")
+        elif not isinstance(regime, dict):
+            errors.append("metadata.market_regime must be a JSON object")
+        else:
+            errors.extend(
+                f"metadata.market_regime missing required key: {key!r}"
+                for key in _REQUIRED_REGIME
+                if key not in regime
+            )
+            label = regime.get("label")
+            if label is not None and label not in _REGIME_LABELS:
+                errors.append(
+                    f"metadata.market_regime.label {label!r} is not one of"
+                    f" {sorted(_REGIME_LABELS)}"
+                )
 
     instruments = data["instruments"]
     if not isinstance(instruments, list):

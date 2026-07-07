@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import io
 import json
 import math
@@ -42,6 +43,7 @@ from aims.policy import (
     build_config_dict,
     build_coverage_metadata,
     evaluate_coverage,
+    fetch_window_days,
     get_data_quality_policy,
 )
 
@@ -579,6 +581,56 @@ def load_ohlcv(
                 )
             )
     return sorted(bars, key=lambda b: b.timestamp)
+
+
+_ADJUSTMENT_DRIFT_THRESHOLD: Final[float] = 0.001
+_STORE_OVERLAP_DAYS: Final[int] = 30
+_DEEP_FETCH_WINDOW_DAYS: Final[dict[str, int]] = {"d": 3650, "w": 1460, "m": 3650}
+
+
+def deep_fetch_window_days(interval: str) -> int:
+    """Return a multi-year lookback window for building a persistent store.
+
+    Weekly/monthly intervals already span years under the regular fetch
+    window (see ``policy.fetch_window_days``); only daily is extended here,
+    since a fixed 365-day daily fetch is far too short for long-horizon
+    features and statistically meaningful backtests.
+    """
+    return _DEEP_FETCH_WINDOW_DAYS.get(interval, fetch_window_days(interval))
+
+
+def merge_price_series(
+    existing: list[OhlcvBar],
+    fresh: list[OhlcvBar],
+    *,
+    drift_threshold: float = _ADJUSTMENT_DRIFT_THRESHOLD,
+) -> tuple[list[OhlcvBar], list[str]]:
+    """Merge a persistent store's bars with freshly fetched bars.
+
+    Fresh bars win on any overlapping date — the provider's current view
+    (e.g. after a dividend/split adjustment rewrites past closes under
+    ``auto_adjust=True``) supersedes the cached value. Overlapping dates
+    whose close diverges by more than *drift_threshold* are reported as
+    warnings so the rewrite is visible instead of silent.
+    """
+    fresh_by_date = {b.timestamp.date(): b for b in fresh}
+    warnings: list[str] = []
+    merged: dict[Any, OhlcvBar] = {}
+    for bar in existing:
+        bar_date = bar.timestamp.date()
+        fresh_bar = fresh_by_date.get(bar_date)
+        if fresh_bar is not None and bar.close:
+            drift = abs(fresh_bar.close - bar.close) / bar.close
+            if drift > drift_threshold:
+                warnings.append(
+                    f"{bar.symbol}: adjustment drift on {bar_date.isoformat()}:"
+                    f" cached close {bar.close:.4f} -> fresh close"
+                    f" {fresh_bar.close:.4f} ({drift:.2%})"
+                )
+        merged[bar_date] = fresh_bar if fresh_bar is not None else bar
+    for bar in fresh:
+        merged.setdefault(bar.timestamp.date(), bar)
+    return [merged[d] for d in sorted(merged)], warnings
 
 
 # ── Fetch status (current-run coverage source of truth) ───────────────────────
@@ -1142,6 +1194,7 @@ def generate_artifact(
     coverage: dict[str, Any] | None = None,
     instrument_metadata: dict[str, dict[str, str]] | None = None,
     price_consistency: dict[str, Any] | None = None,
+    price_history: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     now = datetime.now(tz=UTC)
     generated_at = (
@@ -1217,6 +1270,8 @@ def generate_artifact(
         artifact_metadata["coverage"] = coverage
     if price_consistency is not None:
         artifact_metadata["price_consistency"] = price_consistency
+    if price_history is not None:
+        artifact_metadata["price_history"] = price_history
     return {
         "version": ARTIFACT_VERSION,
         "metadata": artifact_metadata,
@@ -1527,6 +1582,15 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         except (FileNotFoundError, json.JSONDecodeError) as exc:
             print(f"WARNING: failed to load price consistency report: {exc}")
 
+    price_history_report: dict[str, Any] | None = None
+    price_history_arg: str | None = getattr(args, "price_history", None)
+    if price_history_arg:
+        try:
+            with Path(price_history_arg).open(encoding="utf-8") as fh:
+                price_history_report = json.load(fh)
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            print(f"WARNING: failed to load price history report: {exc}")
+
     coverage_policy = CoveragePolicy(
         min_success_ratio=args.min_success_ratio,
         max_missing_symbols=args.max_missing_symbols,
@@ -1615,6 +1679,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         coverage=coverage_metadata,
         instrument_metadata=display_meta,
         price_consistency=price_consistency_report,
+        price_history=price_history_report,
     )
     path = save_artifact(artifact, Path(args.output))
     print(f"artifact saved to {path}")
@@ -1679,6 +1744,108 @@ def _cmd_consistency(args: argparse.Namespace) -> int:
         f" ({len(results)} compared, {warned} warned, {escalated} escalated)"
     )
     return 0
+
+
+def _cmd_update_store(args: argparse.Namespace) -> int:
+    provider_name: str = (
+        getattr(args, "provider", _DEFAULT_PROVIDER) or _DEFAULT_PROVIDER
+    )
+    try:
+        validate_provider_interval(provider_name, args.interval)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return 1
+
+    symbols = _resolve_symbols_for_generate(args)
+    if symbols is None:
+        return 1
+    if not symbols:
+        print("ERROR: no symbols provided")
+        return 1
+
+    store_dir = Path(args.store_dir)
+    as_of = args.as_of or datetime.now(tz=UTC).date().isoformat()
+    end = datetime.strptime(as_of, "%Y-%m-%d").replace(tzinfo=UTC)
+    provider = make_provider(provider_name)
+
+    hashes: dict[str, str] = {}
+    all_warnings: list[str] = []
+    failed: list[str] = []
+    for symbol in symbols:
+        try:
+            existing = load_ohlcv(symbol, args.interval, store_dir)
+        except FileNotFoundError:
+            existing = []
+        if existing:
+            start = existing[-1].timestamp - timedelta(days=args.overlap_days)
+        else:
+            start = end - timedelta(days=deep_fetch_window_days(args.interval))
+        try:
+            fresh = provider.fetch_ohlcv(symbol, start, end, args.interval)
+        except (URLError, ValueError) as exc:
+            failed.append(symbol)
+            print(f"WARNING: update-store fetch failed for {symbol}: {exc}")
+            continue
+        merged, warnings = merge_price_series(existing, fresh)
+        all_warnings.extend(warnings)
+        if not merged:
+            failed.append(symbol)
+            print(f"WARNING: no data available for {symbol}; store unchanged")
+            continue
+        path = save_ohlcv(merged, store_dir)
+        hashes[symbol] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    for warning in all_warnings:
+        print(f"WARNING: {warning}")
+
+    fetch_status_arg: str | None = getattr(args, "fetch_status", None)
+    if fetch_status_arg:
+        # A symbol already present in the store from a prior run must not
+        # read as "fetched" if *this run's* refresh failed for it — mirrors
+        # the fetch-status contract fetch/generate already rely on so a
+        # stale on-disk file can never mask a current-run failure.
+        fetch_status_path = Path(fetch_status_arg)
+        fetch_status_path.parent.mkdir(parents=True, exist_ok=True)
+        fetch_status_payload: dict[str, Any] = {
+            "version": _FETCH_STATUS_VERSION,
+            "interval": args.interval,
+            "analysis_date": as_of,
+            "provider": provider_name,
+            "symbols": {
+                symbol: {
+                    "status": (
+                        _FETCH_STATUS_FAILED
+                        if symbol in failed
+                        else _FETCH_STATUS_SUCCESS
+                    )
+                }
+                for symbol in symbols
+            },
+        }
+        fetch_status_path.write_text(
+            json.dumps(fetch_status_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
+    output_report: str | None = getattr(args, "output_report", None)
+    if output_report:
+        report = {
+            "as_of": as_of,
+            "provider": provider_name,
+            "price_series_hashes": hashes,
+            "adjustment_drift": all_warnings,
+            "failed_symbols": failed,
+        }
+        output_path = Path(output_report)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    print(
+        f"store updated at {store_dir}: {len(hashes)} symbol(s) updated,"
+        f" {len(failed)} failed, {len(all_warnings)} adjustment-drift warning(s)"
+    )
+    return 0 if hashes else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1801,6 +1968,12 @@ def main(argv: list[str] | None = None) -> int:
         dest="price_consistency",
         help="Path to a consistency report from the 'consistency' subcommand",
     )
+    p_gen.add_argument(
+        "--price-history",
+        default=None,
+        dest="price_history",
+        help="Path to a store report from the 'update-store' subcommand",
+    )
 
     p_cons = sub.add_parser(
         "consistency",
@@ -1830,6 +2003,53 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_cons.add_argument("--output", required=True)
 
+    p_store = sub.add_parser(
+        "update-store", help="Incrementally update a persistent OHLCV store"
+    )
+    p_store_src = p_store.add_mutually_exclusive_group(required=True)
+    p_store_src.add_argument(
+        "--symbols",
+        default=None,
+        help="Comma-separated provider symbol list (explicit mode)",
+    )
+    p_store_src.add_argument(
+        "--mapping",
+        default=None,
+        metavar="PATH",
+        help="Path to canonical_instrument_mappings.csv (mapping-derived mode)",
+    )
+    p_store.add_argument("--interval", default=_DEFAULT_INTERVAL)
+    p_store.add_argument(
+        "--provider",
+        default=_DEFAULT_PROVIDER,
+        choices=sorted(KNOWN_PROVIDERS),
+    )
+    p_store.add_argument("--store-dir", required=True, dest="store_dir")
+    p_store.add_argument(
+        "--as-of",
+        default=None,
+        dest="as_of",
+        help="Override the as-of date (YYYY-MM-DD; default: today UTC)",
+    )
+    p_store.add_argument(
+        "--overlap-days",
+        type=int,
+        default=_STORE_OVERLAP_DAYS,
+        dest="overlap_days",
+        help="Days of overlap to re-fetch for drift detection (default: 30)",
+    )
+    p_store.add_argument("--output-report", default=None, dest="output_report")
+    p_store.add_argument(
+        "--fetch-status",
+        default=None,
+        dest="fetch_status",
+        help=(
+            "Path to write a fetch-status JSON recording this run's"
+            " per-symbol success/failure, consumable by 'generate"
+            " --fetch-status'"
+        ),
+    )
+
     args = parser.parse_args(argv)
 
     if args.command == "fetch":
@@ -1842,6 +2062,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_init_fetch_status(args)
     if args.command == "consistency":
         return _cmd_consistency(args)
+    if args.command == "update-store":
+        return _cmd_update_store(args)
     return _cmd_generate(args)
 
 

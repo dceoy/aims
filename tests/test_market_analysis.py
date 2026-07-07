@@ -200,6 +200,64 @@ def test_load_ohlcv_naive_timestamp_gets_utc(ma: ModuleType, tmp_path: Path) -> 
     assert loaded[0].timestamp.tzinfo is not None
 
 
+# ── deep_fetch_window_days / merge_price_series ─────────────────────────────────
+
+
+def test_deep_fetch_window_days_extends_daily(ma: ModuleType) -> None:
+    assert ma.deep_fetch_window_days("d") == 3650
+
+
+def test_deep_fetch_window_days_falls_back_to_policy_for_unknown_interval(
+    ma: ModuleType,
+) -> None:
+    # Weekly/monthly already span years under the regular policy window.
+    assert ma.deep_fetch_window_days("w") == ma.fetch_window_days("w")
+
+
+def test_merge_price_series_no_overlap_concatenates(ma: ModuleType) -> None:
+    existing = _make_bars(ma, "A", [100.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    fresh = _make_bars(ma, "A", [110.0], start=datetime(2023, 1, 3, tzinfo=UTC))
+    merged, warnings = ma.merge_price_series(existing, fresh)
+    assert [b.close for b in merged] == [100.0, 110.0]
+    assert warnings == []
+
+
+def test_merge_price_series_fresh_wins_on_overlap_without_drift(
+    ma: ModuleType,
+) -> None:
+    existing = _make_bars(ma, "A", [100.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    fresh = _make_bars(ma, "A", [100.0005], start=datetime(2023, 1, 2, tzinfo=UTC))
+    merged, warnings = ma.merge_price_series(existing, fresh)
+    assert merged == [fresh[0]]
+    assert warnings == []
+
+
+def test_merge_price_series_flags_adjustment_drift(ma: ModuleType) -> None:
+    existing = _make_bars(ma, "A", [100.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    fresh = _make_bars(ma, "A", [90.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    merged, warnings = ma.merge_price_series(existing, fresh)
+    assert merged == [fresh[0]]
+    assert len(warnings) == 1
+    assert "adjustment drift" in warnings[0]
+    assert "A" in warnings[0]
+
+
+def test_merge_price_series_ignores_zero_existing_close(ma: ModuleType) -> None:
+    existing = [_bar(ma, "A", 0.0, datetime(2023, 1, 2, tzinfo=UTC), low=0.0)]
+    fresh = _make_bars(ma, "A", [90.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    _, warnings = ma.merge_price_series(existing, fresh)
+    assert warnings == []
+
+
+def test_merge_price_series_custom_drift_threshold(ma: ModuleType) -> None:
+    existing = _make_bars(ma, "A", [100.0], start=datetime(2023, 1, 2, tzinfo=UTC))
+    fresh = _make_bars(ma, "A", [100.2], start=datetime(2023, 1, 2, tzinfo=UTC))
+    _, warnings = ma.merge_price_series(existing, fresh, drift_threshold=0.01)
+    assert warnings == []
+    _, warnings_tight = ma.merge_price_series(existing, fresh, drift_threshold=0.0001)
+    assert len(warnings_tight) == 1
+
+
 # ── check_data_quality ─────────────────────────────────────────────────────────
 
 
@@ -1062,6 +1120,29 @@ def test_generate_artifact_omits_price_consistency_by_default(
     scores = ma.score_instruments({"A": bars}, reference_time=ref)
     artifact = ma.generate_artifact(scores, {"A": bars}, {})
     assert "price_consistency" not in artifact["metadata"]
+
+
+def test_generate_artifact_includes_price_history_when_given(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    report = {"as_of": "2024-01-01", "price_series_hashes": {"A": "deadbeef"}}
+    artifact = ma.generate_artifact(scores, {"A": bars}, {}, price_history=report)
+    assert artifact["metadata"]["price_history"] == report
+
+
+def test_generate_artifact_omits_price_history_by_default(
+    ma: ModuleType, mocker: MockerFixture
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "A", [float(100 + i) for i in range(80)])
+    ref = bars[-1].timestamp + timedelta(days=1)
+    scores = ma.score_instruments({"A": bars}, reference_time=ref)
+    artifact = ma.generate_artifact(scores, {"A": bars}, {})
+    assert "price_history" not in artifact["metadata"]
 
 
 def test_generate_artifact_empty_data_source(
@@ -3142,6 +3223,56 @@ def test_cmd_generate_missing_price_consistency_file_warns_and_continues(
     assert "WARNING: failed to load price consistency report" in capsys.readouterr().out
 
 
+def test_cmd_generate_applies_price_history_report(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "E", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+    history_path = tmp_path / "history.json"
+    report = {"as_of": "2024-01-01", "price_series_hashes": {"E": "deadbeef"}}
+    history_path.write_text(json.dumps(report), encoding="utf-8")
+
+    class Args:
+        symbols = "E"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-01-01"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        price_history = str(history_path)
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-01-01.json").read_text())
+    assert artifact["metadata"]["price_history"] == report
+
+
+def test_cmd_generate_missing_price_history_file_warns_and_continues(
+    ma: ModuleType,
+    mocker: MockerFixture,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    bars = _make_bars(ma, "E", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = "E"
+        interval = "d"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = None
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        price_history = str(tmp_path / "missing.json")
+
+    result = ma._cmd_generate(Args())
+    assert result == 0
+    assert "WARNING: failed to load price history report" in capsys.readouterr().out
+
+
 # ── consistency subcommand ───────────────────────────────────────────────────────
 
 
@@ -3265,3 +3396,347 @@ def test_main_consistency_subcommand(ma: ModuleType, tmp_path: Path) -> None:
     ])
     assert exit_code == 0
     assert output_path.exists()
+
+
+# ── update-store subcommand ──────────────────────────────────────────────────────
+
+
+class _FakeProvider:
+    def __init__(
+        self,
+        bars_by_symbol: dict[str, list[object]] | None = None,
+        raise_for: set[str] | None = None,
+    ) -> None:
+        self.bars_by_symbol = bars_by_symbol or {}
+        self.raise_for = raise_for or set()
+        self.calls: list[tuple[str, datetime, datetime, str]] = []
+
+    def fetch_ohlcv(
+        self, symbol: str, start: datetime, end: datetime, interval: str = "d"
+    ) -> list[object]:
+        self.calls.append((symbol, start, end, interval))
+        if symbol in self.raise_for:
+            msg = "simulated fetch failure"
+            raise ValueError(msg)
+        return self.bars_by_symbol.get(symbol, [])
+
+
+def test_cmd_update_store_first_time_full_fetch_uses_deep_window(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    fresh = _make_bars(ma, "A", [100.0, 101.0])
+    provider = _FakeProvider({"A": fresh})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 0
+    assert provider.calls[0][0] == "A"
+    span_days = (provider.calls[0][2] - provider.calls[0][1]).days
+    assert span_days == ma.deep_fetch_window_days("d")
+    loaded = ma.load_ohlcv("A", "d", tmp_path)
+    assert [b.close for b in loaded] == [100.0, 101.0]
+
+
+def test_cmd_update_store_incremental_uses_overlap_window(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    existing = _make_bars(ma, "A", [100.0], start=datetime(2024, 1, 1, tzinfo=UTC))
+    ma.save_ohlcv(existing, tmp_path)
+    fresh = _make_bars(ma, "A", [100.0, 101.0], start=datetime(2024, 1, 1, tzinfo=UTC))
+    provider = _FakeProvider({"A": fresh})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 0
+    start_used = provider.calls[0][1]
+    assert start_used == existing[-1].timestamp - timedelta(days=30)
+    loaded = ma.load_ohlcv("A", "d", tmp_path)
+    assert [b.close for b in loaded] == [100.0, 101.0]
+
+
+def test_cmd_update_store_records_hashes_and_drift_in_report(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    existing = _make_bars(ma, "A", [100.0], start=datetime(2024, 1, 1, tzinfo=UTC))
+    ma.save_ohlcv(existing, tmp_path)
+    fresh = _make_bars(ma, "A", [50.0], start=datetime(2024, 1, 1, tzinfo=UTC))
+    provider = _FakeProvider({"A": fresh})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+    report_path = tmp_path / "report.json"
+
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = str(report_path)
+
+    assert ma._cmd_update_store(Args()) == 0
+    report = json.loads(report_path.read_text())
+    assert report["price_series_hashes"]["A"]
+    assert len(report["adjustment_drift"]) == 1
+    assert report["failed_symbols"] == []
+
+
+def test_cmd_update_store_writes_fetch_status(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    provider = _FakeProvider({"A": _make_bars(ma, "A", [100.0])}, raise_for={"B"})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+    fetch_status_path = tmp_path / "fetch_status.json"
+
+    class Args:
+        symbols = "A,B"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path / "store")
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+        fetch_status = str(fetch_status_path)
+
+    assert ma._cmd_update_store(Args()) == 0
+    status = json.loads(fetch_status_path.read_text())
+    assert status["interval"] == "d"
+    assert status["analysis_date"] == "2024-06-01"
+    assert status["provider"] == "stooq"
+    assert status["symbols"]["A"]["status"] == "success"
+    assert status["symbols"]["B"]["status"] == "failed"
+
+
+def test_cmd_update_store_fetch_status_consumed_by_generate(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    # End-to-end: a symbol whose store update failed this run must not be
+    # treated as fetched even though the store still holds an older bar.
+    # B always succeeds so the run still has data to score.
+    price_store_dir = tmp_path / "store"
+    ma.save_ohlcv(
+        _make_bars(ma, "A", [100.0], start=datetime(2024, 1, 1, tzinfo=UTC)),
+        price_store_dir,
+    )
+    fresh_bars = {
+        "B": _make_bars(
+            ma,
+            "B",
+            [float(100 + i) for i in range(70)],
+            start=datetime(2024, 1, 1, tzinfo=UTC),
+        )
+    }
+    provider = _FakeProvider(fresh_bars, raise_for={"A"})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+    fetch_status_path = tmp_path / "fetch_status.json"
+
+    class StoreArgs:
+        symbols = "A,B"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(price_store_dir)
+        as_of = "2024-03-11"
+        overlap_days = 30
+        output_report = None
+        fetch_status = str(fetch_status_path)
+
+    # A's fetch fails, but the store still has an old bar for it on disk.
+    assert ma._cmd_update_store(StoreArgs()) == 0
+
+    class GenerateArgs:
+        symbols = "A,B"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(price_store_dir)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-03-11"
+        min_success_ratio = 0.01
+        max_missing_symbols = 5
+        fetch_status = str(fetch_status_path)
+
+    # A stale on-disk bar must not mask this run's fetch failure: A is
+    # reported missing despite existing in the store directory.
+    assert ma._cmd_generate(GenerateArgs()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-03-11.json").read_text())
+    assert artifact["metadata"]["coverage"]["missing_symbols"] == ["A"]
+
+
+def test_cmd_update_store_per_symbol_fetch_failure_is_non_fatal(
+    ma: ModuleType,
+    mocker: MockerFixture,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    provider = _FakeProvider({"B": _make_bars(ma, "B", [1.0])}, raise_for={"A"})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+
+    class Args:
+        symbols = "A,B"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 0
+    out = capsys.readouterr().out
+    assert "WARNING: update-store fetch failed for A" in out
+    assert (tmp_path / "B_d.csv").exists()
+
+
+def test_cmd_update_store_all_symbols_failed_returns_nonzero(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    provider = _FakeProvider(raise_for={"A"})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 1
+
+
+def test_cmd_update_store_empty_fetch_result_marks_symbol_failed(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    provider = _FakeProvider({"A": []})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 1
+
+
+def test_cmd_update_store_rejects_invalid_provider_interval(
+    ma: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    class Args:
+        symbols = "A"
+        mapping = None
+        interval = "bogus"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = None
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 1
+    assert "ERROR" in capsys.readouterr().out
+
+
+def test_cmd_update_store_no_symbols_resolved(ma: ModuleType, tmp_path: Path) -> None:
+    class Args:
+        symbols = None
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = None
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 1
+
+
+def test_cmd_update_store_empty_resolved_symbols(
+    ma: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # symbols=",,": all parts strip to empty so _resolve_symbols_for_generate
+    # returns [] rather than None.
+    class Args:
+        symbols = ",,"
+        mapping = None
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path)
+        as_of = None
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 1
+    assert "ERROR: no symbols provided" in capsys.readouterr().out
+
+
+def test_cmd_update_store_mapping_mode(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mapping_path = _write_mini_mapping(tmp_path)
+    provider = _FakeProvider({
+        "^SPX": _make_bars(ma, "^SPX", [100.0]),
+        "^DJI": _make_bars(ma, "^DJI", [200.0]),
+    })
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+        store_dir = str(tmp_path / "store")
+        as_of = "2024-06-01"
+        overlap_days = 30
+        output_report = None
+
+    assert ma._cmd_update_store(Args()) == 0
+    assert (tmp_path / "store" / "_SPX_d.csv").exists()
+    assert (tmp_path / "store" / "_DJI_d.csv").exists()
+
+
+def test_main_update_store_subcommand(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    provider = _FakeProvider({"A": _make_bars(ma, "A", [100.0])})
+    mocker.patch.object(ma, "make_provider", return_value=provider)
+    exit_code = ma.main([
+        "update-store",
+        "--symbols",
+        "A",
+        "--interval",
+        "d",
+        "--provider",
+        "stooq",
+        "--store-dir",
+        str(tmp_path),
+        "--as-of",
+        "2024-06-01",
+    ])
+    assert exit_code == 0
+    assert (tmp_path / "A_d.csv").exists()

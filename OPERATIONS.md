@@ -289,6 +289,16 @@ print(','.join(symbols_from_mappings(rows, 'yfinance', 'd')))
 
 Re-run after material changes to the feature set, scoring logic, or once #78's deep store has accumulated materially more history; a stale artifact is a documentation problem, not a correctness one (the daily pipeline never reads `data/backtests/`).
 
+### Signal performance tracking (#82)
+
+Where the backtest above measures the scoring engine against history offline, `track_signal_performance.py` (delegating to `src/aims/signal_performance.py`) measures the top-5 quantitative signals actually published each day, using only committed `data/analysis/*.json` artifacts — no live price fetch. It runs in the daily workflow after score history (daily interval only) and rewrites a single cumulative artifact, `data/performance/signals.json`, plus the public `content/performance/_index.md` page, each run.
+
+- **What's measured.** Each daily artifact's top-5 reliable, tradable instruments (same eligibility as the report's "Top opportunities" section, #76) become individually tagged "slot observations" — one per instrument per horizon, carrying that instrument's asset class and the artifact's market regime label (#77) — paired with the equal-weight average forward return of the _entire_ reliable universe that date as a benchmark. Grouping the flat pool of slot observations by tag yields the by-asset-class and by-regime breakdowns without requiring every date to have complete coverage in every group. Default horizons: 1d/5d/20d.
+- **Reused machinery.** Forward returns are reconstructed by chaining `ret_1d` across consecutive artifacts (`aims.performance.build_bar_series`/`forward_return`, the same #97 stance-evaluation bar-chaining), self-checked against `ret_5d` and invalidating the affected link on mismatch rather than producing a wrong return.
+- **Pending vs. incomplete.** A slot is `pending` when the forward window hasn't matured yet (not enough later artifacts chained) and `incomplete` when it matured but the chain is broken or unmatched — this distinction lets the artifact and page distinguish "wait for more data" from "this observation is permanently unusable."
+- **Slack.** When present, `notify_slack.py --signal-performance` appends a trailing `20d top-5 excess ...` line (trailing 20-day top-5 vs. benchmark excess return and hit rate); omitted until matured observations exist at that horizon.
+- **Same informational caveat as backtesting.** Excludes fees, slippage, financing, and order timing; rests on small overlapping samples early in accumulation; not an investable or executable track record. Format reference: `data/schema/signal_performance.schema.json`.
+
 ### Assumptions and limitations
 
 - Scores are cross-sectional: they reflect relative, not absolute, performance. A score of 80 in a falling market still means that instrument fell less than most others.
@@ -616,6 +626,19 @@ uv run .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
     --page-output content/evaluation/_index.md
 uv run .agents/skills/qualitative-analysis/scripts/validate_performance.py \
     --input data/performance/YYYY-MM-DD.json
+```
+
+### Regenerate the signal-performance artifact and page
+
+Deterministic; rebuilt in full from every committed daily analysis artifact each run (no API key, no price fetch). See [§3](#3-scoring-methodology).
+
+```sh
+uv run .agents/skills/market-analysis/scripts/track_signal_performance.py \
+    --analysis-dir data/analysis \
+    --output data/performance/signals.json \
+    --page-output content/performance/_index.md
+uv run .agents/skills/market-analysis/scripts/validate_signal_performance.py \
+    --input data/performance/signals.json
 ```
 
 ### Run the OKF theme curation pass

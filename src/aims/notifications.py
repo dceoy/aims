@@ -117,6 +117,32 @@ def _performance_summary(performance: dict[str, Any]) -> str | None:
     return "; ".join(parts)
 
 
+def _signal_performance_summary(
+    signal_performance: dict[str, Any], *, horizon: int = 20
+) -> str | None:
+    """One-line trailing top-5 excess-return summary, or None with no matured data.
+
+    Informational association only — never presented as a track record; the
+    signal-performance page carries the full disclaimer.
+    """
+    horizons = signal_performance.get("signal_evaluation", {}).get("horizons", {})
+    bucket = horizons.get(f"{horizon}d")
+    if not isinstance(bucket, dict):
+        return None
+    excess = bucket.get("excess_return")
+    count = bucket.get("count", 0)
+    if not isinstance(excess, (int, float)) or not count:
+        return None
+    hit_rate = bucket.get("hit_rate")
+    hit_str = (
+        f", hit rate {float(hit_rate):.0%}"
+        if isinstance(hit_rate, (int, float))
+        else ""
+    )
+    sign = "+" if excess >= 0 else ""
+    return f"{horizon}d top-5 excess {sign}{excess * 100:.2f}% (n={count}){hit_str}"
+
+
 def build_success_payload(
     artifact: dict[str, Any],
     report_url: str = "",
@@ -127,6 +153,7 @@ def build_success_payload(
     qualitative: dict[str, Any] | None = None,
     qualitative_failed: bool = False,
     performance: dict[str, Any] | None = None,
+    signal_performance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     meta = artifact.get("metadata", {})
     generated_at = meta.get("generated_at", "")
@@ -213,6 +240,14 @@ def build_success_payload(
             fields.append({
                 "type": "mrkdwn",
                 "text": f"*AI stance hit rate:* {hit_rates}",
+            })
+
+    if signal_performance is not None:
+        signal_summary = _signal_performance_summary(signal_performance)
+        if signal_summary is not None:
+            fields.append({
+                "type": "mrkdwn",
+                "text": f"*Signal performance:* {signal_summary}",
             })
 
     coverage_raw = meta.get("coverage")
@@ -391,6 +426,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Stance-evaluation artifact for the trailing hit-rate line",
     )
+    parser.add_argument(
+        "--signal-performance",
+        type=str,
+        default=None,
+        help="Cumulative signal-performance artifact for the trailing excess-return"
+        " line",
+    )
     return parser.parse_args(argv)
 
 
@@ -451,6 +493,14 @@ def main(argv: list[str] | None = None) -> int:
             except (FileNotFoundError, json.JSONDecodeError) as exc:
                 print(f"ERROR: invalid performance artifact: {exc}")
                 return 1
+        signal_performance = None
+        if args.signal_performance:
+            try:
+                with open(args.signal_performance, encoding="utf-8") as fh:  # noqa: PTH123
+                    signal_performance = json.load(fh)
+            except (FileNotFoundError, json.JSONDecodeError) as exc:
+                print(f"ERROR: invalid signal-performance artifact: {exc}")
+                return 1
         payload = build_success_payload(
             artifact,
             report_url,
@@ -460,6 +510,7 @@ def main(argv: list[str] | None = None) -> int:
             qualitative=qualitative,
             qualitative_failed=args.qualitative_failed,
             performance=performance,
+            signal_performance=signal_performance,
         )
 
     try:

@@ -785,3 +785,120 @@ def test_main_reports_invalid_performance(ns: ModuleType, tmp_path: Path) -> Non
             str(perf_path),
         ])
     assert result == 1
+
+
+# ── signal-performance trailing summary ──────────────────────────────────────────
+
+
+def _signal_perf(horizons: dict[str, Any]) -> dict[str, Any]:
+    return {"signal_evaluation": {"horizons": horizons}}
+
+
+def test_signal_performance_summary_reports_excess_and_hit_rate(
+    ns: ModuleType,
+) -> None:
+    signal_performance = _signal_perf({
+        "20d": {"count": 8, "excess_return": 0.0123, "hit_rate": 0.625}
+    })
+    assert (
+        ns._signal_performance_summary(signal_performance)
+        == "20d top-5 excess +1.23% (n=8), hit rate 62%"
+    )
+
+
+def test_signal_performance_summary_negative_excess() -> None:
+    signal_performance = _signal_perf({
+        "20d": {"count": 4, "excess_return": -0.005, "hit_rate": None}
+    })
+    assert (
+        _aims_ns._signal_performance_summary(signal_performance)
+        == "20d top-5 excess -0.50% (n=4)"
+    )
+
+
+def test_signal_performance_summary_custom_horizon(ns: ModuleType) -> None:
+    signal_performance = _signal_perf({
+        "1d": {"count": 2, "excess_return": 0.01, "hit_rate": 1.0}
+    })
+    assert ns._signal_performance_summary(signal_performance, horizon=1) == (
+        "1d top-5 excess +1.00% (n=2), hit rate 100%"
+    )
+
+
+def test_signal_performance_summary_none_without_bucket(ns: ModuleType) -> None:
+    assert ns._signal_performance_summary(_signal_perf({})) is None
+
+
+def test_signal_performance_summary_none_with_zero_count(ns: ModuleType) -> None:
+    signal_performance = _signal_perf({
+        "20d": {"count": 0, "excess_return": None, "hit_rate": None}
+    })
+    assert ns._signal_performance_summary(signal_performance) is None
+
+
+def test_build_success_payload_adds_signal_performance_field(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    signal_performance = _signal_perf({
+        "20d": {"count": 3, "excess_return": 0.02, "hit_rate": 0.67}
+    })
+    payload = ns.build_success_payload(
+        fixture_artifact, signal_performance=signal_performance
+    )
+    texts = [f["text"] for f in payload["blocks"][1]["fields"]]
+    assert any("Signal performance:" in t for t in texts)
+
+
+def test_build_success_payload_omits_signal_performance_when_empty(
+    ns: ModuleType, fixture_artifact: dict[str, Any]
+) -> None:
+    signal_performance = _signal_perf({"20d": {"count": 0}})
+    payload = ns.build_success_payload(
+        fixture_artifact, signal_performance=signal_performance
+    )
+    texts = [f["text"] for f in payload["blocks"][1]["fields"]]
+    assert not any("Signal performance:" in t for t in texts)
+
+
+def test_main_success_with_signal_performance(ns: ModuleType, tmp_path: Path) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    with FIXTURE_PATH.open() as fh:
+        artifact_path.write_text(json.dumps(json.load(fh)))
+    signal_path = tmp_path / "signals.json"
+    signal_path.write_text(
+        json.dumps(_signal_perf({"20d": {"count": 1, "excess_return": 0.01}}))
+    )
+    mock_response = MagicMock()
+    mock_response.__enter__ = MagicMock(return_value=mock_response)
+    mock_response.__exit__ = MagicMock(return_value=False)
+    with (
+        patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
+        patch("urllib.request.urlopen", return_value=mock_response),
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--signal-performance",
+            str(signal_path),
+        ])
+    assert result == 0
+
+
+def test_main_reports_invalid_signal_performance(
+    ns: ModuleType, tmp_path: Path
+) -> None:
+    artifact_path = tmp_path / "artifact.json"
+    with FIXTURE_PATH.open() as fh:
+        artifact_path.write_text(json.dumps(json.load(fh)))
+    signal_path = tmp_path / "signals.json"
+    signal_path.write_text("{")
+    with patch.dict(
+        "os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}
+    ):
+        result = ns.main([
+            "--artifact",
+            str(artifact_path),
+            "--signal-performance",
+            str(signal_path),
+        ])
+    assert result == 1

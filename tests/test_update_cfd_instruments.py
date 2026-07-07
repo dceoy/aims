@@ -385,6 +385,18 @@ def test_load_mappings_loads_all_types(updater: ModuleType, tmp_path: Path) -> N
     assert result.click_stock_base_symbols == {"Apple": "AAPL"}
 
 
+def test_committed_mappings_resolve_gmo_jpy_spot_metals(updater: ModuleType) -> None:
+    # Regression guard for the GMO JPY-denominated spot metals that broke the
+    # weekly refresh when they appeared in the lineup without mappings (#118).
+    committed = Path(__file__).resolve().parent.parent / (
+        "data/mappings/cfd_ticker_mappings.csv"
+    )
+    result = updater.load_mappings(committed)
+    assert result.instrument_symbols["金/JPY"] == "XAUJPY"
+    assert result.instrument_symbols["銀/JPY"] == "XAGJPY"
+    assert result.instrument_symbols["プラチナ/JPY"] == "XPTJPY"
+
+
 def test_load_mappings_fails_on_missing_file(
     updater: ModuleType, tmp_path: Path
 ) -> None:

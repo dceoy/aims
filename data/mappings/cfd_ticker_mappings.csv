@@ -60,6 +60,9 @@ instrument,,,オーストラリア株価指数ETF,,EWA
 instrument,,,金スポット,,XAU
 instrument,,,銀スポット,,XAG
 instrument,,,プラチナスポット,,XPT
+instrument,,,金/JPY,,XAUJPY
+instrument,,,銀/JPY,,XAGJPY
+instrument,,,プラチナ/JPY,,XPTJPY
 instrument,,,銅先物,,HG
 instrument,,,鉄鉱石,,FEF
 instrument,,,WTI原油,,CL

@@ -319,6 +319,14 @@ The workflow supports `workflow_dispatch` with optional inputs:
 
 GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), which runs only after Python linting, type checking, and tests all pass. The daily analysis workflow commits only content files (JSON and Markdown), not Python source, so existing tests remain stable.
 
+`ci.yml` runs on three deploy-relevant triggers:
+
+- `push` to `main` (human merges).
+- `workflow_run` on "Daily market analysis" completion: bot merges performed with `GITHUB_TOKEN` create no push event, so the daily workflow finishing (successfully) re-runs CI/CD against the head of `main` and deploys it. Deploys are idempotent snapshots of `main`, so a redundant run after a dry run is harmless.
+- `workflow_dispatch` (`gh workflow run ci.yml`): manual full CI + deploy of current `main` — the recovery path when a deploy failed or the site is stale.
+
+The deploy job builds the site with Hugo, uploads it as a Pages artifact, and deploys via `actions/deploy-pages`. Pages deployments fail transiently ("Deployment failed, try again later."); the job retries the deploy once in-run. If the job still fails, a Slack failure notification fires when `SLACK_WEBHOOK_URL` is configured — otherwise check the run under the Actions tab and the deployment status via `gh api repos/<owner>/<repo>/deployments?environment=github-pages`.
+
 ### Rollback
 
 If a published report or artifact needs to be removed, see [Delete a published report](#delete-a-published-report) in Manual recovery. Reverting a bad _code_ change (as opposed to a bad daily _report_) is a normal `git revert` on `main`, gated by the same CI checks as any other change.

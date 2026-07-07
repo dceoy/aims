@@ -238,6 +238,22 @@ The label is computed once, at artifact generation time, and stored as `metadata
 
 `SCORING_VERSION = "1.0.0"` in `src/aims/market_analysis.py`. Increment this when the feature set or scoring logic changes in a way that makes old and new scores incomparable.
 
+### Feature diagnostics and the scoring v2 evaluation process
+
+The composite score averages 10 feature percentile ranks, and 8 of the 10 are correlated momentum/trend variants. `run_backtest` (`src/aims/backtest.py`) reports two informational-only diagnostics per artifact, never used to adjust scores, ranks, or gates:
+
+- **`feature_diagnostics.information_coefficient`**: for each forward horizon and feature, the mean daily cross-sectional Spearman rank correlation between that feature's raw value and the forward return at that horizon, averaged over the dates with at least two valid (feature, forward-return) pairs (`{mean, n}`; `mean` is `null` when `n` is 0). This is the standard "IC" measure of a feature's predictive power.
+- **`feature_diagnostics.feature_correlation`**: a symmetric feature × feature matrix of mean daily cross-sectional Spearman correlation, showing how redundant the momentum/trend features are with each other.
+
+**Scoring v2 adoption process** — a scoring change is a separate, evidence-gated decision from adding these diagnostics, and must not be inferred from a single backtest run:
+
+1. Measure ICs and feature correlations over the expanded universe (#76) and the deepest available history (#78) — short or narrow samples produce noisy ICs.
+2. Propose a v2 feature set/weighting from the evidence — e.g. dropping features with persistently near-zero IC (`ret_1d` is a common candidate per the measured example above), adding volatility-adjusted or longer-horizon momentum, or treating risk features (`vol_20d`, `mdd_60d`) as gates/penalties rather than averaged ranks.
+3. Run v1 and v2 side by side over the same walk-forward window (`run_backtest` with each feature set) and compare out-of-sample bucket monotonicity and net-of-cost top-k excess return (#80) — adopt v2 only if both improve.
+4. Only then bump `SCORING_VERSION`, update this document and the OKF scoring-methodology concept, and refresh golden tests.
+
+No ML-fitted or optimizer-fitted weights — hand-set weights justified by measured ICs, keeping the engine deterministic and dependency-light.
+
 ### Assumptions and limitations
 
 - Scores are cross-sectional: they reflect relative, not absolute, performance. A score of 80 in a falling market still means that instrument fell less than most others.

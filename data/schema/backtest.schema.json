@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIMS walk-forward backtest artifact",
+  "description": "Schema reference for validate_backtest.py. Validation is implemented in Python rather than a JSON Schema library to avoid runtime dependencies.",
+  "artifact_version": "1.1.0",
+  "required_top_keys": [
+    "schema_version",
+    "scoring_version",
+    "config",
+    "observations",
+    "date_range",
+    "metrics",
+    "turnover",
+    "max_drawdown",
+    "feature_diagnostics"
+  ],
+  "required_config_keys": [
+    "symbols",
+    "interval",
+    "forward_horizons",
+    "top_k",
+    "buckets",
+    "min_history"
+  ],
+  "notes": {
+    "metrics": "Object keyed by '{horizon}d' (e.g. '1d', '20d'); each value has score_buckets (bucket number -> {count, average_return}) and top_k ({count, average_return, hit_rate}).",
+    "feature_diagnostics": "Added in 1.1.0 (#79): informational-only diagnostics, never used to adjust scores. 'features' lists the InstrumentFeatures field names in declaration order. 'information_coefficient' is keyed by '{horizon}d' -> feature -> {mean, n}, the mean daily cross-sectional Spearman rank correlation between that feature's value and the forward return at that horizon, averaged over the n dates with at least two valid (feature, forward-return) pairs; mean is null when n is 0. 'feature_correlation' is a symmetric feature x feature matrix of mean daily cross-sectional Spearman correlation between feature pairs (1.0 on the diagonal, null when never jointly observed).",
+    "scoring_version": "SCORING_VERSION is unaffected by feature_diagnostics; adopting a scoring v2 feature set based on measured ICs is a separate, evidence-gated decision (see OPERATIONS.md)."
+  }
+}

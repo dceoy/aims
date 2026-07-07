@@ -245,7 +245,15 @@ def _section_top_opportunities(
     events: list[CalendarEvent] | None = None,
 ) -> str:
     header = "## Top Opportunities"
-    top5 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:5]
+    # Instruments with no broker CFD offering (tradable=false, #76) are kept
+    # in the universe for informational breadth but are not actionable
+    # trading opportunities, so they are excluded here even if they score
+    # well; they remain visible, annotated, in the full Instrument Scores
+    # table.
+    tradable_reliable = [i for i in reliable if i.get("tradable") is not False]
+    top5 = sorted(
+        tradable_reliable, key=lambda i: float(i.get("score", 0)), reverse=True
+    )[:5]
     if not top5:
         return f"{header}\n\n_No reliable instruments available._"
     lines = []
@@ -586,6 +594,8 @@ def _instrument_scores_table(instruments: list[dict[str, Any]]) -> str:
     for inst in instruments:
         rank = inst.get("rank", "")
         label = _instrument_label(inst)
+        if inst.get("tradable") is False:
+            label += " _(informational — no broker CFD)_"
         score = float(inst.get("score", 0))
         reliable = "Yes" if inst.get("is_reliable") else "No"
         gates = inst.get("risk_gates") or []

@@ -177,6 +177,9 @@ def validate_artifact(data: dict[str, Any]) -> list[str]:
                 errors.append(f"instrument[{idx}]: rank must be an integer")
             elif rank < 1:
                 errors.append(f"instrument[{idx}]: rank {rank} must be >= 1")
+            tradable = inst.get("tradable")
+            if tradable is not None and not isinstance(tradable, bool):
+                errors.append(f"instrument[{idx}]: tradable must be a boolean")
 
     return errors
 

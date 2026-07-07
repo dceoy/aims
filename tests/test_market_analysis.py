@@ -2631,7 +2631,36 @@ def test_instrument_display_map_basic(ma: ModuleType, tmp_path: Path) -> None:
     assert dmap["^SPX"]["canonical_id"] == "spx"
     assert dmap["^SPX"]["display_name"] == "S&P 500"
     assert dmap["^SPX"]["asset_class"] == "equity_index"
+    assert dmap["^SPX"]["tradable"] is True
     assert "^DJI" in dmap
+
+
+def test_instrument_display_map_tradable_false(ma: ModuleType, tmp_path: Path) -> None:
+    csv_text = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "sony,Sony,equity,,,,yfinance,6758.T,d,false,No CFD\n"
+    )
+    p = tmp_path / "non_tradable.csv"
+    p.write_text(csv_text, encoding="utf-8")
+    rows = ma.load_instrument_mappings(p)
+    dmap = ma.instrument_display_map(rows, "yfinance", "d")
+    assert dmap["6758.T"]["tradable"] is False
+
+
+def test_instrument_display_map_tradable_false_case_insensitive(
+    ma: ModuleType, tmp_path: Path
+) -> None:
+    csv_text = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "sony,Sony,equity,,,,yfinance,6758.T,d,FALSE,No CFD\n"
+    )
+    p = tmp_path / "non_tradable_upper.csv"
+    p.write_text(csv_text, encoding="utf-8")
+    rows = ma.load_instrument_mappings(p)
+    dmap = ma.instrument_display_map(rows, "yfinance", "d")
+    assert dmap["6758.T"]["tradable"] is False
 
 
 def test_instrument_display_map_no_match(ma: ModuleType, tmp_path: Path) -> None:
@@ -3078,6 +3107,39 @@ def test_cmd_generate_mapping_includes_display_names(
     assert spx_inst["canonical_id"] == "spx"
     assert spx_inst["display_name"] == "S&P 500"
     assert spx_inst["asset_class"] == "equity_index"
+    assert spx_inst["tradable"] is True
+
+
+def test_cmd_generate_mapping_propagates_tradable_false(
+    ma: ModuleType, mocker: MockerFixture, tmp_path: Path
+) -> None:
+    mocker.patch.object(ma, "_get_git_commit", return_value="abc")
+    csv_text = (
+        "canonical_id,display_name,asset_class,broker,broker_instrument_name,"
+        "broker_ticker_symbol,provider,provider_symbol,provider_interval,tradable,notes\n"
+        "sony,Sony,equity,,,,stooq,SONY.JP,d,false,No CFD\n"
+    )
+    mapping_path = tmp_path / "mapping.csv"
+    mapping_path.write_text(csv_text, encoding="utf-8")
+    bars = _make_bars(ma, "SONY.JP", [float(100 + i) for i in range(70)])
+    ma.save_ohlcv(bars, tmp_path)
+
+    class Args:
+        symbols = None
+        mapping = str(mapping_path)
+        interval = "d"
+        provider = "stooq"
+        data_dir = str(tmp_path)
+        output = str(tmp_path / "analysis")
+        analysis_date = "2024-07-01"
+        min_success_ratio = 0.8
+        max_missing_symbols = 1
+        fetch_status = None
+
+    assert ma._cmd_generate(Args()) == 0
+    artifact = json.loads((tmp_path / "analysis" / "2024-07-01.json").read_text())
+    inst = next(i for i in artifact["instruments"] if i["symbol"] == "SONY.JP")
+    assert inst["tradable"] is False
 
 
 def test_cmd_generate_mapping_display_meta_load_error(

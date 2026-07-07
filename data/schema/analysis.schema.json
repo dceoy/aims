@@ -55,7 +55,8 @@
   "optional_instrument_keys": {
     "canonical_id": "Canonical instrument identifier from canonical_instrument_mappings.csv, e.g. 'spx'. Present when generate --mapping is used.",
     "display_name": "Human-readable instrument name from the mapping layer, e.g. 'S&P 500'. Present when generate --mapping is used.",
-    "asset_class": "Asset class from the mapping layer, e.g. 'equity_index' or 'commodity'. Present when generate --mapping is used and the mapping row has a non-empty asset_class."
+    "asset_class": "Asset class from the mapping layer, e.g. 'equity_index' or 'commodity'. Present when generate --mapping is used and the mapping row has a non-empty asset_class.",
+    "tradable": "Boolean from the mapping layer's tradable column (#76). false marks a brokerless instrument (e.g. Japanese large-caps with no CFD offering at a mapped broker) retained for informational breadth: reports keep it in the score table with an annotation but exclude it from Top Opportunities, and Slack excludes it from top signals. Present when generate --mapping is used; absent (treated as tradable) in explicit --symbols mode."
   },
   "score_range": [0.0, 100.0],
   "rank_minimum": 1

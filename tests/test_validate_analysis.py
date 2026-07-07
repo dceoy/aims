@@ -210,6 +210,20 @@ def test_validate_empty_instruments_list(va: ModuleType) -> None:
     assert errors == []
 
 
+def test_validate_tradable_boolean_accepted(va: ModuleType) -> None:
+    for value in (True, False):
+        inst = {**VALID_INSTRUMENT, "tradable": value}
+        data = {**VALID_ARTIFACT, "instruments": [inst]}
+        assert va.validate_artifact(data) == []
+
+
+def test_validate_tradable_must_be_boolean(va: ModuleType) -> None:
+    inst = {**VALID_INSTRUMENT, "tradable": "false"}
+    data = {**VALID_ARTIFACT, "instruments": [inst]}
+    errors = va.validate_artifact(data)
+    assert any("tradable must be a boolean" in e for e in errors)
+
+
 # ── data_freshness validation ──────────────────────────────────────────────────
 
 

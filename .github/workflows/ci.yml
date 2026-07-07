@@ -11,6 +11,21 @@ on:
       - opened
       - synchronize
       - reopened
+  # Daily analysis PRs are merged with GITHUB_TOKEN, which creates no push
+  # event (and therefore no deploy). Re-run CI/CD against main whenever the
+  # daily workflow finishes instead; deploys are idempotent snapshots of
+  # main, so an occasional redundant run (e.g. after a dry run) is harmless.
+  # Safe despite the zizmor audit: the triggering workflow runs only from
+  # this repository (schedule/dispatch, never forks), and no event-supplied
+  # data or head SHA is used — jobs always run against the head of main.
+  workflow_run:   # zizmor: ignore[dangerous-triggers]
+    workflows:
+      - Daily market analysis
+    types:
+      - completed
+  # Manual full CI + deploy of current main (e.g. to recover from a failed
+  # Pages deploy).
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -18,6 +33,9 @@ jobs:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     permissions:
       actions: read
       contents: read
@@ -31,6 +49,9 @@ jobs:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     uses: dceoy/gh-actions-for-devops/.github/workflows/python-package-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
@@ -40,6 +61,9 @@ jobs:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     uses: dceoy/gh-actions-for-devops/.github/workflows/python-package-test.yml@main  # zizmor: ignore[unpinned-uses]
@@ -49,6 +73,9 @@ jobs:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
       security-events: write
@@ -61,6 +88,9 @@ jobs:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -84,6 +114,9 @@ jobs:
     if: >
       github.event_name == 'push'
       || github.event_name == 'pull_request'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -108,6 +141,9 @@ jobs:
   hugo-deploy-to-gh-pages:
     if: >
       github.event_name == 'push'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+      && github.event.workflow_run.conclusion == 'success')
     needs:
       - github-actions-lint-and-scan
       - python-lint-and-scan
@@ -118,9 +154,55 @@ jobs:
       contents: read
       id-token: write
       pages: write
-    uses: dceoy/gh-actions-for-devops/.github/workflows/hugo-deploy-to-gh-pages.yml@main   # zizmor: ignore[unpinned-uses]
-    with:
-      site-path: .
-      go-version: stable
-      base-url: https://dceoy.github.io/aims/
-      destination-dir: site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy-retry.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    env:
+      SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0   # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: stable
+      - name: Install Hugo
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3.2.1
+        with:
+          hugo-version: latest
+          extended: true
+      - name: Build site
+        run: hugo --gc --minify
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        continue-on-error: true
+      # Pages deploys fail transiently ("Deployment failed, try again
+      # later."); one in-run retry absorbs that without a manual re-run.
+      - name: Retry deploy to GitHub Pages
+        id: deploy-retry
+        if: steps.deploy.outcome == 'failure'
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39   # v8.2.0
+        if: failure() && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
+      - name: Sync dependencies
+        if: failure() && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
+        run: uv sync
+      - name: Notify Slack (deploy failure)
+        if: failure() && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
+            --failure \
+            --run-url \
+            "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --message "Hugo Pages deploy failed"

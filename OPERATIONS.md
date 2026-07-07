@@ -132,6 +132,8 @@ Exits 0 when clean; exits 1 on hard errors (missing columns, unknown provider, u
 
 **Connecting new CFD entries to canonical mappings:** After `update-cfd-instruments` adds new rows to `data/cfd_instruments.csv`, the mapping validator warns about tradable CFD entries with no mapping row. Add the corresponding canonical mapping rows to clear those warnings.
 
+**`tradable=false` policy (#76):** Rows with no broker CFD offering (e.g. `7203.T`/`6758.T`/`8306.T` — Japanese large-caps analyzed for informational breadth) stay in the daily universe and are scored normally, but are treated as non-actionable everywhere a report or notification presents a _signal_: `generate --mapping` propagates `tradable` onto each artifact instrument (`instrument_display_map`), and both the "Top Opportunities" report section and the Slack top-signal/event lines exclude `tradable=false` instruments even when they score well. The full "Instrument Scores" table still lists them, annotated `(informational — no broker CFD)`, so the universe's breadth stays visible. Signal-persistence tracking (`data/history/`, the "Signal History" report section) is unaffected by this change and may still surface a `tradable=false` instrument's rank/score deltas.
+
 ---
 
 ## 3. Scoring methodology
@@ -263,6 +265,29 @@ No ML-fitted or optimizer-fitted weights — hand-set weights justified by measu
 - **Significance**: a deterministic moving-block bootstrap (`_moving_block_bootstrap_ci`, seeded, block-resampled to preserve short-range autocorrelation) on the mean daily net excess return, computed at the finest configured horizon (most daily observations to resample). Reported at `significance` with `{horizon, mean_net_excess_return, confidence, confidence_interval, block_size, iterations, seed, n}`; `confidence_interval` is `null` with fewer than two observations.
 - **Regime breakdown**: `regime_breakdown.regimes` buckets the same per-date net top-k and benchmark averages (at the significance horizon) by that date's breadth-based market regime label (`market_regime_metadata`, the same MA20-breadth measure persisted in daily analysis artifacts, #77) — showing whether the strategy's edge concentrates in a particular regime.
 - **Limitations**: overlapping forward horizons (e.g. daily observations at a 20-day horizon) overstate the effective independent sample size; the bootstrap partially compensates via block resampling but this is not a substitute for a longer out-of-sample window. The cost model has no order-book simulation, intraday slippage, or portfolio-level margin constraints.
+
+### Committed backtest artifact (#76)
+
+`data/backtests/` holds a committed walk-forward backtest artifact for the full daily `yfinance` universe (`data/mappings/canonical_instrument_mappings.csv`, all 33 mapped daily instruments across equity indices, commodities, and equities — including the `tradable=false` informational rows, since the backtest measures the scoring engine's cross-sectional behavior, not broker-executable signals), generated from the persistent price store (#78) after #79's IC diagnostics and #80's cost/benchmark/significance metrics landed, so it is not superseded by shallow-history or gross-only numbers. CI validates every file under `data/backtests/*.json` against `validate_backtest.py` (`ci.yml`'s `validate-market-data-config` job).
+
+**Regenerating it:**
+
+```bash
+uv run python .agents/skills/market-analysis/scripts/market_analysis.py update-store \
+    --mapping data/mappings/canonical_instrument_mappings.csv \
+    --interval d --provider yfinance --store-dir <store-dir>
+uv run python .agents/skills/market-analysis/scripts/backtest.py \
+    --symbols "$(uv run python -c "
+from pathlib import Path
+from aims.market_analysis import load_instrument_mappings, symbols_from_mappings
+rows = load_instrument_mappings(Path('data/mappings/canonical_instrument_mappings.csv'))
+print(','.join(symbols_from_mappings(rows, 'yfinance', 'd')))
+")" \
+    --data-dir <store-dir> --output-dir data/backtests \
+    --horizons 1,5,20,60 --top-k 5 --buckets 4 --min-history 60
+```
+
+Re-run after material changes to the feature set, scoring logic, or once #78's deep store has accumulated materially more history; a stale artifact is a documentation problem, not a correctness one (the daily pipeline never reads `data/backtests/`).
 
 ### Assumptions and limitations
 

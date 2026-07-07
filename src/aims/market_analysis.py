@@ -279,22 +279,26 @@ def instrument_display_map(
     rows: list[InstrumentMappingRow],
     provider: str,
     interval: str,
-) -> dict[str, dict[str, str]]:
-    """Return {provider_symbol: {canonical_id, display_name, asset_class}}.
+) -> dict[str, dict[str, str | bool]]:
+    """Return {provider_symbol: {canonical_id, display_name, asset_class, tradable}}.
 
     Filters to rows matching *provider* and *interval*. ``asset_class`` is
-    omitted from an entry when the mapping row leaves it blank.
+    omitted from an entry when the mapping row leaves it blank. ``tradable``
+    is ``True`` unless the row's ``tradable`` column is exactly ``"false"``
+    (case-insensitive), so explicit-symbols mode and legacy rows default to
+    tradable.
     """
-    result: dict[str, dict[str, str]] = {}
+    result: dict[str, dict[str, str | bool]] = {}
     for r in rows:
         if (
             r.provider == provider
             and r.provider_interval == interval
             and r.provider_symbol not in result
         ):
-            entry = {
+            entry: dict[str, str | bool] = {
                 "canonical_id": r.canonical_id,
                 "display_name": r.display_name,
+                "tradable": r.tradable.strip().lower() != "false",
             }
             if r.asset_class:
                 entry["asset_class"] = r.asset_class
@@ -1192,7 +1196,7 @@ def generate_artifact(
     analysis_date: str | None = None,
     missing_symbols: list[str] | None = None,
     coverage: dict[str, Any] | None = None,
-    instrument_metadata: dict[str, dict[str, str]] | None = None,
+    instrument_metadata: dict[str, dict[str, str | bool]] | None = None,
     price_consistency: dict[str, Any] | None = None,
     price_history: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -1213,7 +1217,7 @@ def generate_artifact(
         if not instrument_metadata or symbol not in instrument_metadata:
             return
         meta = instrument_metadata[symbol]
-        for key in ("canonical_id", "display_name", "asset_class"):
+        for key in ("canonical_id", "display_name", "asset_class", "tradable"):
             if key in meta:
                 entry[key] = meta[key]
 
@@ -1521,7 +1525,7 @@ def _trim_bars_at_or_after(
 
 
 def _load_price_consistency(
-    path: Path, display_meta: dict[str, dict[str, str]] | None
+    path: Path, display_meta: dict[str, dict[str, str | bool]] | None
 ) -> tuple[dict[str, Any], dict[str, list[str]]]:
     """Load a consistency report and derive per-symbol escalation gates.
 
@@ -1561,7 +1565,7 @@ def _cmd_generate(args: argparse.Namespace) -> int:
         return 1
 
     # Load mapping metadata for display names when mapping is provided
-    display_meta: dict[str, dict[str, str]] | None = None
+    display_meta: dict[str, dict[str, str | bool]] | None = None
     mapping_arg: str | None = getattr(args, "mapping", None)
     if mapping_arg:
         mapping_path = Path(mapping_arg)
@@ -1706,12 +1710,12 @@ def _cmd_consistency(args: argparse.Namespace) -> int:
     )
 
     def _load_by_canonical_id(
-        meta: dict[str, dict[str, str]], data_dir: str
+        meta: dict[str, dict[str, str | bool]], data_dir: str
     ) -> dict[str, list[OhlcvBar]]:
         loaded: dict[str, list[OhlcvBar]] = {}
         for symbol, info in meta.items():
             canonical_id = info.get("canonical_id")
-            if not canonical_id:
+            if not canonical_id or not isinstance(canonical_id, str):
                 continue
             try:
                 loaded[canonical_id] = load_ohlcv(symbol, args.interval, Path(data_dir))

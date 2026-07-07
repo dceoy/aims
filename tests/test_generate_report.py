@@ -657,6 +657,52 @@ def test_section_top_opportunities_with_null_rsi(gr: ModuleType) -> None:
     assert "RSI14=n/a" in result
 
 
+def _scored_inst(
+    symbol: str, score: float, *, tradable: bool | None = None
+) -> dict[str, Any]:
+    inst: dict[str, Any] = {
+        "symbol": symbol,
+        "rank": 1,
+        "score": score,
+        "is_reliable": True,
+        "risk_gates": [],
+        "explanation": "x",
+        "features": {},
+    }
+    if tradable is not None:
+        inst["tradable"] = tradable
+    return inst
+
+
+def test_section_top_opportunities_excludes_non_tradable(gr: ModuleType) -> None:
+    reliable = [
+        _scored_inst("BEST", 99.0, tradable=False),
+        _scored_inst("NEXT", 50.0, tradable=True),
+    ]
+    result = gr._section_top_opportunities(reliable)
+    assert "NEXT" in result
+    assert "BEST" not in result
+
+
+def test_section_top_opportunities_includes_default_tradable(gr: ModuleType) -> None:
+    # No tradable key (explicit --symbols mode) defaults to tradable.
+    reliable = [_scored_inst("AAPL", 80.0)]
+    result = gr._section_top_opportunities(reliable)
+    assert "AAPL" in result
+
+
+def test_instrument_scores_table_annotates_non_tradable(gr: ModuleType) -> None:
+    instruments = [_scored_inst("SONY", 60.0, tradable=False)]
+    table = gr._section_instrument_scores(instruments)
+    assert "informational — no broker CFD" in table
+
+
+def test_instrument_scores_table_no_annotation_when_tradable(gr: ModuleType) -> None:
+    instruments = [_scored_inst("AAPL", 60.0, tradable=True)]
+    table = gr._section_instrument_scores(instruments)
+    assert "informational" not in table
+
+
 def test_generate_report_returns_string(
     gr: ModuleType, fixture_artifact: dict[str, Any]
 ) -> None:

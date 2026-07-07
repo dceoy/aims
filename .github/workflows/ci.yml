@@ -138,6 +138,14 @@ jobs:
             .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
             --input data/mappings/canonical_instrument_mappings.csv \
             --cfd-instruments data/cfd_instruments.csv
+      - name: Validate backtest artifacts
+        run: |
+          shopt -s nullglob
+          for f in data/backtests/*.json; do
+            uv run python \
+              .agents/skills/market-analysis/scripts/validate_backtest.py \
+              --input "$f"
+          done
   hugo-deploy-to-gh-pages:
     if: >
       github.event_name == 'push'

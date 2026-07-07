@@ -43,7 +43,11 @@ _TOP_SIGNALS_FOR_EVENTS: Final[int] = 5
 def _event_lines(artifact: dict[str, Any], events: list[CalendarEvent]) -> list[str]:
     """One bounded line per top-5 signal with an event inside the window."""
     instruments = artifact.get("instruments", [])
-    reliable = [i for i in instruments if i.get("is_reliable")]
+    reliable = [
+        i
+        for i in instruments
+        if i.get("is_reliable") and i.get("tradable") is not False
+    ]
     top = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[
         :_TOP_SIGNALS_FOR_EVENTS
     ]
@@ -133,7 +137,13 @@ def build_success_payload(
     reliable = [i for i in instruments if i.get("is_reliable")]
     regime, _, _ = regime_from_artifact(artifact, reliable)
 
-    top3 = sorted(reliable, key=lambda i: float(i.get("score", 0)), reverse=True)[:3]
+    # Brokerless instruments (tradable=false, #76) are informational-only
+    # and excluded from top signals, matching the report's Top Opportunities
+    # section.
+    tradable_reliable = [i for i in reliable if i.get("tradable") is not False]
+    top3 = sorted(
+        tradable_reliable, key=lambda i: float(i.get("score", 0)), reverse=True
+    )[:3]
     signals = ", ".join(
         f"{i.get('symbol', '')} ({float(i.get('score', 0)):.1f})" for i in top3
     )

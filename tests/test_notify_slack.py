@@ -205,6 +205,44 @@ def test_build_success_payload_price_consistency_no_escalation(
     assert "Provider divergence:" not in fields_text
 
 
+def test_build_success_payload_excludes_non_tradable_from_top_signals(
+    ns: ModuleType,
+) -> None:
+    artifact: dict[str, Any] = {
+        "version": "1.0.0",
+        "metadata": {
+            "generated_at": "2024-01-01T00:00:00+00:00",
+            "data_source": "stooq",
+            "data_freshness": {},
+            "config": {},
+        },
+        "instruments": [
+            {
+                "symbol": "BEST",
+                "rank": 1,
+                "score": 99.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "features": {},
+                "tradable": False,
+            },
+            {
+                "symbol": "NEXT",
+                "rank": 2,
+                "score": 50.0,
+                "is_reliable": True,
+                "risk_gates": [],
+                "features": {},
+                "tradable": True,
+            },
+        ],
+    }
+    payload = ns.build_success_payload(artifact, "https://example.com/")
+    fields_text = json.dumps(payload["blocks"], ensure_ascii=False)
+    assert "NEXT" in fields_text
+    assert "BEST" not in fields_text
+
+
 def test_build_success_payload_no_reliable(ns: ModuleType) -> None:
     artifact: dict[str, Any] = {
         "version": "1.0.0",

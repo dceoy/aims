@@ -123,22 +123,23 @@ def build_earnings_calendar(
     horizon_days: int = DEFAULT_EARNINGS_HORIZON_DAYS,
     updated_at: str | None = None,
     fetch_fn: FetchEarnings = fetch_earnings_dates,
-) -> tuple[dict[str, Any], list[str]]:
+) -> tuple[dict[str, Any], list[tuple[str, str]]]:
     """Build the earnings calendar for (canonical_id, symbol) *equities*.
 
-    Returns the calendar dict and a list of symbols whose fetch failed.
+    Returns the calendar dict and a list of (symbol, error message) pairs
+    for fetches that failed, so callers can surface the root cause.
     Only dates within (start_date, start_date + horizon_days] are kept —
     the calendar records known future events, not history.
     """
     start = datetime.fromisoformat(f"{start_date}T00:00:00+00:00")
     end = start + timedelta(days=horizon_days)
     events: list[dict[str, Any]] = []
-    failed: list[str] = []
+    failed: list[tuple[str, str]] = []
     for canonical_id, symbol in sorted(equities):
         try:
             dates = fetch_fn(symbol)
-        except Exception:  # noqa: BLE001 - per-symbol failures are non-fatal
-            failed.append(symbol)
+        except Exception as exc:  # noqa: BLE001 - per-symbol failures are non-fatal
+            failed.append((symbol, f"{type(exc).__name__}: {exc}"))
             continue
         events.extend(
             {
@@ -241,8 +242,17 @@ def main(argv: list[str] | None = None) -> int:
         horizon_days=args.horizon_days,
         updated_at=args.updated_at,
     )
-    for symbol in failed:
-        print(f"WARNING: earnings fetch failed for {symbol}")
+    for symbol, message in failed:
+        print(f"WARNING: earnings fetch failed for {symbol}: {message}")
+    if len(failed) == len(equities):
+        # A calendar with zero fetched symbols means the fetch path itself is
+        # broken (e.g. a missing dependency); keep the committed calendar
+        # instead of silently overwriting it with an empty one.
+        print(
+            f"ERROR: all {len(equities)} earnings fetches failed;"
+            f" leaving {args.output} untouched"
+        )
+        return 1
     path = save_calendar(calendar, args.output)
     print(
         f"Earnings calendar written to {path}"

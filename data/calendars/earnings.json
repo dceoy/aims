@@ -1,9 +1,140 @@
 {
-  "events": [],
+  "events": [
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "earnings",
+      "date": "2026-07-14",
+      "source": "yfinance",
+      "title": "JPM earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "earnings",
+      "date": "2026-07-16",
+      "source": "yfinance",
+      "title": "UNH earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "earnings",
+      "date": "2026-07-22",
+      "source": "yfinance",
+      "title": "TSLA earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "earnings",
+      "date": "2026-07-23",
+      "source": "yfinance",
+      "title": "GOOGL earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "earnings",
+      "date": "2026-07-29",
+      "source": "yfinance",
+      "title": "META earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "earnings",
+      "date": "2026-07-29",
+      "source": "yfinance",
+      "title": "MSFT earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "earnings",
+      "date": "2026-07-30",
+      "source": "yfinance",
+      "title": "AAPL earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "earnings",
+      "date": "2026-07-30",
+      "source": "yfinance",
+      "title": "AMZN earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "earnings",
+      "date": "2026-07-31",
+      "source": "yfinance",
+      "title": "6758.T earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "earnings",
+      "date": "2026-07-31",
+      "source": "yfinance",
+      "title": "XOM earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "earnings",
+      "date": "2026-08-04",
+      "source": "yfinance",
+      "title": "8306.T earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "earnings",
+      "date": "2026-08-06",
+      "source": "yfinance",
+      "title": "7203.T earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "earnings",
+      "date": "2026-08-26",
+      "source": "yfinance",
+      "title": "NVDA earnings release"
+    }
+  ],
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-07-04"
+    "updated_at": "2026-07-07"
   },
   "version": "1.0.0"
 }

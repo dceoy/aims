@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "as_of": "2026-07-08",
+    "config": {
+      "horizons": [
+        1,
+        5,
+        20
+      ],
+      "return_consistency_tolerance": 0.001,
+      "top_k": 5
+    },
+    "disclaimer": "Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
+    "generated_at": "2026-07-08T00:00:00+00:00",
+    "git_commit": "1820d0d",
+    "inputs": {
+      "analysis_dates": [
+        "2026-06-29",
+        "2026-06-30",
+        "2026-07-01",
+        "2026-07-02",
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-07",
+        "2026-07-08"
+      ]
+    }
+  },
+  "signal_evaluation": {
+    "dates_evaluated": 9,
+    "horizons": {
+      "1d": {
+        "benchmark_average_return": 0.00782,
+        "by_asset_class": {
+          "commodity": {
+            "benchmark_average_return": 0.004673,
+            "count": 1,
+            "excess_return": 0.007591,
+            "hit_rate": 1.0,
+            "top5_average_return": 0.012265
+          },
+          "equity": {
+            "benchmark_average_return": 0.010183,
+            "count": 9,
+            "excess_return": -0.009318,
+            "hit_rate": 0.333333,
+            "top5_average_return": 0.000866
+          },
+          "equity_index": {
+            "benchmark_average_return": 0.012938,
+            "count": 6,
+            "excess_return": -0.012609,
+            "hit_rate": 0.0,
+            "top5_average_return": 0.000329
+          },
+          "unknown": {
+            "benchmark_average_return": 0.003751,
+            "count": 12,
+            "excess_return": 0.0,
+            "hit_rate": 0.5,
+            "top5_average_return": 0.003751
+          }
+        },
+        "by_regime": {
+          "Unavailable": {
+            "benchmark_average_return": 0.00782,
+            "count": 28,
+            "excess_return": -0.005426,
+            "hit_rate": 0.357143,
+            "top5_average_return": 0.002394
+          }
+        },
+        "count": 28,
+        "excess_return": -0.005426,
+        "hit_rate": 0.357143,
+        "incomplete": 12,
+        "pending": 5,
+        "top5_average_return": 0.002394
+      },
+      "20d": {
+        "benchmark_average_return": null,
+        "by_asset_class": {},
+        "by_regime": {},
+        "count": 0,
+        "excess_return": null,
+        "hit_rate": null,
+        "incomplete": 0,
+        "pending": 45,
+        "top5_average_return": null
+      },
+      "5d": {
+        "benchmark_average_return": 0.011688,
+        "by_asset_class": {
+          "unknown": {
+            "benchmark_average_return": 0.011688,
+            "count": 6,
+            "excess_return": 0.0,
+            "hit_rate": 0.666667,
+            "top5_average_return": 0.011688
+          }
+        },
+        "by_regime": {
+          "Unavailable": {
+            "benchmark_average_return": 0.011688,
+            "count": 6,
+            "excess_return": 0.0,
+            "hit_rate": 0.666667,
+            "top5_average_return": 0.011688
+          }
+        },
+        "count": 6,
+        "excess_return": 0.0,
+        "hit_rate": 0.666667,
+        "incomplete": 4,
+        "pending": 35,
+        "top5_average_return": 0.011688
+      }
+    }
+  },
+  "version": "1.0.0",
+  "warnings": [
+    "2026-06-29: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-06-29: ^GDAXI: broken bar chain within 5d forward window",
+    "2026-06-29: ^N225: broken bar chain within 1d forward window",
+    "2026-06-29: ^N225: broken bar chain within 5d forward window",
+    "2026-06-30: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-06-30: ^GDAXI: broken bar chain within 5d forward window",
+    "2026-06-30: ^N225: broken bar chain within 1d forward window",
+    "2026-06-30: ^N225: broken bar chain within 5d forward window",
+    "2026-07-01: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-07-01: ^N225: broken bar chain within 1d forward window",
+    "2026-07-02: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-07-02: ^N225: broken bar chain within 1d forward window",
+    "2026-07-04: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-07-05: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-07-06: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-07-07: ^GDAXI: broken bar chain within 1d forward window",
+    "ZC=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value"
+  ]
+}

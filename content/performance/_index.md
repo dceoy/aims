@@ -1,6 +1,6 @@
 +++
 title = "Signal Performance"
-date = "2026-07-10T00:00:00+00:00"
+date = "2026-07-11T00:00:00+00:00"
 draft = false
 summary = "Realized forward returns of the published top-5 signals vs. an equal-weight benchmark."
 source_files = ["data/performance/signals.json"]
@@ -8,7 +8,7 @@ source_files = ["data/performance/signals.json"]
 
 ## Signal Performance
 
-As of **2026-07-10**, 11 daily analysis artifact(s) evaluated.
+As of **2026-07-11**, 12 daily analysis artifact(s) evaluated.
 
 > Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.
 
@@ -16,30 +16,32 @@ As of **2026-07-10**, 11 daily analysis artifact(s) evaluated.
 
 | Horizon | Count |  Top-5 | Benchmark | Excess | Hit rate |
 | ------- | ----: | -----: | --------: | -----: | -------: |
-| 1d      |    38 | +0.07% |    +0.58% | -0.51% |      42% |
-| 5d      |    12 | +0.36% |    +0.36% | +0.00% |      67% |
+| 1d      |    43 | +0.07% |    +0.56% | -0.50% |      40% |
+| 5d      |    24 | +0.09% |    +1.24% | -1.15% |      46% |
 | 20d     |     0 |    n/a |       n/a |    n/a |      n/a |
 
 ### By Asset Class
 
 | Horizon / Group   | Count | Excess | Hit rate |
 | ----------------- | ----: | -----: | -------: |
-| 1d / commodity    |     4 | -0.44% |      50% |
-| 1d / equity       |    13 | -0.71% |      54% |
-| 1d / equity_index |     9 | -0.92% |      11% |
+| 1d / commodity    |     5 | -0.16% |      60% |
+| 1d / equity       |    16 | -0.76% |      44% |
+| 1d / equity_index |    10 | -0.85% |      10% |
 | 1d / unknown      |    12 | +0.00% |      50% |
+| 5d / equity       |     6 | -1.12% |      50% |
+| 5d / equity_index |     6 | -3.48% |       0% |
 | 5d / unknown      |    12 | +0.00% |      67% |
 
 ### By Market Regime
 
 | Horizon / Group  | Count | Excess | Hit rate |
 | ---------------- | ----: | -----: | -------: |
-| 1d / Bullish     |     5 | -0.49% |      40% |
+| 1d / Bullish     |    10 | -0.46% |      30% |
 | 1d / Neutral     |     5 | -0.38% |      60% |
 | 1d / Unavailable |    28 | -0.53% |      39% |
-| 5d / Unavailable |    12 | +0.00% |      67% |
+| 5d / Unavailable |    24 | -1.15% |      46% |
 
-## Warnings (23)
+## Warnings (26)
 
 - 2026-06-29: ^GDAXI: broken bar chain within 1d forward window
 - 2026-06-29: ^GDAXI: broken bar chain within 5d forward window
@@ -58,7 +60,7 @@ As of **2026-07-10**, 11 daily analysis artifact(s) evaluated.
 - 2026-07-02: ^N225: broken bar chain within 1d forward window
 - 2026-07-02: ^N225: broken bar chain within 5d forward window
 - 2026-07-04: ^GDAXI: broken bar chain within 1d forward window
+- 2026-07-04: ^GDAXI: broken bar chain within 5d forward window
 - 2026-07-05: ^GDAXI: broken bar chain within 1d forward window
-- 2026-07-06: ^GDAXI: broken bar chain within 1d forward window
-- 2026-07-07: ^GDAXI: broken bar chain within 1d forward window
-- … and 3 more
+- 2026-07-05: ^GDAXI: broken bar chain within 5d forward window
+- … and 6 more

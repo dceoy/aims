@@ -258,11 +258,7 @@ def prepare_request(
     schema = request_schema(
         sorted(str(signal["canonical_id"]) for signal in signals), evidence_ids
     )
-    prompt = (
-        prompt_path.read_text(encoding="utf-8")
-        + "\n\n"
-        + build_user_message(build_payload(analysis, evidence, events, top_k))
-    )
+    prompt = build_user_message(build_payload(analysis, evidence, events, top_k))
     context = {
         "analysis_path": str(analysis_path),
         "evidence_path": str(evidence_path),
@@ -355,8 +351,16 @@ def finalize_response(
         message = "Claude action structured output must be a JSON object"
         raise QualitativeError(message)
     context = _load(request_path)
-    analysis = _load(Path(context["analysis_path"]))
-    evidence = _load(Path(context["evidence_path"]))
+    analysis_path = Path(context["analysis_path"])
+    evidence_path = Path(context["evidence_path"])
+    if sha256_file(analysis_path) != context["analysis_sha256"]:
+        message = f"{analysis_path} changed since preparation; refusing to validate"
+        raise QualitativeError(message)
+    if sha256_file(evidence_path) != context["evidence_sha256"]:
+        message = f"{evidence_path} changed since preparation; refusing to validate"
+        raise QualitativeError(message)
+    analysis = _load(analysis_path)
+    evidence = _load(evidence_path)
     artifact = build_artifact(response_payload, context)
     errors = validate_artifact(
         artifact, analysis=analysis, evidence=evidence, top_k=int(context["top_k"])

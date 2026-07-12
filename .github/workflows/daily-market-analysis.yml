@@ -372,7 +372,8 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.qualitative_prepare.outputs.prompt }}
           claude_args: >-
-            --model claude-opus-4-8 --max-turns 1 --tools ""
+            --model claude-opus-4-8 --max-turns 1 --disallowedTools "*"
+            --system-prompt-file .agents/skills/qualitative-analysis/prompts/qualitative_v1.md
             --json-schema '${{ steps.qualitative_prepare.outputs.schema }}'
       - name: Finalize qualitative analysis (attempt 1)
         id: qualitative_finalize_1
@@ -396,7 +397,8 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.qualitative_prepare.outputs.prompt }}
           claude_args: >-
-            --model claude-opus-4-8 --max-turns 1 --tools ""
+            --model claude-opus-4-8 --max-turns 1 --disallowedTools "*"
+            --system-prompt-file .agents/skills/qualitative-analysis/prompts/qualitative_v1.md
             --json-schema '${{ steps.qualitative_prepare.outputs.schema }}'
       - name: Finalize qualitative analysis (single retry)
         id: qualitative_finalize_2

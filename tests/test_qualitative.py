@@ -91,7 +91,8 @@ def test_workflow_uses_oauth_pinned_action_and_no_tools() -> None:
     assert "secrets.CLAUDE_CODE_OAUTH_TOKEN != ''" in workflow
     assert "ANTHROPIC_API_KEY" not in workflow
     assert f"anthropics/claude-code-action@{q.CLAUDE_ACTION_REVISION}" in workflow
-    assert '--tools ""' in workflow
+    assert '--disallowedTools "*"' in workflow
+    assert "--system-prompt-file" in workflow
 
 
 def test_build_and_save_artifact(
@@ -235,6 +236,21 @@ def test_finalize_withheld_retry_and_last_attempt_write(
 def test_finalize_rejects_invalid_attempt(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="attempt"):
         q.finalize_response("{}", tmp_path / "request", attempt=0)
+
+
+@pytest.mark.parametrize("mutate_path_key", ["analysis_path", "evidence_path"])
+def test_finalize_rejects_tampered_inputs(
+    tmp_path: Path,
+    analysis: dict[str, Any],
+    evidence: dict[str, Any],
+    valid_response_payload: dict[str, Any],
+    mutate_path_key: str,
+) -> None:
+    request = _prepare(tmp_path, analysis, evidence)
+    context = json.loads(request.read_text())
+    Path(context[mutate_path_key]).write_text("{}", encoding="utf-8")
+    with pytest.raises(q.QualitativeError, match="changed since preparation"):
+        q.finalize_response(json.dumps(valid_response_payload), request, attempt=1)
 
 
 def test_main_prepare_finalize_and_errors(

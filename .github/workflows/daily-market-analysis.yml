@@ -76,10 +76,10 @@ jobs:
       FALLBACK_PROVIDER: >-
         ${{ (inputs.provider || 'yfinance') == 'stooq' && 'yfinance' || 'stooq' }}
       SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-      # Qualitative steps run only when the optional ANTHROPIC_API_KEY secret
+      # Qualitative steps run only when the optional Claude Code OAuth secret
       # exists (mirroring SLACK_NOTIFICATIONS_ENABLED); without it the run is
       # byte-for-byte today's behavior.
-      QUALITATIVE_ENABLED: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      QUALITATIVE_ENABLED: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
       SKIP_QUALITATIVE: ${{ inputs.skip_qualitative || 'false' }}
       # Rendering switch (shadow-mode exit, roadmap #98): the per-run input
       # overrides the default-off AI_COMMENTARY_ENABLED repository variable.
@@ -336,12 +336,11 @@ jobs:
       # exit criteria on #98 are met. Any failure here is non-fatal
       # (fail-open): the quantitative report publishes unchanged and the
       # Slack success message carries a warning.
-      - name: Run qualitative analysis (shadow mode)
-        id: qualitative
+      - name: Prepare qualitative analysis (shadow mode)
+        id: qualitative_prepare
         if: steps.symbols.outputs.symbols != '' && env.QUALITATIVE_ENABLED == 'true' && env.SKIP_QUALITATIVE != 'true'
         continue-on-error: true
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DATE: ${{ steps.date.outputs.date }}
           STEM: ${{ steps.date.outputs.stem }}
         run: |
@@ -358,17 +357,87 @@ jobs:
             --input "data/evidence/${STEM}.json"
           uv run python \
             .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+            prepare \
             --analysis "data/analysis/${STEM}.json" \
             --evidence "data/evidence/${STEM}.json" \
             --calendar data/calendars/macro_events.json \
             --calendar data/calendars/earnings.json \
+            --run-dir data/run/qualitative
+      - name: Invoke Claude Code Action (attempt 1)
+        id: claude_qualitative_1
+        if: steps.qualitative_prepare.outcome == 'success' && steps.qualitative_prepare.outputs.ready == 'true'
+        continue-on-error: true
+        uses: anthropics/claude-code-action@e90deca47693f9457b72f2b53c17d7c445a87342 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.qualitative_prepare.outputs.prompt }}
+          claude_args: >-
+            --model claude-opus-4-8 --max-turns 1 --tools ""
+            --json-schema '${{ steps.qualitative_prepare.outputs.schema }}'
+      - name: Finalize qualitative analysis (attempt 1)
+        id: qualitative_finalize_1
+        if: steps.claude_qualitative_1.outcome == 'success'
+        continue-on-error: true
+        env:
+          CLAUDE_STRUCTURED_OUTPUT: ${{ steps.claude_qualitative_1.outputs.structured_output }}
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+            finalize \
+            --request data/run/qualitative/request.json \
+            --attempt 1 \
             --output data/qualitative/
-          if [ -f "data/qualitative/${STEM}.json" ]; then
-            uv run python \
-              .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
-              --input "data/qualitative/${STEM}.json" \
-              --analysis "data/analysis/${STEM}.json" \
-              --evidence "data/evidence/${STEM}.json"
+      - name: Invoke Claude Code Action (single retry)
+        id: claude_qualitative_2
+        if: steps.qualitative_finalize_1.outputs.retry == 'true'
+        continue-on-error: true
+        uses: anthropics/claude-code-action@e90deca47693f9457b72f2b53c17d7c445a87342 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.qualitative_prepare.outputs.prompt }}
+          claude_args: >-
+            --model claude-opus-4-8 --max-turns 1 --tools ""
+            --json-schema '${{ steps.qualitative_prepare.outputs.schema }}'
+      - name: Finalize qualitative analysis (single retry)
+        id: qualitative_finalize_2
+        if: steps.claude_qualitative_2.outcome == 'success'
+        continue-on-error: true
+        env:
+          CLAUDE_STRUCTURED_OUTPUT: ${{ steps.claude_qualitative_2.outputs.structured_output }}
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+            finalize \
+            --request data/run/qualitative/request.json \
+            --attempt 2 \
+            --output data/qualitative/
+      - name: Record qualitative analysis outcome
+        id: qualitative
+        if: steps.symbols.outputs.symbols != '' && env.QUALITATIVE_ENABLED == 'true' && env.SKIP_QUALITATIVE != 'true'
+        continue-on-error: true
+        env:
+          PREPARE_OUTCOME: ${{ steps.qualitative_prepare.outcome }}
+          READY: ${{ steps.qualitative_prepare.outputs.ready }}
+          ACTION_1_OUTCOME: ${{ steps.claude_qualitative_1.outcome }}
+          FINALIZE_1_OUTCOME: ${{ steps.qualitative_finalize_1.outcome }}
+          RETRY: ${{ steps.qualitative_finalize_1.outputs.retry }}
+          ACTION_2_OUTCOME: ${{ steps.claude_qualitative_2.outcome }}
+          FINALIZE_2_OUTCOME: ${{ steps.qualitative_finalize_2.outcome }}
+        run: |
+          if [ "$PREPARE_OUTCOME" != "success" ]; then
+            exit 1
+          fi
+          if [ "$READY" != "true" ]; then
+            exit 0
+          fi
+          if [ "$ACTION_1_OUTCOME" != "success" ] \
+            || [ "$FINALIZE_1_OUTCOME" != "success" ]; then
+            exit 1
+          fi
+          if [ "$RETRY" = "true" ] \
+            && { [ "$ACTION_2_OUTCOME" != "success" ] \
+              || [ "$FINALIZE_2_OUTCOME" != "success" ]; }; then
+            exit 1
           fi
       # Deterministic stance evaluation (#97): derives forward returns from
       # committed analysis artifacts only, joins them with any accumulated

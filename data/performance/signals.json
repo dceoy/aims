@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "as_of": "2026-07-11",
+    "as_of": "2026-07-12",
     "config": {
       "horizons": [
         1,
@@ -11,8 +11,8 @@
       "top_k": 5
     },
     "disclaimer": "Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
-    "generated_at": "2026-07-11T00:00:00+00:00",
-    "git_commit": "1cd223a",
+    "generated_at": "2026-07-12T00:00:00+00:00",
+    "git_commit": "5bb5f8f",
     "inputs": {
       "analysis_dates": [
         "2026-06-29",
@@ -26,34 +26,35 @@
         "2026-07-08",
         "2026-07-09",
         "2026-07-10",
-        "2026-07-11"
+        "2026-07-11",
+        "2026-07-12"
       ]
     }
   },
   "signal_evaluation": {
-    "dates_evaluated": 12,
+    "dates_evaluated": 13,
     "horizons": {
       "1d": {
-        "benchmark_average_return": 0.005627,
+        "benchmark_average_return": 0.005972,
         "by_asset_class": {
           "commodity": {
-            "benchmark_average_return": 0.0005,
+            "benchmark_average_return": 0.001095,
             "count": 5,
-            "excess_return": -0.001555,
+            "excess_return": -0.003125,
             "hit_rate": 0.6,
-            "top5_average_return": -0.001055
+            "top5_average_return": -0.00203
           },
           "equity": {
-            "benchmark_average_return": 0.00656,
+            "benchmark_average_return": 0.007118,
             "count": 16,
-            "excess_return": -0.007592,
+            "excess_return": -0.00815,
             "hit_rate": 0.4375,
             "top5_average_return": -0.001032
           },
           "equity_index": {
-            "benchmark_average_return": 0.008946,
+            "benchmark_average_return": 0.009244,
             "count": 10,
-            "excess_return": -0.008474,
+            "excess_return": -0.008771,
             "hit_rate": 0.1,
             "top5_average_return": 0.000473
           },
@@ -67,11 +68,11 @@
         },
         "by_regime": {
           "Bullish": {
-            "benchmark_average_return": -0.001447,
+            "benchmark_average_return": 4.1e-05,
             "count": 10,
-            "excess_return": -0.004598,
+            "excess_return": -0.006573,
             "hit_rate": 0.3,
-            "top5_average_return": -0.006045
+            "top5_average_return": -0.006532
           },
           "Neutral": {
             "benchmark_average_return": 0.008119,
@@ -89,11 +90,11 @@
           }
         },
         "count": 43,
-        "excess_return": -0.004977,
+        "excess_return": -0.005436,
         "hit_rate": 0.395349,
         "incomplete": 12,
-        "pending": 5,
-        "top5_average_return": 0.00065
+        "pending": 10,
+        "top5_average_return": 0.000537
       },
       "20d": {
         "benchmark_average_return": null,
@@ -103,23 +104,23 @@
         "excess_return": null,
         "hit_rate": null,
         "incomplete": 0,
-        "pending": 60,
+        "pending": 65,
         "top5_average_return": null
       },
       "5d": {
-        "benchmark_average_return": 0.012384,
+        "benchmark_average_return": 0.013644,
         "by_asset_class": {
           "equity": {
-            "benchmark_average_return": 0.021147,
+            "benchmark_average_return": 0.023667,
             "count": 6,
-            "excess_return": -0.011179,
-            "hit_rate": 0.5,
+            "excess_return": -0.013699,
+            "hit_rate": 0.0,
             "top5_average_return": 0.009968
           },
           "equity_index": {
-            "benchmark_average_return": 0.021147,
+            "benchmark_average_return": 0.023667,
             "count": 6,
-            "excess_return": -0.034761,
+            "excess_return": -0.037281,
             "hit_rate": 0.0,
             "top5_average_return": -0.013614
           },
@@ -133,18 +134,18 @@
         },
         "by_regime": {
           "Unavailable": {
-            "benchmark_average_return": 0.012384,
+            "benchmark_average_return": 0.013644,
             "count": 24,
-            "excess_return": -0.011485,
-            "hit_rate": 0.458333,
+            "excess_return": -0.012745,
+            "hit_rate": 0.333333,
             "top5_average_return": 0.000899
           }
         },
         "count": 24,
-        "excess_return": -0.011485,
-        "hit_rate": 0.458333,
+        "excess_return": -0.012745,
+        "hit_rate": 0.333333,
         "incomplete": 11,
-        "pending": 25,
+        "pending": 30,
         "top5_average_return": 0.000899
       }
     }
@@ -174,8 +175,15 @@
     "2026-07-06: ^GDAXI: broken bar chain within 1d forward window",
     "2026-07-06: ^GDAXI: broken bar chain within 5d forward window",
     "2026-07-07: ^GDAXI: broken bar chain within 1d forward window",
+    "GC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
     "ZC=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
     "ZS=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
-    "ZW=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value"
+    "ZS=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value"
   ]
 }

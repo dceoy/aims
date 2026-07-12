@@ -1,9 +1,9 @@
 +++
 title = "AI Stance Evaluation"
-date = "2026-07-11T00:00:00+00:00"
+date = "2026-07-12T00:00:00+00:00"
 draft = false
-summary = "AI stance evaluation as of 2026-07-11: no matured observations yet."
-source_files = ["data/performance/2026-07-11.json"]
+summary = "AI stance evaluation as of 2026-07-12: no matured observations yet."
+source_files = ["data/performance/2026-07-12.json"]
 +++
 
 This page evaluates the AI qualitative layer's published per-instrument stances (supportive / neutral / conflicting) against realized forward returns reconstructed deterministically from committed analysis artifacts. A supportive stance counts as a hit when the instrument's forward return is positive; a conflicting stance counts as a hit when it is negative; neutral stances are tracked but not scored directionally.
@@ -16,13 +16,20 @@ _No matured stance observations yet. Stances need enough subsequent committed an
 
 ## Data Status
 
-- Analysis artifacts: 12 (2026-06-29 to 2026-07-11)
+- Analysis artifacts: 13 (2026-06-29 to 2026-07-12)
 - Qualitative artifacts: none
 - Stance entries evaluated: 0 (gate-excluded: 0, unmatched: 0)
-- Warnings (4):
+- Warnings (11):
+  - GC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
+  - HG=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
+  - PL=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
+  - SI=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
   - ZC=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value
+  - ZC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
   - ZS=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value
+  - ZS=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
   - ZW=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value
+  - ZW=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value
   - no qualitative artifacts found; stance evaluation is empty
 
 ## Methodology

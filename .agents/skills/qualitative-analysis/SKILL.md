@@ -1,13 +1,13 @@
 ---
 name: qualitative-analysis
-description: Fetch validated evidence bundles and event calendars, generate the grounded AI qualitative analysis artifact with one capped Claude API call, and validate and gate it before any rendering.
+description: Prepare grounded qualitative inputs for Claude Code Action OAuth, then independently validate and gate its structured output before rendering.
 ---
 
 # qualitative-analysis
 
 The AI qualitative layer of AIMS (roadmap #98, contract #89): deterministic
 evidence and calendar inputs, one capped LLM call producing a schema-validated
-`data/qualitative/<stem>.json` artifact, and deterministic grounding gates.
+`data/qualitative/<stem>.json` artifact through Claude Code Action OAuth, and deterministic grounding gates.
 The quantitative pipeline stays the sole source of truth for scores, ranks,
 risk gates, and the market regime — this layer only explains or challenges
 them, and any failure here publishes the quantitative report unchanged.
@@ -26,7 +26,7 @@ to `src/aims/`.
 | `validate_evidence.py`          | Validate an evidence bundle against `data/schema/evidence.schema.json`  |
 | `update_calendars.py`           | Refresh `data/calendars/earnings.json` from yfinance earnings dates     |
 | `validate_calendar.py`          | Validate a calendar file against `data/schema/calendar.schema.json`     |
-| `qualitative_analysis.py`       | One Claude API call → validated, gated qualitative artifact             |
+| `qualitative_analysis.py`       | Deterministic `prepare` and untrusted-output `finalize` boundaries      |
 | `validate_qualitative.py`       | Validate a qualitative artifact (shape, enums, caps, grounding)         |
 | `evaluate_stances.py`           | Deterministic stance-vs-forward-return evaluation (`data/performance/`) |
 | `validate_performance.py`       | Validate a stance-evaluation artifact                                   |
@@ -37,7 +37,7 @@ to `src/aims/`.
 ## Usage
 
 ```sh
-# 1. Deterministic inputs (no LLM, no API key needed)
+# 1. Deterministic inputs (no LLM or credential needed)
 uv run .agents/skills/qualitative-analysis/scripts/fetch_evidence.py \
     --analysis-date 2026-07-04 --output data/evidence/
 uv run .agents/skills/qualitative-analysis/scripts/validate_evidence.py \
@@ -48,16 +48,23 @@ uv run .agents/skills/qualitative-analysis/scripts/update_calendars.py \
 uv run .agents/skills/qualitative-analysis/scripts/validate_calendar.py \
     --input data/calendars/earnings.json
 
-# 2. The single non-deterministic step (requires ANTHROPIC_API_KEY)
-ANTHROPIC_API_KEY=... \
+# 2. Prepare the committed prompt payload and JSON Schema
 uv run .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+    prepare \
     --analysis data/analysis/2026-07-04.json \
     --evidence data/evidence/2026-07-04.json \
     --calendar data/calendars/macro_events.json \
     --calendar data/calendars/earnings.json \
+    --run-dir data/run/qualitative/
+
+# 3. The workflow invokes pinned anthropics/claude-code-action with
+#    CLAUDE_CODE_OAUTH_TOKEN and --tools "", then finalizes its untrusted output.
+CLAUDE_STRUCTURED_OUTPUT='{"market": ..., "instruments": ...}' \
+uv run .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+    finalize --request data/run/qualitative/request.json --attempt 1 \
     --output data/qualitative/
 
-# 3. Validate the committed artifact (defense in depth)
+# 4. Validate the committed artifact (defense in depth)
 uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
     --input data/qualitative/2026-07-04.json \
     --analysis data/analysis/2026-07-04.json \
@@ -84,8 +91,8 @@ uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
   `prompts/qualitative_v1.md`; its version and SHA-256, the model ID, and
   SHA-256 hashes of all inputs are recorded in artifact metadata. Changing
   the prompt or model requires the #97 regression harness (below).
-- **Fail-open:** missing `ANTHROPIC_API_KEY` or an empty evidence bundle
-  skips the step (exit 0); API errors or persistent validation failures exit
+- **Fail-open:** missing `CLAUDE_CODE_OAUTH_TOKEN` or an empty evidence bundle
+  skips the action path; OAuth/action/quota errors or persistent validation failures exit
   non-zero without writing an artifact. The daily workflow treats all of
   these as non-fatal and publishes the quantitative report unchanged.
 
@@ -121,7 +128,7 @@ Before merging any change to `prompts/qualitative_v1.md`, to
 
 ```sh
 # 1. Generate candidate artifacts with the edited prompt/model from
-#    committed inputs (or use the committed fixtures when no API key is
+#    committed inputs (or use the committed fixtures without OAuth execution
 #    available), then run the harness and record the results:
 uv run .agents/skills/qualitative-analysis/scripts/prompt_regression.py \
     --artifact tests/fixtures/qualitative_2024-01-01.json \

@@ -93,6 +93,8 @@
     },
     "interval": "d",
     "model_id": "claude-opus-4-8",
+    "execution_type": "claude-code-action-oauth",
+    "action_revision": "e90deca47693f9457b72f2b53c17d7c445a87342",
     "prompt_sha256": "abababababababababababababababababababababababababababababababab",
     "prompt_version": "1.0.0"
   },

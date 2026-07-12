@@ -61,6 +61,8 @@ _REQUIRED_META: Final[tuple[str, ...]] = (
     "model_id",
     "prompt_version",
     "prompt_sha256",
+    "execution_type",
+    "action_revision",
     "input_hashes",
 )
 _REQUIRED_HASHES: Final[tuple[str, ...]] = ("analysis_sha256", "evidence_sha256")

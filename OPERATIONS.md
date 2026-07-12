@@ -431,15 +431,15 @@ If a published report or artifact needs to be removed, see [Delete a published r
 
 ## 6. GitHub Actions secrets
 
-| Secret              | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SLACK_WEBHOOK_URL` | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                                                                                                                                                                                                                                                                                                                                                       |
-| `ANTHROPIC_API_KEY` | Optional | Claude API key for the AI qualitative analysis step (design in [§10](#10-ai-qualitative-analysis-layer-design), operations in [§11](#11-ai-qualitative-analysis-layer-operations)). Consumed by `daily-market-analysis.yml`: when set, the workflow fetches evidence and generates, validates, gates, and commits a qualitative artifact in the analysis PR (shadow mode). When unset, all qualitative steps are skipped and the run is byte-for-byte the quantitative pipeline. |
-| `GITHUB_TOKEN`      | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed.                                                                                                                                                                                                                                                                                                                                 |
+| Secret                    | Required | Description                                                                                                                                                                                                                                                                        |
+| ------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SLACK_WEBHOOK_URL`       | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                                                                                                                                                         |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Optional | Long-lived Claude Code OAuth token for the qualitative action step. Generate it with `claude setup-token`, store it as a repository Actions secret, and never place it in files or logs. When unset, the qualitative steps are skipped and the quantitative pipeline is unchanged. |
+| `GITHUB_TOKEN`            | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed.                                                                                                                                   |
 
 **How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.
 
-**Never commit secret values.** The `notify_slack.py` script reads `SLACK_WEBHOOK_URL` only from the environment, and `qualitative_analysis.py` reads `ANTHROPIC_API_KEY` only from the environment.
+**Never commit secret values.** Generate `CLAUDE_CODE_OAUTH_TOKEN` locally with `claude setup-token`, then add it at **Settings → Secrets and variables → Actions → New repository secret**. Rotate it by generating and replacing the secret; revoke it from the Claude account's connected-app/session settings (or by signing out affected Claude Code sessions), then replace the GitHub secret before re-enabling runs. The token is passed only to the pinned action and is never read or recorded by the Python finalizer.
 
 **Repository variables:**
 
@@ -524,9 +524,9 @@ Reports include a freshness table. Symbols with `n/a` in the freshness column ha
 WARNING: AI commentary: step failed; quantitative report unaffected
 ```
 
-The "Run qualitative analysis (shadow mode)" step is `continue-on-error`: evidence fetch problems, Claude API errors (401/429/5xx/timeouts), or an artifact that stays invalid after the single regeneration retry never block quantitative publication. The Slack success message carries the warning above.
+The qualitative prepare/action/finalize chain is fail-open: evidence problems, OAuth/action failures, subscription usage limits, timeouts, or output that stays invalid after the single retry never block quantitative publication. The Slack success message carries the warning above.
 
-**Fix:** Open the step log in the failed run. For API errors, check the `ANTHROPIC_API_KEY` secret and [status.anthropic.com](https://status.anthropic.com), then re-run (or backfill per [§9](#9-manual-recovery)). For validation errors, the log lists each violated rule from `validate_qualitative.py`. Repeated systemic failures can be silenced with the `skip_qualitative` dispatch input while investigating.
+**Fix:** Open the step log. For authentication failures, replace `CLAUDE_CODE_OAUTH_TOKEN` with a fresh `claude setup-token` value. For usage-limit failures, wait for the Claude subscription quota window to reset or skip qualitative analysis; the workflow does not fall back to metered API billing. For validation errors, the finalizer lists each violated rule. Repeated failures can be silenced with `skip_qualitative` while investigating.
 
 ### AI commentary absent or withheld by gates
 
@@ -611,14 +611,17 @@ uv run .agents/skills/qualitative-analysis/scripts/fetch_evidence.py \
 uv run .agents/skills/qualitative-analysis/scripts/validate_evidence.py \
     --input data/evidence/YYYY-MM-DD.json
 
-# 2. regenerate, validate, and gate the qualitative artifact
-ANTHROPIC_API_KEY=... \
+# 2. prepare the deterministic action request
 uv run .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+    prepare \
     --analysis data/analysis/YYYY-MM-DD.json \
     --evidence data/evidence/YYYY-MM-DD.json \
     --calendar data/calendars/macro_events.json \
     --calendar data/calendars/earnings.json \
-    --output data/qualitative/
+    --run-dir data/run/qualitative/
+# 3. Run the same pinned Claude Code Action workflow with the OAuth secret,
+#    then pass structured_output to `finalize --attempt 1` (and at most once
+#    more with `--attempt 2` when the first finalizer emits retry=true).
 uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
     --input data/qualitative/YYYY-MM-DD.json \
     --analysis data/analysis/YYYY-MM-DD.json \
@@ -684,7 +687,7 @@ The quantitative pipeline cannot see _why_ — news, earnings, disclosures, and 
 
 - **The quantitative artifact stays authoritative for all numbers.** The qualitative artifact may reference scores, ranks, features, risk gates, and the market regime; it never restates them authoritatively and never modifies them. This mirrors the OKF guardrail that LLM prose is never the source of truth for numeric facts.
 - **The LLM call is the single non-deterministic step.** It produces a committed, schema-validated JSON artifact (`data/qualitative/<stem>.json`). Everything downstream — validation, gating, report rendering, Hugo build — stays deterministic. Report generation without a qualitative artifact remains byte-identical to today's output.
-- **Fail-open.** Any qualitative failure (missing API key, API error, timeout, gate withholding) publishes the quantitative report unchanged. Quantitative coverage gates are never weakened. Qualitative-step failures are non-fatal warnings; quantitative failures remain fatal exactly as now.
+- **Fail-open.** Any qualitative failure (missing OAuth token, action/model/quota error, timeout, gate withholding) publishes the quantitative report unchanged. Quantitative coverage gates are never weakened. Qualitative-step failures are non-fatal warnings; quantitative failures remain fatal exactly as now.
 
 ### Artifact contract (#92)
 
@@ -707,16 +710,16 @@ The quantitative pipeline cannot see _why_ — news, earnings, disclosures, and 
 
 Schema validity is not truth. After validation, a deterministic gate pass cross-examines the structured claims against the numbers AIMS already computes, mirroring the `risk_gates` pattern: direction consistency (an `up`/`down` `direction_claim` contradicting the sign of the matching return feature, or a `none` claim contradicted by a non-trivial move in that feature, is gated — stance disagreement is never gated), numeric-claim verification within tolerance, evidence recency (aligned with `stale_days` in `src/aims/policy.py`), and citation coverage. Gated per-instrument entries are excluded from rendering; a gated market narrative withholds the whole artifact. One regeneration retry is allowed before degrading. Gate outcomes are recorded in artifact metadata so the report and Slack can say why commentary is absent. Gates are deterministic code only — no LLM-based verification.
 
-### Runner architecture and API access (#92)
+### Runner architecture and Claude Code Action execution (#92/#138)
 
 - **Runner:** an agent skill at `.agents/skills/qualitative-analysis/` whose scripts are thin wrappers delegating to `src/aims/qualitative.py`, the same pattern as `market-analysis/scripts/`. It runs in the daily workflow after the "Validate artifact" step (#95).
-- **API access:** the official `anthropic` Python SDK is added as a runtime dependency. Rationale: schema-constrained structured outputs, typed error classes, and built-in retry/backoff for 429/5xx — hand-rolling those over stdlib `urllib` (the `notify_slack.py` precedent, which was considered) would mean more custom code maintained at 100% branch coverage for no dependency saved in practice. `output_config.format` takes a real JSON Schema (`type`/`properties`/`required`) authored in code at implementation time (#92); `data/schema/qualitative.schema.json` stays a hand-rolled reference for `validate_qualitative.py`, not that request schema. The API-level schema guarantees basic shape and required-key presence; enum values, citation targets, and cross-field rules remain enforced by the validator and the #93 gates. The API-calling boundary in `src/aims/qualitative.py` stays thin and mockable; tests never call the network.
+- **Model execution:** `anthropics/claude-code-action` is pinned to a full commit SHA and receives `CLAUDE_CODE_OAUTH_TOKEN`. Automation mode uses `--tools ""`, so Claude has no repository read/write, shell, or GitHub mutation tools; all necessary committed inputs are embedded by the deterministic prepare stage. Claude Code's `--json-schema` produces `structured_output`, which is still treated as untrusted and rechecked by the hand-written validator and grounding gates before persistence. Python performs no model network call and has no Anthropic SDK dependency.
 - **Model:** `claude-opus-4-8`, pinned in code and recorded in artifact metadata alongside the prompt version. The prompt is a committed file; changing it or the model requires the #97 regression harness once that exists. Current Claude models accept no sampling parameters (`temperature` is rejected), so run-to-run reproducibility rests on committed inputs, structured outputs, deterministic gates, and committing a single validated artifact per date — not on a temperature setting.
 - **Caps:** one call per run; input capped by the evidence bundle's per-instrument item caps and length-capped snippets (#90); output capped via `max_tokens`; request timeout and a single retry (which is also the #93 regeneration retry).
 
-### Secret handling and cost (#95)
+### OAuth handling and subscription quota (#95/#138)
 
-`ANTHROPIC_API_KEY` is an optional repository secret read only from the environment, mirroring `SLACK_WEBHOOK_URL` (see [§6](#6-github-actions-secrets)). When absent, every qualitative step is skipped and the pipeline behaves exactly as today. Expected cost, to be re-measured once #92 runs: one daily call with roughly 30–60k input tokens and 2–5k output tokens on `claude-opus-4-8` ($5/$25 per million tokens) is about $0.20–0.45 per run, i.e. roughly $10–20/month. Record measured figures here after the first shadow-mode week.
+`CLAUDE_CODE_OAUTH_TOKEN` is optional and comes from `claude setup-token` under the operator's Claude Pro/Max subscription. When absent, every qualitative step is skipped. Runs consume the subscription's shared usage allowance rather than API credits; limits vary by plan and concurrent Claude usage. A limit failure is fail-open and should be retried only after the allowance resets. Generation, repository-secret setup, rotation, and revocation are documented in §6.
 
 ### Rollout: shadow mode before rendering (#95, then #94)
 
@@ -725,7 +728,7 @@ Daily analysis PRs auto-merge with no human review (#75), so schema validation a
 1. **Shadow mode (#95):** evidence and qualitative artifacts are generated, validated, gated, and committed in the daily analysis PR, but `generate_report.py` is not passed `--qualitative`. Published reports stay byte-identical to today's.
 2. **Exit criteria** (tracked on #98): at least 10 consecutive scheduled runs with zero schema/validator failures, a market-narrative gate pass rate of at least 80%, and a human spot-review of the committed artifacts recorded on #98.
 3. **Enable rendering (#94):** a default-off repository variable (e.g. `AI_COMMENTARY_ENABLED`) flips `--qualitative` on. The flip is a reviewed change recorded against #98's checklist, not a silent default. AI commentary renders in an explicitly labeled section with citations, model/prompt provenance, and the financial disclaimer adjacent.
-4. **Go/no-go checkpoint** (tracked on #98): after roughly one quarter of enabled rendering, review stance hit rates and calibration (#97), gate withhold rates, and realized cost; continue, adjust, or retire the layer.
+4. **Go/no-go checkpoint** (tracked on #98): after roughly one quarter of enabled rendering, review stance hit rates and calibration (#97), gate withhold rates, and subscription quota reliability; continue, adjust, or retire the layer.
 
 ### Non-goals
 
@@ -771,9 +774,9 @@ Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering win
 
 ### Shadow mode, rendering switch, and cost
 
-Shadow mode is the default state: with `ANTHROPIC_API_KEY` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#6-github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
+Shadow mode is the default state: with `CLAUDE_CODE_OAUTH_TOKEN` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#6-github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
 
-Cost controls: one Claude call per run (`claude-opus-4-8`, pinned in `aims.qualitative.MODEL_ID`), input bounded by the evidence caps, output capped at 8192 tokens, 300-second request timeout, one SDK-level retry for 429/5xx, and one regeneration retry. Expected order of magnitude per [§10](#10-ai-qualitative-analysis-layer-design): roughly $0.20–0.45 per run (≈$10–20/month); record measured figures here after the first shadow-mode week. Changing the model or the committed prompt (`.agents/skills/qualitative-analysis/prompts/qualitative_v1.md`, version + SHA-256 recorded in every artifact) requires the [§12](#12-stance-evaluation-accountability-and-okf-theme-curation) regression harness.
+Quota controls: one Claude Code Action invocation per run, plus at most one regeneration retry; top-K evidence bounds the prompt and `--max-turns 1` prevents open-ended agent loops. The action has no tools. Both invocations use the pinned model and subscription OAuth allowance. Changing the model or committed prompt requires the §12 regression harness.
 
 ---
 
@@ -797,7 +800,7 @@ Phase 4 of the roadmap (#98): measure whether AI commentary adds information, gu
 
 A prompt edit or model swap can silently change output quality with no code diff. `prompt_regression.py` (in `src/aims/prompt_regression.py`) recomputes the validator and the #93 gates over a `(qualitative, analysis, evidence)` triple and asserts **structural and gate metrics** — validator cleanliness, market-narrative rendering, instrument gate pass rate (≥ 0.6), citation coverage (= 1.0), and stance-distribution sanity — **never exact prose**, so wording changes alone cannot fail it. Results are recorded in `data/performance/prompt_regressions.json` keyed by the prompt file's SHA-256 and the pinned model ID (schema: `data/schema/prompt_regression.schema.json`).
 
-**Before adopting any change to `prompts/qualitative_v1.md`, `PROMPT_VERSION`, or `MODEL_ID`:** run the harness (over freshly generated candidate artifacts, or the committed fixtures when no API key is available) with `--record data/performance/prompt_regressions.json` and commit the updated file. A CI test (`tests/test_prompt_regression.py::test_committed_prompt_and_model_have_a_recorded_passing_entry`) fails when the committed prompt/model has no recorded passing entry, so an unreviewed prompt change cannot merge. There is **no automatic prompt tuning or optimization loop** — the harness measures and records; adoption stays a reviewed human decision. See the `qualitative-analysis` skill doc for the exact command.
+**Before adopting any change to `prompts/qualitative_v1.md`, `PROMPT_VERSION`, or `MODEL_ID`:** run the harness (over freshly generated candidate artifacts, or the committed fixtures without an OAuth run) with `--record data/performance/prompt_regressions.json` and commit the updated file. A CI test (`tests/test_prompt_regression.py::test_committed_prompt_and_model_have_a_recorded_passing_entry`) fails when the committed prompt/model has no recorded passing entry, so an unreviewed prompt change cannot merge. There is **no automatic prompt tuning or optimization loop** — the harness measures and records; adoption stays a reviewed human decision. See the `qualitative-analysis` skill doc for the exact command.
 
 ### Citation link-rot sampling (#97)
 
@@ -813,4 +816,4 @@ Its output is a **proposal for human review only** — it never writes to `okf/`
 
 ### Go/no-go checkpoint (#98)
 
-After roughly one quarter of enabled rendering, review this section's stance hit rates and confidence calibration, gate withhold rates, and realized API cost, then record a continue / adjust / retire decision on issue #98. A layer that measures as plausible-sounding noise is retired, not maintained.
+After roughly one quarter of enabled rendering, review this section's stance hit rates and confidence calibration, gate withhold rates, and subscription quota reliability, then record a continue / adjust / retire decision on issue #98. A layer that measures as plausible-sounding noise is retired, not maintained.

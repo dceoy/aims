@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "as_of": "2026-07-13",
+    "as_of": "2026-07-14",
     "config": {
       "horizons": [
         1,
@@ -11,8 +11,8 @@
       "top_k": 5
     },
     "disclaimer": "Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
-    "generated_at": "2026-07-13T00:00:00+00:00",
-    "git_commit": "c7c1bf5",
+    "generated_at": "2026-07-14T00:00:00+00:00",
+    "git_commit": "b1e00d6",
     "inputs": {
       "analysis_dates": [
         "2026-06-29",
@@ -28,36 +28,37 @@
         "2026-07-10",
         "2026-07-11",
         "2026-07-12",
-        "2026-07-13"
+        "2026-07-13",
+        "2026-07-14"
       ]
     }
   },
   "signal_evaluation": {
-    "dates_evaluated": 14,
+    "dates_evaluated": 15,
     "horizons": {
       "1d": {
-        "benchmark_average_return": 0.005627,
+        "benchmark_average_return": 0.003275,
         "by_asset_class": {
           "commodity": {
-            "benchmark_average_return": 0.0005,
-            "count": 5,
-            "excess_return": -0.001555,
-            "hit_rate": 0.6,
-            "top5_average_return": -0.001055
+            "benchmark_average_return": -0.001814,
+            "count": 12,
+            "excess_return": 0.000498,
+            "hit_rate": 0.583333,
+            "top5_average_return": -0.001316
           },
           "equity": {
-            "benchmark_average_return": 0.00656,
-            "count": 16,
-            "excess_return": -0.007592,
-            "hit_rate": 0.4375,
-            "top5_average_return": -0.001032
+            "benchmark_average_return": 0.003825,
+            "count": 22,
+            "excess_return": -0.007905,
+            "hit_rate": 0.318182,
+            "top5_average_return": -0.00408
           },
           "equity_index": {
-            "benchmark_average_return": 0.008946,
-            "count": 10,
-            "excess_return": -0.008474,
-            "hit_rate": 0.1,
-            "top5_average_return": 0.000473
+            "benchmark_average_return": 0.006878,
+            "count": 12,
+            "excess_return": -0.006922,
+            "hit_rate": 0.25,
+            "top5_average_return": -4.4e-05
           },
           "unknown": {
             "benchmark_average_return": 0.003751,
@@ -76,11 +77,11 @@
             "top5_average_return": -0.006045
           },
           "Neutral": {
-            "benchmark_average_return": 0.008119,
-            "count": 5,
-            "excess_return": -0.003849,
-            "hit_rate": 0.6,
-            "top5_average_return": 0.004271
+            "benchmark_average_return": -0.00057,
+            "count": 20,
+            "excess_return": -0.002813,
+            "hit_rate": 0.45,
+            "top5_average_return": -0.003383
           },
           "Unavailable": {
             "benchmark_average_return": 0.007708,
@@ -90,12 +91,12 @@
             "top5_average_return": 0.002394
           }
         },
-        "count": 43,
-        "excess_return": -0.004977,
-        "hit_rate": 0.395349,
+        "count": 58,
+        "excess_return": -0.004328,
+        "hit_rate": 0.396552,
         "incomplete": 12,
-        "pending": 15,
-        "top5_average_return": 0.00065
+        "pending": 5,
+        "top5_average_return": -0.001053
       },
       "20d": {
         "benchmark_average_return": null,
@@ -105,18 +106,25 @@
         "excess_return": null,
         "hit_rate": null,
         "incomplete": 0,
-        "pending": 70,
+        "pending": 75,
         "top5_average_return": null
       },
       "5d": {
-        "benchmark_average_return": 0.012384,
+        "benchmark_average_return": 0.012069,
         "by_asset_class": {
+          "commodity": {
+            "benchmark_average_return": 0.010175,
+            "count": 1,
+            "excess_return": 0.00653,
+            "hit_rate": 1.0,
+            "top5_average_return": 0.016705
+          },
           "equity": {
-            "benchmark_average_return": 0.021147,
-            "count": 6,
-            "excess_return": -0.011179,
-            "hit_rate": 0.5,
-            "top5_average_return": 0.009968
+            "benchmark_average_return": 0.01749,
+            "count": 9,
+            "excess_return": -0.004603,
+            "hit_rate": 0.555556,
+            "top5_average_return": 0.012887
           },
           "equity_index": {
             "benchmark_average_return": 0.021147,
@@ -135,19 +143,19 @@
         },
         "by_regime": {
           "Unavailable": {
-            "benchmark_average_return": 0.012384,
-            "count": 24,
-            "excess_return": -0.011485,
-            "hit_rate": 0.458333,
-            "top5_average_return": 0.000899
+            "benchmark_average_return": 0.012069,
+            "count": 28,
+            "excess_return": -0.008695,
+            "hit_rate": 0.5,
+            "top5_average_return": 0.003374
           }
         },
-        "count": 24,
-        "excess_return": -0.011485,
-        "hit_rate": 0.458333,
-        "incomplete": 11,
+        "count": 28,
+        "excess_return": -0.008695,
+        "hit_rate": 0.5,
+        "incomplete": 12,
         "pending": 35,
-        "top5_average_return": 0.000899
+        "top5_average_return": 0.003374
       }
     }
   },
@@ -176,6 +184,7 @@
     "2026-07-06: ^GDAXI: broken bar chain within 1d forward window",
     "2026-07-06: ^GDAXI: broken bar chain within 5d forward window",
     "2026-07-07: ^GDAXI: broken bar chain within 1d forward window",
+    "2026-07-07: ^GDAXI: broken bar chain within 5d forward window",
     "GC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
     "HG=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
     "PL=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",

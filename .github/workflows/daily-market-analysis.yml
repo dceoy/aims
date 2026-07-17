@@ -370,6 +370,9 @@ jobs:
         uses: anthropics/claude-code-action@e90deca47693f9457b72f2b53c17d7c445a87342 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # OAuth authenticates Claude; the built-in token prevents the action
+          # from attempting a separate Claude GitHub App token exchange.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: ${{ steps.qualitative_prepare.outputs.prompt }}
           claude_args: >-
             --model claude-opus-4-8 --max-turns 1 --disallowedTools "*"
@@ -395,6 +398,9 @@ jobs:
         uses: anthropics/claude-code-action@e90deca47693f9457b72f2b53c17d7c445a87342 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # OAuth authenticates Claude; the built-in token prevents the action
+          # from attempting a separate Claude GitHub App token exchange.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: ${{ steps.qualitative_prepare.outputs.prompt }}
           claude_args: >-
             --model claude-opus-4-8 --max-turns 1 --disallowedTools "*"

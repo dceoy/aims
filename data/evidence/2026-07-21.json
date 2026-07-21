@@ -1,0 +1,2256 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-35680fadcccf2ce0",
+      "published_at": "2026-07-14T09:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "ECB selects 36 payment service providers to join digital euro pilot",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260714~8cd07d9d45.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8682dd57be11f493",
+      "published_at": "2026-07-14T12:01:00+00:00",
+      "snippet": "CF raises its quarterly dividend by 20% as strong nitrogen demand, pricing and cash generation reinforce confidence in its long-term financial outlook.",
+      "source": "Zacks",
+      "title": "CF Industries Boosts Shareholder Returns With 20% Dividend Hike",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/cf-industries-boosts-shareholder-returns-120100462.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "brent_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c57605c30eef1f24",
+      "published_at": "2026-07-14T12:29:17+00:00",
+      "snippet": "Oil prices rose to monthly highs on Tuesday as the US and Iran continued to trade strikes in the Middle East.",
+      "source": "Yahoo Finance",
+      "title": "Oil prices hold onto modest gains as Trump announces Gulf investment deals to replace 20% cargo fees",
+      "url": "https://finance.yahoo.com/markets/article/oil-prices-hold-onto-modest-gains-as-trump-announces-gulf-investment-deals-to-replace-20-cargo-fees-122917495.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-290625fee4d68f89",
+      "published_at": "2026-07-14T14:00:00+00:00",
+      "snippet": "Global liquefied natural gas (LNG) trade volumes increased 5.4% to a record 56.3 billion cubic feet per day last year (Bcf/d), driven largely by U.S. LNG export capacity expanding to meet growing demand, according to a recent report from the International Group of Liquefied Natural Gas Importers (GIIGNL). Global LNG trade has slowed this year following the closure of the key export route for Qatar, the world's second-largest LNG exporter.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Global liquefied natural gas trade volumes reached record high in 2025",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=67864"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-2e262a141de1664f",
+      "published_at": "2026-07-14T17:13:29+00:00",
+      "snippet": "Soybeans are showing 1 to 3 \u00bc cent losses at midday. The cmdtyView national average Cash Bean price is down 3 cents $11.47 3/4. Soymeal futures are down a dime, with Soy Oil futures 49 points lower. July futures expire for the complex at the close. Crop Progress data from...",
+      "source": "Barchart",
+      "title": "Soybeans On the Lower Side at Tuesday\u2019s Midday",
+      "url": "https://www.barchart.com/story/news/3279138/soybeans-on-the-lower-side-at-tuesdays-midday"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-9a64500ec27b3d5a",
+      "published_at": "2026-07-14T18:00:00+00:00",
+      "snippet": "Minutes of the Board's discount rate meetings on June 8 and June 17, 2026",
+      "source": "Federal Reserve press releases",
+      "title": "Minutes of the Board's discount rate meetings on June 8 and June 17, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-96311a984523e486",
+      "published_at": "2026-07-14T21:48:17+00:00",
+      "snippet": "Soybeans closed Tuesday with contracts 1 to 4 cents lower, as July expired with a 5 \u00bc cent gains at $12.07 \u00bc. The cmdtyView national average Cash Bean price was down 3 3/4 cents $11.46. Soymeal futures saw late strength to close up 20 cents to $2.80, with Soy Oil...",
+      "source": "Barchart",
+      "title": "Soybeans Slip Lower on Tuesday",
+      "url": "https://www.barchart.com/story/news/3284129/soybeans-slip-lower-on-tuesday"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-33069e7c7a4e1d82",
+      "published_at": "2026-07-15T06:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Interview with Ouest-France",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260715~ab95a43007.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-11d3a03e04b7b5a9",
+      "published_at": "2026-07-15T09:03:40+00:00",
+      "snippet": "Oil prices were rising, with Brent crude trading just shy of $86 a barrel after the U.S. reinstated its naval blockade on Iran. \"Although Trump withdrew a proposal to impose transit fees on ships using Hormuz, the renewed conflict has pushed oil prices to their highest level in about a month, while broader regional tensions intensified following Houthi attacks on Saudi Arabia,\" said Soojin Kim from MUFG.",
+      "source": "Barrons.com",
+      "title": "Oil Rises After U.S. Reimposed Naval Blockade on Iran",
+      "url": "https://www.barrons.com/livecoverage/stock-market-news-today-071526/card/oil-rises-after-u-s-reimposed-naval-blockade-on-iran-nKrmlTlyGbAteZljUqrY?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-814fa60a69c468c5",
+      "published_at": "2026-07-15T11:08:35+00:00",
+      "snippet": "The Canadian dollar's upside is likely to be limited as the Bank of Canada is seen maintaining a cau",
+      "source": "MT Newswires",
+      "title": "MUFG Sees Limited Upside for Canadian Dollar Ahead of BoC Decision",
+      "url": "https://finance.yahoo.com/markets/currencies/articles/mufg-sees-limited-upside-canadian-110835746.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-dc6ee3d8713e39aa",
+      "published_at": "2026-07-15T14:00:00+00:00",
+      "snippet": "Petroleum markets in the second quarter of 2026 (2Q26) were characterized by continued disruptions to international crude oil and petroleum product flows through the Strait of Hormuz, contributing to higher and more volatile crude oil prices through most of the quarter. The disruptions also resulted in international buyers seeking alternative supply sources for petroleum products, driving up U.S. refinery margins, production, and exports.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Petroleum markets responded to disruptions in the Middle East in the second quarter",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=67865"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0da504e542985e49",
+      "published_at": "2026-07-15T17:16:59+00:00",
+      "snippet": "Soybeans are up 5 to 8 cents so far on Wednesday. The cmdtyView national average Cash Bean price is up 6 1/4 cents $11.52. Soymeal futures are down 40 cents to $1 higher, with Soy Oil futures 3 to 14 points higher. The next 7 days are remaining dry for...",
+      "source": "Barchart",
+      "title": "Soybeans Holding onto Midweek Gains as NOPA Reports a Large June Crush",
+      "url": "https://www.barchart.com/story/news/3301224/soybeans-holding-onto-midweek-gains-as-nopa-reports-a-large-june-crush"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-fba68fbfe8c917ff",
+      "published_at": "2026-07-15T17:16:59+00:00",
+      "snippet": "Corn futures are trading with contracts 8 to 9 cents higher so far at midday, with spillover support from near limit gains is wheat giving an assist. The CmdtyView national average Cash Corn price is 8 1/2 cents higher at $4.16 1/4. The next 7 days are remaining dry for...",
+      "source": "Barchart",
+      "title": "Corn Back to Rallying on Wednesday Despite Weaker Ethanol Data",
+      "url": "https://www.barchart.com/story/news/3301210/corn-back-to-rallying-on-wednesday-despite-weaker-ethanol-data"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-bf73536fa2900277",
+      "published_at": "2026-07-16T10:11:22+00:00",
+      "snippet": "Gold prices extended their losses on Thursday as investors shifted their attention from softer US inflation figures to the inflationary risks associated with higher oil prices, increasing expectations that the Federal Reserve will maintain a cautious approach to monetary policy. At 04:42 ET (08:42 GMT), spot gold (XAU/USD) was down 0.",
+      "source": "InvestorsHub",
+      "title": "Gold declines further as rising oil prices cloud the Federal Reserve outlook",
+      "url": "https://investorshub.advfn.com/market-news/article/32021/gold-declines-further-as-rising-oil-prices-cloud-the-federal-reserve-outlook"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-62523303150b1828",
+      "published_at": "2026-07-16T10:33:27+00:00",
+      "snippet": "Asian stock markets gyrated Thursday, as traders weighed ongoing Persian Gulf hostilities, crude oil",
+      "source": "MT Newswires",
+      "title": "Oil, Tech Outlooks Gyrate Asian Stock Markets",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/oil-tech-outlooks-gyrate-asian-103327065.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-0fc6474c4450b9a4",
+      "published_at": "2026-07-16T14:00:00+00:00",
+      "snippet": "Crude oil inventories held at storage facilities in Cushing, Oklahoma, fell below 20 million barrels during the week ending June 19 until the week ending July 10, according to our Weekly Petroleum Status Report.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "What are tank bottoms?",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=67866"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-6a8570fa68c167d4",
+      "published_at": "2026-07-16T15:00:00+00:00",
+      "snippet": "Federal Reserve Board issues enforcement action with former chief lending officer of Heritage State Bank",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board issues enforcement action with former chief lending officer of Heritage State Bank",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260716a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6856d399f28d093b",
+      "published_at": "2026-07-16T15:25:00+00:00",
+      "snippet": "SONY advances its entertainment strategy by expanding AI, anime and IP investments while gaming, music and film strengthen long-term growth opportunities.",
+      "source": "Zacks",
+      "title": "Will Sony's Entertainment Strategy Support Long-Term Growth?",
+      "url": "https://finance.yahoo.com/media-advertising/articles/sonys-entertainment-strategy-support-long-152500524.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e4d92891b8c4b498",
+      "published_at": "2026-07-16T15:54:40+00:00",
+      "snippet": "The gaming giant announced earlier this month that they'd stop producing physical games. So what happens to players who can't access the online store?",
+      "source": "Moneywise",
+      "title": "Sony's 2028 PlayStation disc cutoff locks out 122 countries from future games \u2014 and raises costs for others",
+      "url": "https://finance.yahoo.com/technology/articles/sonys-2028-playstation-disc-cutoff-155440027.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "brent_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6d8019e9972353fa",
+      "published_at": "2026-07-16T17:13:54+00:00",
+      "snippet": "Diesel prices hit $5 per gallon as driving fuel costs rose again.",
+      "source": "Yahoo Finance",
+      "title": "Diesel hits $5 per gallon as pump prices resume climb",
+      "url": "https://finance.yahoo.com/markets/article/diesel-hits-5-per-gallon-as-pump-prices-resume-climb-171354477.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ad8308c908834f98",
+      "published_at": "2026-07-16T18:00:00+00:00",
+      "snippet": "Struggling to keep up in the console market, Microsoft\u2019s Xbox made a big bet on its Game Pass subscription service. Now Xbox is calling for a \u201creset\u201d of its business. Here\u2019s what went wrong.",
+      "source": "WSJ",
+      "title": "Why Microsoft's $80 Billion Xbox Bet Backfired",
+      "url": "https://finance.yahoo.com/video/why-microsofts-80-billion-xbox-180000458.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-da8d6eac614e0f3c",
+      "published_at": "2026-07-16T18:00:00+00:00",
+      "snippet": "Agencies issue joint statement on handling of highly sensitive information during bank examinations",
+      "source": "Federal Reserve press releases",
+      "title": "Agencies issue joint statement on handling of highly sensitive information during bank examinations",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260716a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f947fedf4cec9eec",
+      "published_at": "2026-07-16T19:27:00+00:00",
+      "snippet": "Oil futures ended lower in an indecisive session with the market awaiting clarity on whether the U.S. steps up its strikes on Iran or the sides look to resume talks.",
+      "source": "The Wall Street Journal",
+      "title": "Oil Futures Settle Lower in Choppy Trade",
+      "url": "https://www.wsj.com/finance/commodities-futures/oil-rises-amid-prospects-of-escalating-mideast-conflict-7f8ab657?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-05d7b894c7367191",
+      "published_at": "2026-07-16T21:04:00+00:00",
+      "snippet": "Nvidia stock has been slow to rally but business in Japan and a robotics push could help in the future.",
+      "source": "Barrons.com",
+      "title": "Nvidia Pushes Into a Big New AI Market That Could Rally the Stock",
+      "url": "https://www.barrons.com/articles/nvidia-stock-price-today-ai-9af33ec6?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5dcfc738e92a7d4b",
+      "published_at": "2026-07-16T22:29:52+00:00",
+      "snippet": "The wheat complex slipped back on Thursday, with contracts marginally lower. Chicago SRW contracts saw nearby losses of 1 to 3 cents on the day. KC HRW futures posted front month losses of 2 to 3 \u00bd cents on the day. MPLS spring wheat posted gains of 2 to 3...",
+      "source": "Barchart",
+      "title": "Wheat Corrects Lower with Modest Tuesday Losses",
+      "url": "https://www.barchart.com/story/news/3327058/wheat-corrects-lower-with-modest-tuesday-losses"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ae30aa7f67197c16",
+      "published_at": "2026-07-17T09:36:44+00:00",
+      "snippet": "Gold prices moved modestly higher on Friday as investors returned to the market following the previous session\u2019s sharp decline. Even so, the precious metal remained on track for its largest weekly loss since early June as escalating tensions between the United States and Iran continued to fuel inflation concerns.",
+      "source": "InvestorsHub",
+      "title": "Gold recovers slightly but remains on course for its weakest week since June",
+      "url": "https://investorshub.advfn.com/market-news/article/32119/gold-recovers-slightly-but-remains-on-course-for-its-weakest-week-since-june"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-9dcdfaf265e9a2e7",
+      "published_at": "2026-07-17T10:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: The cooperative spirit at the heart of the digital euro",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260717~b6a156dc40.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c019aba9ca37e0ed",
+      "published_at": "2026-07-17T10:21:07+00:00",
+      "snippet": "STORY: A brutal selloff in chipmakers spread through global markets on Friday. It led to a rout across Asia and also saw European shares open lower. It follows a shift in investor sentiment about an AI-driven rally as they reassessed its durability. Investors fled risk across Asia, which sent MSCI's broadest index of Asia-Pacific shares outside Japan down 2.7%. While the Nikkei tumbled more than 5%. Taiwan's stock market plunged more than 6% for its worst day since U.S. President Donald Trump's ",
+      "source": "Reuters Videos",
+      "title": "Stocks sink as chip rout deepens, oil set for weekly gain",
+      "url": "https://finance.yahoo.com/video/stocks-sink-chip-rout-deepens-102107909.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d848ffea962c04e3",
+      "published_at": "2026-07-17T10:36:14+00:00",
+      "snippet": "Asian stock markets largely fell back on Friday, as global caution on hefty tech-sector capital outl",
+      "source": "MT Newswires",
+      "title": "Tech Rout Blunts Asian Stock Markets",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/tech-rout-blunts-asian-stock-103614132.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-561e88638f7309e3",
+      "published_at": "2026-07-17T12:00:00+00:00",
+      "snippet": "8am: Wall Street futures lower as tech rout spreads Wall Street looked set for a sharply weaker open on Friday as a global sell-off in semiconductor stocks gathered pace, with disappointing corporate earnings adding to the risk-off mood. Futures pointed to the Nasdaq opening around 1.5%...",
+      "source": "Proactive",
+      "title": "Nasdaq to lead US stocks lower as chip sell-off deepens; Netflix disappoints",
+      "url": "https://www.proactiveinvestors.com/companies/news/1095621/nasdaq-to-lead-us-stocks-lower-as-chip-sell-off-deepens-netflix-disappoints-1095621.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-86e24f3928e37281",
+      "published_at": "2026-07-17T12:13:54+00:00",
+      "snippet": "Valterra Platinum is in focus after analysts adjusted price targets, including moves from \u00a364.00 to \u00a371.00 on the bullish side and to \u00a380.00 in more cautious work. These shifts reflect differing readings of recent research, with some analysts leaning on supportive platinum pricing while others question how much investors should pay without clearer visibility on future delivery. As you read on, you will see how these evolving targets feed into the broader analyst narrative around Valterra...",
+      "source": "Simply Wall St.",
+      "title": "Valterra Platinum (JSE:VAL) Stock Gets Fair Value Trim As Analysts Split On Platinum Outlook",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/valterra-platinum-jse-val-stock-121354863.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d27179c3999f1641",
+      "published_at": "2026-07-17T12:18:01+00:00",
+      "snippet": "Wheat is trading 3 to 8 cent gains across the three markets on Friday. The wheat complex slipped back on Thursday, with contracts marginally lower. Chicago SRW contracts saw nearby losses of 1 to 3 cents on the day. Open interest was up 6,265 contracts on Thursday. KC HRW futures...",
+      "source": "Barchart",
+      "title": "Wheat Bulls Starting Friday Morning with Gains",
+      "url": "https://www.barchart.com/story/news/3334944/wheat-bulls-starting-friday-morning-with-gains"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax"
+      ],
+      "category": "instrument_news",
+      "id": "ev-7fdff62d87c2e1a7",
+      "published_at": "2026-07-17T15:50:17+00:00",
+      "snippet": "European stock markets closed mixed in Friday trading with the Stoxx 600 down 0.5%, Germany's DAX sh",
+      "source": "MT Newswires",
+      "title": "European Equities Mixed in Friday Trading; ASML to Give Staff One-Time Bonus",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/european-equities-mixed-friday-trading-155017583.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-64199de8e4ee1db9",
+      "published_at": "2026-07-17T16:28:18+00:00",
+      "snippet": "CoreWeave has launched a $2.6 billion first-lien delayed-draw term loan (DDTL) to support the acquisition and installation of graphics processing units (GPUs), according to sources. A lender call is scheduled for 10 a.m. ET Monday, July 20, and commitments are due by noon ET Thursday, July 30. Price talk for the DDTL maturing in September 2031 is S+425-450, with a 0% floor and an OID of 99. That works out to a yield to maturity of 8.53%-8.79%. The DDTL is available until December 2026, with an u",
+      "source": "Pitchbook",
+      "title": "CoreWeave launches $2.6B term loan to support acquisition of GPUs",
+      "url": "https://pitchbook.com/news/articles/coreweave-launches-2-6b-term-loan-to-support-acquisition-of-gpus"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9f1088d3957e33a3",
+      "published_at": "2026-07-17T16:28:26+00:00",
+      "snippet": "The FTSE 100 Index closed up 28.13 points at 10,600.37.",
+      "source": "PA Media: Money",
+      "title": "Utility stocks support FTSE 100 in nervy trade",
+      "url": "https://uk.finance.yahoo.com/news/utility-stocks-support-ftse-100-162826258.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0303d295b04b578b",
+      "published_at": "2026-07-17T16:34:40+00:00",
+      "snippet": "This week's market action has been dominated by chip stock weakness, and a new Chinese AI model only added fuel to the fire. The Nasdaq sank 1.1%, and the S&P 500 fell 0.7%. The Dow was down 0.3%, or 155 points.",
+      "source": "Barrons.com",
+      "title": "DeepSeek Round 2? A New Chinese AI Model Deepens Chip Stock Selloff.",
+      "url": "https://www.barrons.com/livecoverage/stock-market-news-today-071726/card/deepseek-round-2-a-new-chinese-ai-model-deepens-chip-stock-selloff--lgDpCTAMNzO0eXQMUWih?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-61011ce485b1b607",
+      "published_at": "2026-07-17T17:00:50+00:00",
+      "snippet": "The wheat complex is reverting from Thursday weaker trade to post midday gains across the complex. Chicago SRW contracts are up 6 to 7 cents in most contracts. KC HRW futures are rallying 13 to 14 cents across most contracts. MPLS spring wheat is joining in on the strength, up...",
+      "source": "Barchart",
+      "title": "Wheat Rallying Through Friday\u2019s Midday",
+      "url": "https://www.barchart.com/story/news/3339252/wheat-rallying-through-fridays-midday"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-812f98bf5b5ecc0d",
+      "published_at": "2026-07-17T17:00:50+00:00",
+      "snippet": "Soybeans are rebounding from the Thursday weakness with contracts up 6 to 8 cents in most contracts at midday. The cmdtyView national average Cash Bean price is up 7 \u00bd cents at $11.62 1/2. Soymeal futures are $2.10 to $2.60 lower at midday, while Soy Oil futures were 223 to...",
+      "source": "Barchart",
+      "title": "Soybeans Holding onto Midday Gains, Following Slew of Export Business",
+      "url": "https://www.barchart.com/story/news/3339242/soybeans-holding-onto-midday-gains-following-slew-of-export-business"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8590b27614d85fbb",
+      "published_at": "2026-07-17T17:45:54+00:00",
+      "snippet": "The US stock market sank on Friday in a \u201cbloodbath\u201d for companies linked to the AI boom.",
+      "source": "The Telegraph",
+      "title": "Wall Street plunges in AI \u2018bloodbath\u2019",
+      "url": "https://uk.finance.yahoo.com/news/global-stocks-plunge-ai-bloodbath-093710394.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-77eae03353e6f576",
+      "published_at": "2026-07-17T17:46:00+00:00",
+      "snippet": "PRECIOUS METALS Front Month Comex Gold for July delivery lost $91.40 per troy ounce, or 2.23% to $4012.70 this week \u2014Largest one week net and percentage decline since the week ending June 26, 2026 \u2014Down for two consecutive weeks \u2014Down $100.",
+      "source": "The Wall Street Journal",
+      "title": "Comex Gold Ends the Week 2.23% Lower at $4012.70",
+      "url": "https://www.wsj.com/finance/commodities-futures/gold-rises-central-bank-buying-likely-to-remain-structural-driver-f10d22c2?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a4bb6759d6db817b",
+      "published_at": "2026-07-17T18:18:21+00:00",
+      "snippet": "Lucid stock is surging for a third straight session while Tesla and Rivian sit out the party, and the reason behind the divergence says a lot about how fragile this recovery really is.",
+      "source": "24/7 Wall St.",
+      "title": "Lucid Rallies 10% for a Third Straight Up Day, Leaving Tesla, Rivian Behind",
+      "url": "https://247wallst.com/investing/2026/07/17/lucid-rallies-10-for-a-third-straight-up-day-leaving-tesla-rivian-behind/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6ae291824e942c3f",
+      "published_at": "2026-07-17T19:16:06+00:00",
+      "snippet": "Air taxi stocks have shed nearly half their value in 2026, and the losses keep accelerating. Before writing them off or doubling down, investors need to understand what separates a beaten-down opportunity from a broken story.",
+      "source": "24/7 Wall St.",
+      "title": "Joby, Archer, and EHang Are Down 40% to 60% in 2026. Are Air Taxi Stocks Damaged Beyond Repair?",
+      "url": "https://247wallst.com/investing/2026/07/17/joby-archer-and-ehang-are-down-40-to-60-in-2026-are-air-taxi-stocks-damaged-beyond-repair/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-61d5023d1bc56007",
+      "published_at": "2026-07-17T20:31:00+00:00",
+      "snippet": "Bitcoin (CRYPTO: $BTC) and other digital assets were under pressure to end the week amid a global rout in technolog...",
+      "source": "CryptoProwl",
+      "title": "Weekly Wrap: Crypto Struggles as Technology Stocks Fall",
+      "url": "https://www.cryptoprowl.com/releases/weekly-wrap-crypto-struggles-as-technology-stocks-fall-6194"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-397152de33fa4e07",
+      "published_at": "2026-07-17T20:55:03+00:00",
+      "snippet": "The wheat complex was in rally mode to close out the week, finishing higher in all three exchanges. Chicago SRW contracts were 4 \u00be to 9 \u00bd cents higher across most contracts, with September up 42 \u00bd cents on the week. KC HRW futures rallied 10 \u00bd to 15 \u00be...",
+      "source": "Barchart",
+      "title": "Wheat Strengthens into the Friday Close",
+      "url": "https://www.barchart.com/story/news/3342300/wheat-strengthens-into-the-friday-close"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e44846dd171a13b2",
+      "published_at": "2026-07-17T21:50:06+00:00",
+      "snippet": "In the latest trading session, Toyota Motor Corporation (TM) closed at $177.61, marking a -1.2% move from the previous day.",
+      "source": "Zacks",
+      "title": "Toyota Motor Corporation (TM) Sees a More Significant Dip Than Broader Market: Some Facts to Know",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/toyota-motor-corporation-tm-sees-215006634.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-dd86d8ebc76625e6",
+      "published_at": "2026-07-17T22:00:07+00:00",
+      "snippet": "In the closing of the recent trading day, Sony (SONY) stood at $21.12, denoting a -1.26% move from the preceding trading day.",
+      "source": "Zacks",
+      "title": "Sony (SONY) Declines More Than Market: Some Information for Investors",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/sony-sony-declines-more-market-220007072.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax",
+        "stoxx50"
+      ],
+      "category": "instrument_news",
+      "id": "ev-21f32772414eaf29",
+      "published_at": "2026-07-18T05:01:30+00:00",
+      "snippet": "An Austrian chipmaker is up 459% this year, turning Vienna\u2019s bank-heavy market into one of the eurozone's best performers of 2026.View on euronews",
+      "source": "Euronews",
+      "title": "Why has Austria become Europe's hottest AI market this year?",
+      "url": "https://www.euronews.com/2026/07/18/why-has-austria-become-europes-hottest-ai-market-this-year"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c12d0876bac1fe6a",
+      "published_at": "2026-07-18T07:11:44+00:00",
+      "snippet": "Toyota Motor (TSE:7203) is facing a lawsuit claiming it continued tracking users online after they opted out of website tracking cookies. The complaint centers on alleged violations of user privacy preferences and could raise regulatory and reputational questions for the company. At the same time, Toyota is reported to be accelerating its shift toward cleaner energy sources in response to rising oil supply disruptions. These developments come as Toyota trades around \u00a52,899.5 per share and...",
+      "source": "Simply Wall St.",
+      "title": "Toyota (TSE:7203) Faces Privacy Lawsuit As It Speeds Cleaner Energy Shift",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/toyota-tse-7203-faces-privacy-071144427.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-16c9191c496c7ece",
+      "published_at": "2026-07-20T07:00:00+00:00",
+      "snippet": "Vodafone has been dealt a setback in its race against Elon Musk\u2019s Starlink to launch mobile phone coverage from space in Britain.",
+      "source": "The Telegraph",
+      "title": "Vodafone hit by delays in mobile space race against Musk",
+      "url": "https://www.telegraph.co.uk/business/2026/07/20/vodafone-hit-by-delays-in-mobile-space-race-against-musk/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d25f37252a02c0f7",
+      "published_at": "2026-07-20T07:30:36+00:00",
+      "snippet": "Truist, Oppenheimer and KeyBanc moved to $500 targets, with Oppenheimer saying UnitedHealth \u201chandily\u201d beat expectations.",
+      "source": "Stocktwits",
+      "title": "UNH Stock Tracks Hot Monthly Streak: Wall Street Cheers \u2018Impressive\u2019 Q2 And Sees Over 20% More Room To Run",
+      "url": "https://stocktwits.com/news-articles/markets/equity/unh-wall-street-impressive-q2-more-room-to-run/cZZLvPfR7MU"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-9cea405f2f8a3bda",
+      "published_at": "2026-07-20T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Survey on the Access to Finance of Enterprises: lending conditions tightened",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260720~cafc3874a7.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum",
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-74dc1423efe60b54",
+      "published_at": "2026-07-20T09:23:17+00:00",
+      "snippet": "Gold prices were broadly stable on Monday as investors balanced rising geopolitical tensions between the United States and Iran against expectations that higher energy prices could encourage the Federal Reserve to keep interest rates elevated for longer. At 22:17 ET (02:17 GMT), XAU/USD was up 0.",
+      "source": "InvestorsHub",
+      "title": "Gold holds near $4,000 as Fed rate expectations offset safe-haven demand",
+      "url": "https://investorshub.advfn.com/market-news/article/32164/gold-holds-near-4000-as-fed-rate-expectations-offset-safe-haven-demand"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi",
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a7db924e328a6d9f",
+      "published_at": "2026-07-20T10:38:30+00:00",
+      "snippet": "Asian stock markets turned in a mixed performance Monday, with Seoul retreating on another chip-sect",
+      "source": "MT Newswires",
+      "title": "Tech Turmoil Troubles Asian Stock Markets",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/tech-turmoil-troubles-asian-stock-103830698.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-fb28535b46deb77b",
+      "published_at": "2026-07-20T12:32:02+00:00",
+      "snippet": "Wheat is trading with modest 2 to 5 cent gains so far on Monday. The wheat complex was in rally mode to close out the week, finishing higher in all three exchanges. Chicago SRW contracts were 4 \u00be to 9 \u00bd cents higher across most contracts, with September up 42...",
+      "source": "Barchart",
+      "title": "Wheat Showing Modest Monday Morning Strength",
+      "url": "https://www.barchart.com/story/news/3363183/wheat-showing-modest-monday-morning-strength"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4f78c90691475f52",
+      "published_at": "2026-07-20T13:12:44+00:00",
+      "snippet": "Asian markets were mixed at the end of Monday\u2019s trading session, but South Korean equities sunk deeper into last week\u2019s selloff. China\u2019s Shanghai Composite and Hong Kong\u2019s Hang Seng Index ended their respective trading days up 0.9% and 2.4%, respectively. Last Friday\u2019s selloff was part of a broader rotation out of tech, specifically semiconductors, leading the Asian market especially exposed given the region\u2019s prominence in the chip trade.",
+      "source": "Barrons.com",
+      "title": "Last Week's Mini DeepSeek Moment Blows Over, but KOSPI Struggles Persist",
+      "url": "https://www.barrons.com/livecoverage/stock-market-news-today-072026/card/last-week-s-mini-deepseek-moment-blows-over-but-kospi-struggles-persist-oHjFxypnl5DTwKhqychg?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8dbe3b2f42c9d7fa",
+      "published_at": "2026-07-20T13:31:10+00:00",
+      "snippet": "Semiconductor stocks edged higher on Monday following a recent sell-off.",
+      "source": "Yahoo Finance",
+      "title": "AMD, Micron, SK Hynix climb as semiconductor complex attempt recovery",
+      "url": "https://finance.yahoo.com/technology/article/amd-micron-sk-hynix-climb-as-semiconductor-complex-attempt-recovery-133110868.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c68bf7f51ff8edcd",
+      "published_at": "2026-07-20T13:36:00+00:00",
+      "snippet": "CLB struggles with ongoing headwinds from lower completion activity, operational disruptions, inflationary costs, weaker margins and projected earnings decline in 2026.",
+      "source": "Zacks",
+      "title": "Core Stock Down 39% in 6 Months: Should You Hold or Sell Now?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/core-stock-down-39-6-133600385.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-79ddd736cdf4cb3a",
+      "published_at": "2026-07-20T13:38:00+00:00",
+      "snippet": "Nexa Resources and Teck Resources are riding stronger base metal prices, but which miner's growth plans, and production outlook make it the better buy now?",
+      "source": "Zacks",
+      "title": "NEXA vs. TECK: Which Base Metals Stock Is the Better Buy Now?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/nexa-vs-teck-metals-stock-133800987.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9a4533b24b336b8c",
+      "published_at": "2026-07-20T13:51:34+00:00",
+      "snippet": "Investing.com -- UBS told investors in a note Monday that it maintains an \"Attractive\" view on Japanese equities despite a sharp increase in market volatility, arguing that valuations have become more appealing following the recent pullback.",
+      "source": "Investing.com",
+      "title": "Buy the dip in Nikkei as valuations look attractive after recent pullback: UBS",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/buy-dip-nikkei-valuations-look-135134549.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d55590aad4e95bd4",
+      "published_at": "2026-07-20T13:53:32+00:00",
+      "snippet": "December soybean meal futures present a buying opportunity on more price strength.",
+      "source": "Barchart",
+      "title": "Soybean Meal Prices Are Rising Amid Global Supply Disruptions. How to Trade the Uptrend Here.",
+      "url": "https://www.barchart.com/story/news/3364914/soybean-meal-prices-are-rising-amid-global-supply-disruptions-how-to-trade-the-uptrend-here"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-86e4d9417da4dc90",
+      "published_at": "2026-07-20T14:00:00+00:00",
+      "snippet": "On July 3, 2026, the New York Independent System Operator (NYISO) imported 52 gigawatthours (GWh) of electricity from Canada, the most traded between the two areas since January 2025. Some of the imported electricity flowed along the new Champlain Hudson Power Express (CHPE) transmission line between Quebec, Canada, and New York City, which officially reached commercial operations in May after three years of construction.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "New York imports more electricity from Canada after high-voltage transmission line opens",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=67867"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8c4af7a6eee72c7e",
+      "published_at": "2026-07-20T14:38:34+00:00",
+      "snippet": "Tempus AI\u2019s planned acquisition follows recent interest in blood-based cancer tests across the medtech industry.",
+      "source": "MedTech Dive",
+      "title": "Tempus to buy cancer test-maker Personalis for $1.5B",
+      "url": "https://www.medtechdive.com/news/tempus-to-buy-cancer-test-maker-personalis-for-15b/825684/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8171bb77c7029257",
+      "published_at": "2026-07-20T14:43:02+00:00",
+      "snippet": "The stock is trading near 52-week highs, but under the surface, commercial segment cost trends are creating headwinds.",
+      "source": "Trefis",
+      "title": "The Real Risk Inside UnitedHealth Stock",
+      "url": "https://www.trefis.com/articles/607940/the-real-risk-inside-unitedhealth-stock/2026-07-20"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d4e4df95cd9e92c5",
+      "published_at": "2026-07-20T14:48:00+00:00",
+      "snippet": "Both companies offer attractive yields, but one has lower risk and higher free cash flow.",
+      "source": "Motley Fool",
+      "title": "Chevron vs. ExxonMobil: Only One Deserves a Spot in Your Portfolio Today.",
+      "url": "https://www.fool.com/investing/2026/07/20/chevron-vs-exxonmobil-only-one-deserves-a-spot-in/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-cb650cb11e2d8fe9",
+      "published_at": "2026-07-20T15:02:51+00:00",
+      "snippet": "Brent crude's sudden five-day surge just put one free-cash-flow ETF's energy strategy to the test, and the results reveal something important about how its quarterly rebalance mechanic could either amplify or quietly erase those gains.",
+      "source": "24/7 Wall St.",
+      "title": "This \u2018Cash Cow\u2019 ETF\u2019s Energy Bet Just Paid Off as Brent Spiked 14% in Five Days",
+      "url": "https://247wallst.com/investing/etf/2026/07/20/this-cash-cow-etfs-energy-bet-just-paid-off-as-brent-spiked-14-in-five-days/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-020891234a729be0",
+      "published_at": "2026-07-20T15:15:00+00:00",
+      "snippet": "Pre-Markets in Green After Week of Losses.",
+      "source": "Zacks",
+      "title": "Pre-Markets in Green After Week of Losses",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/pre-markets-green-week-losses-151500473.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ea930818d2a05374",
+      "published_at": "2026-07-20T15:24:45+00:00",
+      "snippet": "Silver (SI=F) September futures opened at $55.96 per ounce on Monday, July 20, 2026, down 0.6% from Friday's closing price. The silver price moved higher this morning, reaching $57.05 as of 8:45 a.m. ET.",
+      "source": "Yahoo Personal Finance",
+      "title": "Silver prices today, Monday, July 20, 2026: Silver ticks up after violent weekend in Middle East",
+      "url": "https://finance.yahoo.com/personal-finance/investing/article/silver-prices-today-monday-july-20-2026-silver-ticks-up-after-violent-weekend-in-middle-east-152445143.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax",
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f5da1207240bed61",
+      "published_at": "2026-07-20T15:46:05+00:00",
+      "snippet": "European stock markets closed mixed in Monday trading as investors continued to gauge rising hostili",
+      "source": "MT Newswires",
+      "title": "European Stocks Close Mixed in Monday Trading; Energy Stocks Rise Amid Expanding Middle East Fighting",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/european-stocks-close-mixed-monday-154605056.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8ca5acb1e399dac0",
+      "published_at": "2026-07-20T16:00:00+00:00",
+      "snippet": "Middle East tensions, AI-driven tech weakness and stock-specific swings fueled big moves in leveraged ETFs. Here's a look at last week's top performers.",
+      "source": "Zacks",
+      "title": "Best-Performing Leveraged ETF Areas of Last Week",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/best-performing-leveraged-etf-areas-160000451.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-65f3db9bb6031078",
+      "published_at": "2026-07-20T16:00:02+00:00",
+      "snippet": "Does UnitedHealth Group (UNH) have what it takes to be a top stock pick for momentum investors? Let's find out.",
+      "source": "Zacks",
+      "title": "UnitedHealth Group (UNH) is a Great Momentum Stock: Should You Buy?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/unitedhealth-group-unh-great-momentum-160002331.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-79b4e8d2ba091c1f",
+      "published_at": "2026-07-20T16:16:15+00:00",
+      "snippet": "Nearly half of Nasdaq 100 stocks are already in correction territory while the index hovers near record highs, and that contradiction is forcing investors to confront an uncomfortable question about who actually gets hurt when the AI trade finally stumbles.",
+      "source": "24/7 Wall St.",
+      "title": "Just a Handful of AI Stocks Are Carrying Everything. History Says It Doesn\u2019t Have to End Badly",
+      "url": "https://247wallst.com/investing/2026/07/20/just-a-handful-of-ai-stocks-are-carrying-everything-history-says-it-doesnt-have-to-end-badly/"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e179398c01668ba6",
+      "published_at": "2026-07-20T16:19:04+00:00",
+      "snippet": "ReconAfrica CEO Brian Reinsborough joined Steve Darling from Proactive to discuss preliminary production testing results from the Kavango West 1X discovery well, where the company has successfully produced hydrocarbons to surface during testing of the Elandshoek formation. Production testing began on June 8, 2026, with the company completing tests on the three lowest zones in the Elandshoek formation. The uppermost of those zones flowed natural gas to surface during three separate flow tests, wi",
+      "source": "Proactive",
+      "title": "ReconAfrica produces first onshore Hydrocarbons in Namibia from Kavango West well",
+      "url": "https://finance.yahoo.com/video/reconafrica-produces-first-onshore-hydrocarbons-161904510.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "cac",
+        "dax",
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-89a473769be3206e",
+      "published_at": "2026-07-20T16:23:32+00:00",
+      "snippet": "David Lammy, Rachel Reeves and Steve Reed were among the first high-profile Cabinet ministers to be shown the door by Mr Burnham.",
+      "source": "PA Media: Money",
+      "title": "Stocks down as Andy Burnham starts Cabinet reshuffle",
+      "url": "https://uk.finance.yahoo.com/news/stocks-down-andy-burnham-starts-162332463.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-16b61d26cec71d1b",
+      "published_at": "2026-07-20T16:30:07+00:00",
+      "snippet": "Small-cap stocks have surged back into the spotlight after years of trailing large caps, and investors are now wrestling with a familiar dilemma: chase the rally or wait for a pullback that may never come.",
+      "source": "24/7 Wall St.",
+      "title": "The Russell 2000 Is Outpacing the S&P 500 in 2026. Is It Too Late to Buy Small-Cap ETFs?",
+      "url": "https://247wallst.com/investing/etf/2026/07/20/the-russell-2000-is-outpacing-the-sp-500-in-2026-is-it-too-late-to-buy-small-cap-etfs/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-2b4de6b36f94d183",
+      "published_at": "2026-07-20T16:39:52+00:00",
+      "snippet": "Apple overtook NVIDIA after its stock rose 0.4% while NVIDIA fell 3.7% on Friday.",
+      "source": "GuruFocus.com",
+      "title": "Apple Reclaims World's Most Valuable Company Title at $4.9 Trillion",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/apple-reclaims-worlds-most-valuable-163952633.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d8b6880db794d6c8",
+      "published_at": "2026-07-20T16:55:52+00:00",
+      "snippet": "It's time to retire the group name as the AI revolution creates new power players.",
+      "source": "Yahoo Finance",
+      "title": "Why it's time to retire the 'Magnificent 7' name: Strategist",
+      "url": "https://finance.yahoo.com/markets/article/why-its-time-to-retire-the-magnificent-7-name-strategist-165552204.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-49f5d4b6c6a33dbf",
+      "published_at": "2026-07-20T16:59:00+00:00",
+      "snippet": "The Trump administration and industry groups had said the rules were too hard to comply with and could lead to energy shortages.",
+      "source": "The Wall Street Journal",
+      "title": "EU to Ease Methane Rules After U.S. Pressure",
+      "url": "https://www.wsj.com/world/europe/eu-to-ease-methane-rules-after-u-s-pressure-9c5ac9b0?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-bb4a3ab3348c0f15",
+      "published_at": "2026-07-20T17:16:00+00:00",
+      "snippet": "Big banks posted strong Q2 beats and double-digit earnings growth forecasts, prompting a closer look at valuations and momentum across the sector.",
+      "source": "Zacks",
+      "title": "Zacks Market Edge Highlights: Goldman Sachs, Wells Fargo, JPMorgan Chase , Citigroup and Bank of America",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-market-edge-highlights-goldman-171600053.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm",
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-2428554852c7b8ca",
+      "published_at": "2026-07-20T17:58:00+00:00",
+      "snippet": "Apple's iPhone and Services growth, JPMorgan's banking strength and ExxonMobil's energy portfolio headline today's featured analyst reports.",
+      "source": "Zacks",
+      "title": "The Zacks Analyst Blog Highlights Apple, JPMorgan Chase, ExxonMobil, Smith-Midland and Coffee Holding",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/zacks-analyst-blog-highlights-apple-175800884.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0964cecdc11e6d6b",
+      "published_at": "2026-07-20T18:04:59+00:00",
+      "snippet": "UnitedHealth\u2019s $5 billion buyback announcement signals that the healthcare giant\u2019s turnaround is gaining momentum, making it a lucrative opportunity.",
+      "source": "Barchart",
+      "title": "A $5 Billion Reason to Buy UnitedHealth Stock Here",
+      "url": "https://www.barchart.com/story/news/3368903/a-5-billion-reason-to-buy-unitedhealth-stock-here"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d365f0273a2ad943",
+      "published_at": "2026-07-20T18:15:05+00:00",
+      "snippet": "Awale Resources' (ARIC.V) first assay results from deeper drilling at the BBM gold-copper deposit at",
+      "source": "MT Newswires",
+      "title": "Awale Resources Reports First Assay Results from Deeper Drilling at BBM Gold-Copper Deposit; Shares up 13.5%",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/awale-resources-reports-first-assay-181505986.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-77d8da83af422c79",
+      "published_at": "2026-07-20T18:17:00+00:00",
+      "snippet": "BlackRock is leading a debt sale targeting at least $12 billion for its massive new El Paso data-center project backed by Meta Platforms people familiar with the matter said. The world\u2019s largest investment firm, along with its infrastructure and private-credit arms, owns an 80% stake in the Texas data-center project, while Meta Platforms, which will use the data centers, owns the other 20%. JPMorgan Chase and Morgan Stanley are leading the jumbo debt sale to finance the project and are reaching ",
+      "source": "The Wall Street Journal",
+      "title": "BlackRock Leads $12 Billion Financing for New Meta Data Centers in Texas",
+      "url": "https://www.wsj.com/business/deals/blackrock-leads-12-billion-financing-for-new-meta-data-centers-in-texas-e1c3d42c?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d783c58ccf29d219",
+      "published_at": "2026-07-20T19:13:47+00:00",
+      "snippet": "August Nymex natural gas (NGQ26 ) on Monday closed down -0.051 (-1.75%). Nat-gas prices retreated on Monday and are just above last Thursday\u2019s 2-month low. Prices are under pressure amid concern that a tropical depression will become Tropical Storm Bertha and disrupt liquefied natural gas (LNG) export facilities on the...",
+      "source": "Barchart",
+      "title": "Nat-Gas Prices Weaken on Tropical Storm Risk",
+      "url": "https://www.barchart.com/story/news/3369579/nat-gas-prices-weaken-on-tropical-storm-risk"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-63c09b18e1c647a1",
+      "published_at": "2026-07-20T19:25:26+00:00",
+      "snippet": "Semiconductor shares led markets higher as investors awaited results from more than 80 S&P 500 companies.",
+      "source": "GuruFocus.com",
+      "title": "Nasdaq 100 Jumps 1% as Chip Stocks Rebound Before Big Tech Earnings",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/nasdaq-100-jumps-1-chip-192526254.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ab99244b55f4bafd",
+      "published_at": "2026-07-20T19:34:38+00:00",
+      "snippet": "Yahoo Finance Senior Business Reporter Ines Ferre joins Market Domination to break down the biggest market movers and key trends shaping trading as Wall Street heads into the closing bell.",
+      "source": "Yahoo Finance Video",
+      "title": "Closing bell: The biggest market movers today",
+      "url": "https://finance.yahoo.com/video/closing-bell-the-biggest-market-movers-today-193438506.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0bfddab8a257d024",
+      "published_at": "2026-07-20T20:17:00+00:00",
+      "snippet": "Lumentum Holdings was among the hottest names in the artificial-intelligence trade at the start of the year. After a couple rocky months, it is time to buy, according to Barclays. The firm upgraded Lumentum shares to Overweight from Equal Weight and reiterated a price target of $1,000 in a research note Monday.",
+      "source": "Barrons.com",
+      "title": "Lumentum Stock Surges After Barclay\u2019s Says It\u2019s Time to Buy",
+      "url": "https://www.barrons.com/articles/lumentum-stock-s-p-500s-top-performer-b67f580e?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-13a31019a56b627b",
+      "published_at": "2026-07-20T20:28:33+00:00",
+      "snippet": "Hut 8 did not disclose the tenant for its 1 GW Beacon Point data center, but process of elimination points to Amazon, Nvidia, Meta, or Microsoft.",
+      "source": "Blockspace",
+      "title": "Who is the tenant for Hut 8\u2019s 1 GW Beacon Point data center?",
+      "url": "https://blockspace.media/short/ai-stocks-surge-to-open-the-week-as-q2-earnings-approach/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-24c09c6635f07ade",
+      "published_at": "2026-07-20T20:31:57+00:00",
+      "snippet": "The Nasdaq composite holds up the best of the major indexes on Monday. Sandisk stock looks to end a losing streak.",
+      "source": "Investor's Business Daily",
+      "title": "Stock Market Today: Dow Sinks, Nasdaq Gives Up Gains After Trump's Iran Comments; Sandisk Rises",
+      "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-us-iran-nvidia-micron-sandisk-2/?src=A00220&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8f5bbb8317d90f72",
+      "published_at": "2026-07-20T20:58:12+00:00",
+      "snippet": "Shares of Elon Musk\u2019s SpaceX suffered their seventh straight day of declines, falling 3.3% to $119.85. SpaceX, whose stock is now well below its $135 offering price from June, on Monday dropped below Meta Platforms to become the eighth-largest U.",
+      "source": "The Wall Street Journal",
+      "title": "SpaceX Stock Closes Lower for the Seventh Straight Trading Session",
+      "url": "https://www.wsj.com/livecoverage/stock-market-today-dow-sp-500-nasdaq-07-20-2026/card/spacex-stock-closes-lower-for-the-seventh-straight-trading-session-uQzNtm4W4ImOr5kyFiPd?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8c47c0f8e1a6af76",
+      "published_at": "2026-07-20T21:01:58+00:00",
+      "snippet": "The S&P/TSX Composite Index fell on Monday as a decline in financial shares outweighed gains in tech",
+      "source": "MT Newswires",
+      "title": "TSX Closer: Index Edges Lower as Financials Weigh, Investors Assess Softer Canadian Inflation",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/tsx-closer-index-edges-lower-210158453.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4f683650fa14cb4d",
+      "published_at": "2026-07-20T21:08:17+00:00",
+      "snippet": "Nebius Group secured $775 million in senior secured debt backed by GPU assets and contracted revenue. The financing marks NasdaqGS:NBIS's first major asset-backed deal to support its global AI cloud expansion. Key customers linked to the underlying contracts include large technology partners such as Microsoft and Meta. Nebius Group, trading as NasdaqGS:NBIS, is drawing attention after arranging a $775 million asset-backed debt facility tied to its operational GPU base and customer...",
+      "source": "Simply Wall St.",
+      "title": "Nebius Group (NBIS) Secures $775 Million In Debt To Expand Its AI Cloud",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/nebius-group-nbis-secures-775-210817297.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-96cd1a3a511318c4",
+      "published_at": "2026-07-20T21:17:10+00:00",
+      "snippet": "Clinton Sparks, Global Gaming League CEO joins Yahoo Finance's Josh Lipton and breaks down the Global Gaming League (GGL), which is an inclusive competitive gaming ecosystem featuring celebrity-owned teams, subscription tiers, and developer partnerships designed to connect casual gamers and mainstream pop culture with the broader esports world.",
+      "source": "Yahoo Finance Video",
+      "title": "Howie Mandel, Ne-Yo back new esports platform: Global Gaming League CEO",
+      "url": "https://finance.yahoo.com/video/howie-mandel-ne-yo-back-new-esports-platform-global-gaming-league-ceo-211710786.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-882daa4d4eb9f34c",
+      "published_at": "2026-07-20T21:21:28+00:00",
+      "snippet": "Apple's federal lawsuit against OpenAI looks like a trade secret dispute on the surface, but one analyst thinks it signals Apple spotted something alarming in OpenAI's hardware roadmap and moved to get ahead of it.",
+      "source": "24/7 Wall St.",
+      "title": "Apple\u2019s Lawsuit Against OpenAI Could Be the Opening Move in the Next AI Hardware War",
+      "url": "https://247wallst.com/investing/2026/07/20/apples-lawsuit-against-openai-could-be-the-opening-move-in-the-next-ai-hardware-war/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c238fa3509936ebb",
+      "published_at": "2026-07-20T21:26:41+00:00",
+      "snippet": "Apple keeps beating earnings while its Mag 7 rivals burn billions on data centers, and one investor thinks he has found the reason the gap will only widen from here.",
+      "source": "24/7 Wall St.",
+      "title": "I\u2019m Buying Apple\u2019s AI Advantage That Keeps It Ahead of the Mag 7 At Least Until This Point",
+      "url": "https://247wallst.com/investing/2026/07/20/im-buying-apples-ai-advantage-that-keeps-it-ahead-of-the-mag-7-at-least-until-this-point/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a6a24d311f7eeb61",
+      "published_at": "2026-07-20T21:27:00+00:00",
+      "snippet": "Wall Street still prices Amazon like a retailer, but one shareholder keeps accumulating shares for a reason most investors have not yet connected to the ticker. The answer involves silicon, and it changes the entire valuation conversation.",
+      "source": "24/7 Wall St.",
+      "title": "3 Reasons I\u2019m Buying Amazon Over and Over Until Late 2026",
+      "url": "https://247wallst.com/investing/2026/07/20/3-reasons-im-buying-amazon-over-and-over-until-late-2026/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx",
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-7402dc5209b01006",
+      "published_at": "2026-07-20T21:38:24+00:00",
+      "snippet": "U.S. crude futures closed higher at $83.23 a barrel, while international benchmark Brent settled at $89.22.",
+      "source": "Stocktwits",
+      "title": "S&P 500, Dow End Lower As Oil Prices Rise Amid US-Iran Crisis \u2014 PSKY, GOOGL, IREN, AMD, NVDA, AVGO In Focus",
+      "url": "https://stocktwits.com/news-articles/markets/equity/s-and-p-500-dow-end-lower-as-oil-prices-rise-amid-us-iran-crisis/cZZiiqPR7H7"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-166f5a03ba3cc457",
+      "published_at": "2026-07-20T21:50:06+00:00",
+      "snippet": "Enbridge (ENB) closed the most recent trading day at $55.73, moving 1.73% from the previous trading session.",
+      "source": "Zacks",
+      "title": "Enbridge (ENB) Suffers a Larger Drop Than the General Market: Key Insights",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/enbridge-enb-suffers-larger-drop-215006009.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ef6310396d98173f",
+      "published_at": "2026-07-20T21:50:49+00:00",
+      "snippet": "Kinross Gold (NYSE:KGC) mines gold across the US, Canada, Brazil, Mauritania, and Chile, selling at spot prices. Its profits move directly with gold. According to \u201cThe Claude Portfolio\u201d account on X, Claude AI added the stock to its portfolio. The X account claims Claude AI has full control of its portfolio, with AI sub-agents triggered [\u2026]",
+      "source": "Insider Monkey",
+      "title": "Kinross Gold (KGC): The One Stock Claude AI Wants When Everything Else Falls",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/kinross-gold-kgc-one-stock-215049611.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ca8c4d83428b4683",
+      "published_at": "2026-07-20T22:12:33+00:00",
+      "snippet": "JPMorgan Chase is involved in a series of high profile economic agreements between U.S. companies and Iraq tied to the Iraqi Prime Minister\u2019s recent visit to Washington. The bank is working alongside energy, healthcare, and technology firms in a $60b program focused on developing Iraq\u2019s economy. These activities extend beyond JPMorgan Chase\u2019s traditional lending and fixed income roles and place the bank at the center of a multi sector initiative. JPMorgan Chase, traded as NYSE:JPM, is...",
+      "source": "Simply Wall St.",
+      "title": "JPMorgan Chase (JPM) Helps Drive $60 Billion In U.S. Iraq Deals",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-chase-jpm-helps-drive-221233611.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-7cf1a6f1ffb82d6b",
+      "published_at": "2026-07-20T22:15:00+00:00",
+      "snippet": "The Realest founder and CEO Scott Keeney joins Yahoo Finance Executive Editor Brian Sozzi to discuss why high-end memorabilia remains \"wildly undervalued\" despite market bubble concerns.",
+      "source": "Yahoo Finance Video",
+      "title": "Is the collectibles market in a bubble? Realest CEO says memorabilia is 'wildly undervalued'",
+      "url": "https://finance.yahoo.com/video/collectibles-market-bubble-realest-ceo-221500840.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-51b719533a625ad0",
+      "published_at": "2026-07-20T22:15:07+00:00",
+      "snippet": "Pan American Silver (PAAS) closed the most recent trading day at $42.19, moving +1.01% from the previous trading session.",
+      "source": "Zacks",
+      "title": "Pan American Silver (PAAS) Ascends While Market Falls: Some Facts to Note",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/pan-american-silver-paas-ascends-221507168.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3091a40758c19b20",
+      "published_at": "2026-07-20T22:15:36+00:00",
+      "snippet": "The oil major looks expensive on paper, but the real question is whether you believe in the growth that makes it cheaper over time.",
+      "source": "Trefis",
+      "title": "How Time, Not a Trade, Could Re-Rate Chevron Stock",
+      "url": "https://www.trefis.com/articles/607930/how-time-not-a-trade-could-re-rate-chevron-stock/2026-07-20"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6dade001abf7a588",
+      "published_at": "2026-07-20T22:17:56+00:00",
+      "snippet": "Today, July 20, 2026, semiconductor and AI infrastructure shares pared early gains as U.S.-Iran tensions and crude oil gains pressured markets.",
+      "source": "Motley Fool",
+      "title": "Stock Market Today, July 20: Hut 8 Surges 10% as Geopolitical Tensions Weigh on Broader Market",
+      "url": "https://www.fool.com/coverage/stock-market-today/2026/07/20/stock-market-today-july-20-hut-8-surges-10-as-geopolitical-tensions-weigh-on-broader-market/"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-95ec042b4d19e082",
+      "published_at": "2026-07-20T22:26:20+00:00",
+      "snippet": "By Caroline Valetkevitch and Alun John NEW YORK/LONDON, July 20 (Reuters) - Major stock indexes fell on Monday with investors cautious about developments in the U.S.-Iran war and ahead of earnings",
+      "source": "Reuters",
+      "title": "Stocks fall as oil gains; Iran tensions, earnings in focus",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/asia-shares-hesitant-oil-climbs-003525906.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-de95e8c5366c85da",
+      "published_at": "2026-07-20T22:30:18+00:00",
+      "snippet": "Tennis great-turned-angel investor Maria Sharapova said she faced pressure to \"soften her edges\" because her on-court demeanor intimidated people, but she refused to apologize for the ruthless mentality that powered her career. Sharapova Refused Pressure To Soften Her Edge Speaking...",
+      "source": "Benzinga",
+      "title": "Maria Sharapova Once Revealed Her 'Steely Mentality' Made People Uncomfortable\u2014 It Also Built a Tennis Dynasty and a Portfolio of Winning Bets",
+      "url": "https://finance.yahoo.com/small-business/articles/maria-sharapova-once-revealed-her-223018539.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a3c3dc106740e74b",
+      "published_at": "2026-07-20T22:43:30+00:00",
+      "snippet": "STORY: Stocks started the week on a down note, with the Dow falling about six tenths of one percent, while the S&P 500 dropped two tenths and the Nasdaq ended basically flat. :: Archive Investors looked for moves toward de-escalation in the Middle East while they waited for earnings reports due from major technology companies later in the week. Melissa Brown, managing director of investment decision research at SimCorp, says the technology firms will have to post significant earnings growth to m",
+      "source": "Reuters Videos",
+      "title": "US stocks edge down with Iran and earnings season in focus",
+      "url": "https://finance.yahoo.com/video/us-stocks-edge-down-iran-224330051.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl",
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-385a4707b4b1d254",
+      "published_at": "2026-07-20T23:03:03+00:00",
+      "snippet": "Looking to diversify your U.S. equity-centric portfolio? Emerging markets are touted as one of the best solutions, but these days they\u2019re strikingly similar in tech concentrations to U.S. funds. Pictet\u2019s Young Jae Lee offers a different perspective and approach to EM investing with genuine diversification via the RISE ETF on this week\u2019s Behind the Ticker.",
+      "source": "etf.com",
+      "title": "Behind the Ticker: RISE Ditches the Usual EM Playbook",
+      "url": "http://www.etf.com/sections/podcasts/behind-ticker-rise-ditches-usual-em-playbook?utm_source=yahoo-finance&utm_medium=rss&utm_campaign=yahoo-finance-rss"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper",
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-29fdfaa8aff5a743",
+      "published_at": "2026-07-20T23:33:00+00:00",
+      "snippet": "The S&P/ASX Small Ordinaries Index gained 8.80 points, or 0.27%, to close at 3,315.00 yesterday, providing some relief after a weaker trading week. Despite the positive session, the index remained 37.80 points, or 1.13%, lower over the past five days as investors continued to navigate...",
+      "source": "Proactive",
+      "title": "The Small Cap Watch: Alkane delivers strong quarter; Hancock now 51% owner of Titan's Linderos Copper Project and Lightning advances Warby tungsten targets",
+      "url": "https://www.proactiveinvestors.com/companies/news/1095731/the-small-cap-watch-alkane-delivers-strong-quarter-hancock-now-51-owner-of-titan-s-linderos-copper-project-and-lightning-advances-warby-tungsten-targets-1095731.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-b825b365f90ed800",
+      "published_at": "2026-07-20T23:51:54+00:00",
+      "snippet": "XLK's expense ratio looks almost free, but the fee that will actually hurt your portfolio never appears on the factsheet. Before you add another tech position, check what you are quietly paying twice for.",
+      "source": "24/7 Wall St.",
+      "title": "Why XLK Investors Pay Twice for the Same Mega-Cap Exposure",
+      "url": "https://247wallst.com/investing/etf/2026/07/20/why-xlk-investors-pay-twice-for-the-same-mega-cap-exposure/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3bf0f31e56eb9456",
+      "published_at": "2026-07-20T23:53:19+00:00",
+      "snippet": "The chipmaker is forecasting rapid growth from its data center business, but owning a piece of that future comes at a steep price and with significant execution risk.",
+      "source": "Trefis",
+      "title": "After A Steep Run And A Sharp Drop, Is Marvell Technology Stock A Bet On The AI Buildout?",
+      "url": "https://www.trefis.com/articles/607947/after-a-steep-run-and-a-sharp-drop-is-marvell-technology-stock-a-bet-on-the-ai-buildout/2026-07-20"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn",
+        "dji",
+        "meta",
+        "spx",
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5154496ded80bd6b",
+      "published_at": "2026-07-20T23:55:00+00:00",
+      "snippet": "REVIEW PREVIEW NEWSLETTER Losing Streak. Markets started off the week on slippery footing as fighting over the weekend between the U.S. and Iran pushed oil prices higher. The S&P 500 ended the day down 0.",
+      "source": "Barrons.com",
+      "title": "Review & Preview: Rough Start",
+      "url": "https://www.barrons.com/articles/stocks-today-iran-war-oil-volatility-weighs-on-markets-fcf20ca4?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-62166e2127102ab1",
+      "published_at": "2026-07-21T00:03:00+00:00",
+      "snippet": "As a longtime Amazon Prime member, I've come to expect my orders to arrive fairly quickly. Sometimes, though, Amazon exceeds my expectations. Not long ago, I placed an order for some first-aid supplies, expecting them to show up the next day. Roughly two hours later, my dogs started barking ...",
+      "source": "TheStreet",
+      "title": "Amazon may be losing its biggest competitive edge",
+      "url": "https://www.thestreet.com/retail/amazon-losing-competitive-edge-price-more-important-then-speed"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e189cc7e43cd9202",
+      "published_at": "2026-07-21T00:07:27+00:00",
+      "snippet": "In the world of energy giants, one company is posting chart-topping results while its stock price languishes with the laggards, forcing a hard look at what the market truly values.",
+      "source": "Trefis",
+      "title": "The Peer-Group Mispricing Sitting On VG Stock",
+      "url": "https://www.trefis.com/articles/607951/the-peer-group-mispricing-sitting-on-vg-stock/2026-07-20"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-258836ed7dbb0d1d",
+      "published_at": "2026-07-21T00:38:25+00:00",
+      "snippet": "The fund is trading near its high, but acting on that feeling might be the costliest move you can make.",
+      "source": "Trefis",
+      "title": "Cash In Your SPYV Gain, Or Let It Ride?",
+      "url": "https://www.trefis.com/articles/607966/cash-in-your-spyv-gain-or-let-it-ride/2026-07-20"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e37c96897c9bb16f",
+      "published_at": "2026-07-21T00:50:00+00:00",
+      "snippet": "This battle between tech heavyweights is much closer than you might guess.",
+      "source": "Motley Fool",
+      "title": "Better \"Magnificent Seven\" Stock: Alphabet vs. Microsoft",
+      "url": "https://www.fool.com/investing/2026/07/20/better-magnificent-seven-stock-alphabet-vs-microso/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3e655f54322304a0",
+      "published_at": "2026-07-21T01:00:00+00:00",
+      "snippet": "IREN Limited (NASDAQ: $IREN) shares jumped nearly 20% on Monday after the company signed $2.8 billion in new AI clo...",
+      "source": "CryptoProwl",
+      "title": "IREN Signs $2.8B in AI Cloud Contracts, Lifts 2026 Target Above $4B",
+      "url": "https://www.cryptoprowl.com/releases/iren-signs-28b-in-ai-cloud-contracts-lifts-2026-target-above-4b-6208"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3f18727a99b69d37",
+      "published_at": "2026-07-21T01:00:00+00:00",
+      "snippet": "Frank Bisignano directed staff to use software to snoop in email of rivals and surveil work of employees; Bisignano, who also heads Social Security, denied he ever spied on co-workers.",
+      "source": "The Wall Street Journal",
+      "title": "The Man Who Runs the IRS Spied on Colleagues When He Worked at JPMorgan",
+      "url": "https://www.wsj.com/finance/banking/irs-bisignano-spying-jpmorgan-6cd1ddf0?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4304b35642bb86ee",
+      "published_at": "2026-07-21T01:05:45+00:00",
+      "snippet": "By Ishaan Arora July 21 (Reuters) - Oil prices softened on Tuesday, with markets weighing reports of mediation efforts between the U.S. and Iran against an exchange of fresh attacks between the two",
+      "source": "Reuters",
+      "title": "Oil prices dip as mediation efforts offset US-Iran strikes",
+      "url": "https://ca.finance.yahoo.com/news/oil-prices-dip-mediation-efforts-010408078.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1a1c0aebc2b46263",
+      "published_at": "2026-07-21T01:07:12+00:00",
+      "snippet": "CleanSpark saw its share price jump by 10.67 percent on Monday to finish at $14.42 apiece, as investor optimism was fueled by the aggressive expansion of artificial intelligence players with a series of multi-billion-dollar leasing deals. Multi-Year Deals On Monday, its counterpart, Hut 8 Corp., clinched a new $9.8-billion leasing deal with an existing high-investment-grade [\u2026]",
+      "source": "Insider Monkey",
+      "title": "CleanSpark (CLSK) Soars on Fresh Multi-Billion AI Investments",
+      "url": "https://finance.yahoo.com/technology/ai/articles/cleanspark-clsk-soars-fresh-multi-010712608.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-2208ee388aac8129",
+      "published_at": "2026-07-21T01:14:44+00:00",
+      "snippet": "(Bloomberg) -- Jijia Vision is in discussions to hold an initial public offering on Hong Kong\u2019s stock exchange as soon as this year, joining a flurry of Chinese AI firms planning public market debuts. Most Read from BloombergSaudi-Led Coalition in Yemen Vows to Protect Ships From HouthisUS Strikes Iran in Escalating Campaign After Troops KilledIran Says Mediators Stepping In After Days of US ClashesMoonshot\u2019s Kimi K3 May Be More About Memory Than ComputeChinese AI Sensation Moonshot\u2019s Gamble on",
+      "source": "Bloomberg",
+      "title": "China\u2019s GigaAI Seeks 2026 Hong Kong IPO in First for World Model",
+      "url": "https://finance.yahoo.com/technology/ai/articles/china-gigaai-seeks-2026-hong-011444029.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5c020188e10e3fd1",
+      "published_at": "2026-07-21T01:16:00+00:00",
+      "snippet": "Silver Mines Ltd (ASX:SVL, OTC:SLVMF, FRA:SWQ) has completed a definitive feasibility study (DFS) for the Bowdens Silver Project in New South Wales, outlining a potential 26-year operation with a pre-tax net present value of A$1.04 billion and silver reserves of 93.5 million ounces. The...",
+      "source": "Proactive",
+      "title": "Silver Mines confirms robust Bowdens economics as silver reserves rise to 93.5 million ounces",
+      "url": "https://www.proactiveinvestors.com/companies/news/1095739/silver-mines-confirms-robust-bowdens-economics-as-silver-reserves-rise-to-93-5-million-ounces-1095739.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-028feae974df41b8",
+      "published_at": "2026-07-21T01:20:00+00:00",
+      "snippet": "Meta stock slumped in June -- then jumped in July.",
+      "source": "Motley Fool",
+      "title": "Meta Stock's Rebound Made Mark Zuckerberg the World's Fifth-Richest Person at $222 Billion",
+      "url": "https://www.fool.com/investing/2026/07/20/meta-stocks-rebound-made-mark-zuckerberg-the-world/"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper",
+        "gold",
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0bf3165845a0e316",
+      "published_at": "2026-07-21T01:25:00+00:00",
+      "snippet": "Aeris Resources Ltd (ASX:AIS, OTC:ARSRF) has more than quadrupled Ore Reserves at its Tritton Operations in central New South Wales, strengthening the foundation for a long-life, multi-mine copper hub centred on the project\u2019s existing processing infrastructure. Tritton\u2019s Ore Reserve now...",
+      "source": "Proactive",
+      "title": "Aeris Resources quadruples Tritton copper reserves to underpin long-life mining hub",
+      "url": "https://www.proactiveinvestors.com/companies/news/1095740/aeris-resources-quadruples-tritton-copper-reserves-to-underpin-long-life-mining-hub-1095740.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-29ad7cef03063fac",
+      "published_at": "2026-07-21T01:31:44+00:00",
+      "snippet": "David Sacks issued a sharp warning to tech executives cozying up to Washington regulators, while investors are already debating whether PayPal's reported takeover offer drastically undersells one of fintech's most contested assets.",
+      "source": "24/7 Wall St.",
+      "title": "\u201cGrow a Spine\u201d: All-In Podcast Pushes Back on AI Regulation and Calls PayPal\u2019s $60 Takeover Offer Just an Opening Bid",
+      "url": "https://247wallst.com/investing/2026/07/20/grow-a-spine-all-in-podcast-pushes-back-on-ai-regulation-and-calls-paypals-60-takeover-offer-just-an-opening-bid/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl",
+        "spx",
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-740e4660b456c2ae",
+      "published_at": "2026-07-21T01:43:08+00:00",
+      "snippet": "Chip stocks staged a comeback on Monday, gaining at the close after a sharp selloff last week.",
+      "source": "Stocktwits",
+      "title": "Nasdaq, S&P 500 Futures Rise As Chip Rally Counters Iran Jitters Ahead Of Big Tech Earnings: Why IREN, ACHR, TSLA, BA Stocks Are Drawing Focus",
+      "url": "https://stocktwits.com/news-articles/markets/equity/nasdaq-s-and-p-500-futures-rise-as-chip-rally-counters-iran-jitters-ahead-of-big-tech-earnings/cZZ1tCdR7HO"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-673749b3df2eb7ea",
+      "published_at": "2026-07-21T01:52:00+00:00",
+      "snippet": "A cyberattack shut down one of the company's fastest-growing brands. Here's how much it actually matters.",
+      "source": "Motley Fool",
+      "title": "A Ransomware Attack Just Halted Coca-Cola's Fairlife Production and Knocked the Stock Down 4%. Should Dividend Investors Care?",
+      "url": "https://www.fool.com/investing/2026/07/20/a-ransomware-attack-just-halted-coca-colas-fairlif/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a7404106cc8fca4f",
+      "published_at": "2026-07-21T01:54:28+00:00",
+      "snippet": "Jamie Dimon says he would not buy stocks or long bonds at current prices. Here are the four warnings behind that call.",
+      "source": "BeInCrypto",
+      "title": "Jamie Dimon Won\u2019t Buy S&P 500 or Bonds. Here Are the Warnings Investors Are Missing",
+      "url": "https://beincrypto.com/jamie-dimon-warnings-investors-missing/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f6868a17bb421e42",
+      "published_at": "2026-07-21T02:06:41+00:00",
+      "snippet": "The stake is higher than estimated in March, when Nvidia announced a $2 billion investment in the neocloud operator.",
+      "source": "Stocktwits",
+      "title": "NBIS Stock Jumps Overnight As Nvidia Reveals Over 9% Stake, Analyst Sees More Upside",
+      "url": "https://stocktwits.com/news-articles/markets/equity/nbis-stock-jumps-overnight-as-nvidia-reveals-over-9-stake-analyst-sees-more-upside/cZZ1uV9R7HQ"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-96728cbcff51951f",
+      "published_at": "2026-07-21T02:22:15+00:00",
+      "snippet": "Kioxia stock crashed 45% in a month, yet analysts still peg 118% upside. Here's why the bulls haven't budged.",
+      "source": "BeInCrypto",
+      "title": "Kioxia Crashed 45% in a Month: Why Are Analysts Still This Bullish?",
+      "url": "https://beincrypto.com/kioxia-stock-crash-analyst-bullish/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "nvda",
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1ade71da11287675",
+      "published_at": "2026-07-21T02:37:21+00:00",
+      "snippet": "Dow Jones Futures: Trump sparked losses Monday after he said Iran \"will pay\" for killing American soldiers. SpaceX and Tesla sold off.",
+      "source": "Investor's Business Daily",
+      "title": "Dow Jones Futures: Trump Comments Spark Stock Market Losses; Elon Musk-Led SpaceX, Tesla Tumble",
+      "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-trump-spacex-spcx-tesla-tsla/?src=A00220&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft",
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c40dab933f4949ac",
+      "published_at": "2026-07-21T02:47:00+00:00",
+      "snippet": "Some contract announcements move stocks. And then there are the ones that reframe an entire investment thesis. We saw the latter on a Monday, July 20. IREN Limited (IREN) was trading up more than 21% to $40.57 as of July 20 midday, according to Yahoo Finance. That\u2019s after the Australia-based ...",
+      "source": "TheStreet",
+      "title": "AI infrastructure stock surges after landing massive $2.8B win",
+      "url": "https://www.thestreet.com/investing/stocks/iren-limited-stock-surges-2-billion-deal-microsoft-nvidia-perplexity-figure-ai"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-112636bb33058958",
+      "published_at": "2026-07-21T03:07:00+00:00",
+      "snippet": "Every dominant company eventually meets the competitor it decided not to take seriously. The pattern is boring by now. The incumbent has the brand, the cash and the head start, so the upstart gets filed under interesting rather than dangerous, right up until the quarter it stops being either. Elon ...",
+      "source": "TheStreet",
+      "title": "Elon Musk just got a new rival on three fronts",
+      "url": "https://www.thestreet.com/automotive/xpeng-rival-elon-musk-robots-robotaxis-flying-cars"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl",
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e66939e6b0f359b2",
+      "published_at": "2026-07-21T03:09:20+00:00",
+      "snippet": "Jim Cramer dumped tech stocks ahead of Intel, Tesla, and Alphabet earnings, reviving bets on the Inverse-Cramer Effect.",
+      "source": "BeInCrypto",
+      "title": "Cramer Says Dump Tech Before Intel, Tesla, Alphabet Earnings: Will Inverse-Cramer Strike?",
+      "url": "https://beincrypto.com/cramer-dumps-tech-earnings-week/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl",
+        "tsla",
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a18e2bb5841413dd",
+      "published_at": "2026-07-21T03:29:02+00:00",
+      "snippet": "Asian stocks mostly rebounded after days of losses on Tuesday led by technology shares, while oil prices eased slightly even as Iran said it had struck hit US military targets in Bahrain and Kuwait.Iran's Revolutionary Guards said on Tuesday they hit US military targets including air defence systems in Bahrain and Kuwait, state news agency IRNA reported.",
+      "source": "AFP",
+      "title": "Asia stocks up as chip stocks recover, oil eases",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/asia-stocks-chip-stocks-recover-032902299.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-94ed4b6d20c916c4",
+      "published_at": "2026-07-21T03:47:11+00:00",
+      "snippet": "July 21 (Reuters) - Indian shares opened marginally lower on Tuesday as rising tensions in the Middle East and firm oil prices hurt risk appetite, while top private lender HDFC Bank extended losses.",
+      "source": "Reuters",
+      "title": "Indian shares muted as firmer oil, HDFC Bank weigh",
+      "url": "https://sg.finance.yahoo.com/news/indian-shares-muted-firmer-oil-034711814.html"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-07-21",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 10
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 13
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 10
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [
+        "aapl",
+        "amzn",
+        "brent_crude",
+        "cac",
+        "copper",
+        "corn",
+        "dax",
+        "dji",
+        "ftse",
+        "gold",
+        "googl",
+        "hsi",
+        "jpm",
+        "meta",
+        "msft",
+        "mufg",
+        "natural_gas",
+        "ndx",
+        "nkx",
+        "nvda",
+        "platinum",
+        "rut",
+        "silver",
+        "sony",
+        "soybean",
+        "spx",
+        "stoxx50",
+        "toyota",
+        "tsla",
+        "unh",
+        "wheat",
+        "wti_crude",
+        "xom"
+      ],
+      "sources": {
+        "feed:boj_news": {
+          "error": "not well-formed (invalid token): line 10, column 69",
+          "status": "failed"
+        },
+        "feed:ecb_press": {
+          "item_count": 4,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 4,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "item_count": 3,
+          "status": "success"
+        },
+        "yfinance:6758.T": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:7203.T": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:8306.T": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:AAPL": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:AMZN": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:BZ=F": {
+          "item_count": 2,
+          "status": "success"
+        },
+        "yfinance:CL=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:GC=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:GOOGL": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:HG=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:JPM": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:META": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:MSFT": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:NG=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:NVDA": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:PL=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:SI=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:TSLA": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:UNH": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:XOM": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:ZC=F": {
+          "item_count": 2,
+          "status": "success"
+        },
+        "yfinance:ZS=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:ZW=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^FCHI": {
+          "item_count": 2,
+          "status": "success"
+        },
+        "yfinance:^FTSE": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^GDAXI": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^GSPC": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^HSI": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^N225": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^RUT": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^STOXX50E": {
+          "item_count": 1,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2026-07-21T00:00:00+00:00",
+    "git_commit": "c154c40",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-07-21T04:17:55.111014+00:00"
+  },
+  "version": "1.0.0"
+}

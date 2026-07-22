@@ -3,26 +3,6 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "jpm"
-      ],
-      "category": "earnings",
-      "date": "2026-07-14",
-      "source": "yfinance",
-      "title": "JPM earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "unh"
-      ],
-      "category": "earnings",
-      "date": "2026-07-16",
-      "source": "yfinance",
-      "title": "UNH earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
         "googl"
       ],
       "category": "earnings",
@@ -129,12 +109,32 @@
       "date": "2026-08-26",
       "source": "yfinance",
       "title": "NVDA earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "earnings",
+      "date": "2026-10-13",
+      "source": "yfinance",
+      "title": "JPM earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "earnings",
+      "date": "2026-10-27",
+      "source": "yfinance",
+      "title": "UNH earnings release"
     }
   ],
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-07-13"
+    "updated_at": "2026-07-20"
   },
   "version": "1.0.0"
 }

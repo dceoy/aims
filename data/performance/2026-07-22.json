@@ -1,0 +1,183 @@
+{
+  "metadata": {
+    "analysis_date": "2026-07-22",
+    "config": {
+      "horizons": [
+        1,
+        5,
+        20
+      ],
+      "return_consistency_tolerance": 0.001
+    },
+    "disclaimer": "Informational association only. These figures measure whether published AI stances lined up with subsequent price moves in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
+    "generated_at": "2026-07-22T00:00:00+00:00",
+    "git_commit": "e99f27c",
+    "inputs": {
+      "analysis_dates": [
+        "2026-06-29",
+        "2026-06-30",
+        "2026-07-01",
+        "2026-07-02",
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-07",
+        "2026-07-08",
+        "2026-07-09",
+        "2026-07-10",
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-14",
+        "2026-07-15",
+        "2026-07-16",
+        "2026-07-17",
+        "2026-07-18",
+        "2026-07-19",
+        "2026-07-20",
+        "2026-07-21",
+        "2026-07-22"
+      ],
+      "qualitative_dates": []
+    },
+    "interval": "d"
+  },
+  "stance_evaluation": {
+    "excluded_gated": 0,
+    "horizons": {
+      "1d": {
+        "broken_chain": 0,
+        "confidence_calibration": {
+          "high": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "low": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "medium": {
+            "count": 0,
+            "hit_rate": null
+          }
+        },
+        "observations": 0,
+        "pending": 0,
+        "stances": {
+          "conflicting": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "neutral": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "supportive": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          }
+        }
+      },
+      "20d": {
+        "broken_chain": 0,
+        "confidence_calibration": {
+          "high": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "low": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "medium": {
+            "count": 0,
+            "hit_rate": null
+          }
+        },
+        "observations": 0,
+        "pending": 0,
+        "stances": {
+          "conflicting": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "neutral": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "supportive": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          }
+        }
+      },
+      "5d": {
+        "broken_chain": 0,
+        "confidence_calibration": {
+          "high": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "low": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "medium": {
+            "count": 0,
+            "hit_rate": null
+          }
+        },
+        "observations": 0,
+        "pending": 0,
+        "stances": {
+          "conflicting": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "neutral": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "supportive": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          }
+        }
+      }
+    },
+    "instruments_evaluated": 0,
+    "unmatched": 0
+  },
+  "version": "1.0.0",
+  "warnings": [
+    "CL=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "GC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "GC=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "NG=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "no qualitative artifacts found; stance evaluation is empty"
+  ]
+}

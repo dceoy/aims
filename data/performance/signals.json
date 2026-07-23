@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "as_of": "2026-07-22",
+    "as_of": "2026-07-23",
     "config": {
       "horizons": [
         1,
@@ -11,8 +11,8 @@
       "top_k": 5
     },
     "disclaimer": "Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
-    "generated_at": "2026-07-22T00:00:00+00:00",
-    "git_commit": "e99f27c",
+    "generated_at": "2026-07-23T00:00:00+00:00",
+    "git_commit": "93a857a",
     "inputs": {
       "analysis_dates": [
         "2026-06-29",
@@ -37,29 +37,30 @@
         "2026-07-19",
         "2026-07-20",
         "2026-07-21",
-        "2026-07-22"
+        "2026-07-22",
+        "2026-07-23"
       ]
     }
   },
   "signal_evaluation": {
-    "dates_evaluated": 23,
+    "dates_evaluated": 24,
     "horizons": {
       "1d": {
-        "benchmark_average_return": 0.004102,
+        "benchmark_average_return": 0.004122,
         "by_asset_class": {
           "commodity": {
-            "benchmark_average_return": 0.002242,
-            "count": 31,
-            "excess_return": 0.001343,
-            "hit_rate": 0.516129,
-            "top5_average_return": 0.003585
+            "benchmark_average_return": 0.002373,
+            "count": 33,
+            "excess_return": 0.002571,
+            "hit_rate": 0.545455,
+            "top5_average_return": 0.004944
           },
           "equity": {
-            "benchmark_average_return": 0.004949,
-            "count": 17,
-            "excess_return": -0.009066,
-            "hit_rate": 0.294118,
-            "top5_average_return": -0.004117
+            "benchmark_average_return": 0.004866,
+            "count": 20,
+            "excess_return": -0.008794,
+            "hit_rate": 0.3,
+            "top5_average_return": -0.003927
           },
           "equity_index": {
             "benchmark_average_return": 0.010035,
@@ -78,11 +79,11 @@
         },
         "by_regime": {
           "Bullish": {
-            "benchmark_average_return": -0.002644,
-            "count": 6,
-            "excess_return": -0.005202,
-            "hit_rate": 0.333333,
-            "top5_average_return": -0.007846
+            "benchmark_average_return": 0.000555,
+            "count": 11,
+            "excess_return": -0.000886,
+            "hit_rate": 0.454545,
+            "top5_average_return": -0.000331
           },
           "Neutral": {
             "benchmark_average_return": 0.002323,
@@ -99,12 +100,12 @@
             "top5_average_return": 0.002394
           }
         },
-        "count": 68,
-        "excess_return": -0.002972,
-        "hit_rate": 0.397059,
+        "count": 73,
+        "excess_return": -0.002475,
+        "hit_rate": 0.410959,
         "incomplete": 42,
         "pending": 5,
-        "top5_average_return": 0.00113
+        "top5_average_return": 0.001647
       },
       "20d": {
         "benchmark_average_return": null,
@@ -114,25 +115,25 @@
         "excess_return": null,
         "hit_rate": null,
         "incomplete": 0,
-        "pending": 115,
+        "pending": 120,
         "top5_average_return": null
       },
       "5d": {
-        "benchmark_average_return": 0.015536,
+        "benchmark_average_return": 0.01626,
         "by_asset_class": {
           "commodity": {
-            "benchmark_average_return": 0.021176,
-            "count": 16,
-            "excess_return": 0.008837,
-            "hit_rate": 0.4375,
-            "top5_average_return": 0.030013
+            "benchmark_average_return": 0.021434,
+            "count": 18,
+            "excess_return": 0.009361,
+            "hit_rate": 0.5,
+            "top5_average_return": 0.030795
           },
           "equity": {
-            "benchmark_average_return": 0.018524,
-            "count": 5,
-            "excess_return": -0.034389,
-            "hit_rate": 0.2,
-            "top5_average_return": -0.015865
+            "benchmark_average_return": 0.019352,
+            "count": 6,
+            "excess_return": -0.045818,
+            "hit_rate": 0.166667,
+            "top5_average_return": -0.026465
           },
           "unknown": {
             "benchmark_average_return": 0.00385,
@@ -151,11 +152,11 @@
             "top5_average_return": 0.000642
           },
           "Neutral": {
-            "benchmark_average_return": 0.018646,
-            "count": 16,
-            "excess_return": 0.002073,
-            "hit_rate": 0.4375,
-            "top5_average_return": 0.020719
+            "benchmark_average_return": 0.019411,
+            "count": 19,
+            "excess_return": -0.002246,
+            "hit_rate": 0.473684,
+            "top5_average_return": 0.017165
           },
           "Unavailable": {
             "benchmark_average_return": 0.009185,
@@ -165,12 +166,12 @@
             "top5_average_return": 0.009282
           }
         },
-        "count": 30,
-        "excess_return": -0.001019,
-        "hit_rate": 0.466667,
-        "incomplete": 50,
+        "count": 33,
+        "excess_return": -0.003225,
+        "hit_rate": 0.484848,
+        "incomplete": 52,
         "pending": 35,
-        "top5_average_return": 0.014518
+        "top5_average_return": 0.013035
       }
     }
   },
@@ -257,7 +258,9 @@
     "2026-07-15: ^FTSE: broken bar chain within 1d forward window",
     "2026-07-15: ^FTSE: broken bar chain within 5d forward window",
     "2026-07-16: AAPL: broken bar chain within 1d forward window",
+    "2026-07-16: AAPL: broken bar chain within 5d forward window",
     "2026-07-16: JPM: broken bar chain within 1d forward window",
+    "2026-07-16: JPM: broken bar chain within 5d forward window",
     "2026-07-17: AAPL: broken bar chain within 1d forward window",
     "2026-07-17: JPM: broken bar chain within 1d forward window",
     "2026-07-17: ^HSI: broken bar chain within 1d forward window",

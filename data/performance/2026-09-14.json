@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "analysis_date": "2026-09-14",
+    "config": {
+      "horizons": [
+        1,
+        5,
+        20
+      ],
+      "return_consistency_tolerance": 0.001
+    },
+    "disclaimer": "Informational association only. These figures measure whether published AI stances lined up with subsequent price moves in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
+    "generated_at": "2026-09-14T00:00:00+00:00",
+    "git_commit": "671cd3b",
+    "inputs": {
+      "analysis_dates": [
+        "2026-06-29",
+        "2026-06-30",
+        "2026-07-01",
+        "2026-07-02",
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-07",
+        "2026-07-08",
+        "2026-07-09",
+        "2026-07-10",
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-14",
+        "2026-07-15",
+        "2026-07-16",
+        "2026-07-17",
+        "2026-07-18",
+        "2026-07-19",
+        "2026-07-20",
+        "2026-07-21",
+        "2026-07-22",
+        "2026-07-23",
+        "2026-07-24",
+        "2026-07-25",
+        "2026-07-26",
+        "2026-07-27",
+        "2026-07-28",
+        "2026-07-29",
+        "2026-07-30",
+        "2026-07-31",
+        "2026-08-01",
+        "2026-08-02",
+        "2026-08-03",
+        "2026-08-04",
+        "2026-08-05",
+        "2026-08-06",
+        "2026-08-07",
+        "2026-08-08",
+        "2026-08-09",
+        "2026-08-10",
+        "2026-08-11",
+        "2026-08-12",
+        "2026-08-13",
+        "2026-08-14",
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "2026-08-21",
+        "2026-08-24",
+        "2026-08-25",
+        "2026-08-26",
+        "2026-08-27",
+        "2026-08-28",
+        "2026-08-31",
+        "2026-09-01",
+        "2026-09-02",
+        "2026-09-03",
+        "2026-09-04",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-09",
+        "2026-09-10",
+        "2026-09-11",
+        "2026-09-14"
+      ],
+      "qualitative_dates": []
+    },
+    "interval": "d"
+  },
+  "stance_evaluation": {
+    "excluded_gated": 0,
+    "horizons": {
+      "1d": {
+        "broken_chain": 0,
+        "confidence_calibration": {
+          "high": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "low": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "medium": {
+            "count": 0,
+            "hit_rate": null
+          }
+        },
+        "observations": 0,
+        "pending": 0,
+        "stances": {
+          "conflicting": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "neutral": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "supportive": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          }
+        }
+      },
+      "20d": {
+        "broken_chain": 0,
+        "confidence_calibration": {
+          "high": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "low": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "medium": {
+            "count": 0,
+            "hit_rate": null
+          }
+        },
+        "observations": 0,
+        "pending": 0,
+        "stances": {
+          "conflicting": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "neutral": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "supportive": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          }
+        }
+      },
+      "5d": {
+        "broken_chain": 0,
+        "confidence_calibration": {
+          "high": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "low": {
+            "count": 0,
+            "hit_rate": null
+          },
+          "medium": {
+            "count": 0,
+            "hit_rate": null
+          }
+        },
+        "observations": 0,
+        "pending": 0,
+        "stances": {
+          "conflicting": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "neutral": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          },
+          "supportive": {
+            "average_return": null,
+            "count": 0,
+            "hit_rate": null
+          }
+        }
+      }
+    },
+    "instruments_evaluated": 0,
+    "unmatched": 0
+  },
+  "version": "1.0.0",
+  "warnings": [
+    "AAPL: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "AMZN: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "BZ=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "CL=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "CL=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "GC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "GC=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "GC=F: conflicting ret_1d for bar 2026-07-31 across analysis artifacts; keeping the latest value",
+    "GC=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "GOOGL: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-07-31 across analysis artifacts; keeping the latest value",
+    "HG=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "JPM: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "META: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "MSFT: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "NG=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "NG=F: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "NG=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "NVDA: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-07-31 across analysis artifacts; keeping the latest value",
+    "PL=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-07-31 across analysis artifacts; keeping the latest value",
+    "SI=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "TSLA: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "UNH: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "XOM: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-07-31 across analysis artifacts; keeping the latest value",
+    "ZC=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-07-31 across analysis artifacts; keeping the latest value",
+    "ZS=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-02 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-10 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-07-17 across analysis artifacts; keeping the latest value",
+    "ZW=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",
+    "^DJI: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "^GSPC: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "^NDX: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
+    "no qualitative artifacts found; stance evaluation is empty"
+  ]
+}

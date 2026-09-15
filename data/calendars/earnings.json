@@ -3,16 +3,6 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "nvda"
-      ],
-      "category": "earnings",
-      "date": "2026-08-26",
-      "source": "yfinance",
-      "title": "NVDA earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
         "jpm"
       ],
       "category": "earnings",
@@ -129,12 +119,22 @@
       "date": "2026-11-12",
       "source": "yfinance",
       "title": "8306.T earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "earnings",
+      "date": "2026-11-17",
+      "source": "yfinance",
+      "title": "NVDA earnings release"
     }
   ],
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-08-24"
+    "updated_at": "2026-09-14"
   },
   "version": "1.0.0"
 }

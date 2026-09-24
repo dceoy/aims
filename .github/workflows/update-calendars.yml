@@ -26,10 +26,15 @@ jobs:
             --mapping data/mappings/canonical_instrument_mappings.csv \
             --output data/calendars/earnings.json
       - name: Refresh official macro calendars
+        id: macro_calendar
+        continue-on-error: true
         run: |
           uv run python \
             .agents/skills/qualitative-analysis/scripts/update_macro_calendar.py \
             --output data/calendars/macro_events.json
+      - name: Report macro calendar refresh failure
+        if: steps.macro_calendar.outcome == 'failure'
+        run: echo "::warning title=Macro calendar refresh failed::Keeping the committed macro calendar; earnings refresh can still be submitted."
       - name: Validate calendars
         run: |
           for CAL in data/calendars/*.json; do

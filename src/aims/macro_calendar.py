@@ -19,7 +19,6 @@ FED_URL: Final = "https://www.federalreserve.gov/monetarypolicy/fomccalendars.ht
 ECB_URL: Final = "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
 BOJ_URL: Final = "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm"
 DEFAULT_OUTPUT: Final = Path("data/calendars/macro_events.json")
-_MIN_EVENTS: Final = {"fed": 6, "ecb": 6, "boj": 6}
 _MONTHS: Final = {
     name.lower(): number
     for number, name in enumerate(
@@ -216,11 +215,11 @@ def build_macro_calendar(
             == {"fed": FED_URL, "ecb": ECB_URL, "boj": BOJ_URL}[source]
             and e.get("date", "") > start.isoformat()
         )
-        minimum = max(_MIN_EVENTS[source], (old_count + 1) // 2)
-        if len(events) < minimum:
+        minimum = max(1, (old_count + 1) // 2)
+        if not events or (old_count and len(events) < minimum):
             message = (
                 f"{source} returned {len(events)} future events; "
-                f"expected at least {minimum}"
+                f"expected at least {minimum} based on the previous schedule"
             )
             raise ValueError(message)
     events = sorted(

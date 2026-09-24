@@ -48,6 +48,12 @@ BOJ = html.fromstring("""<html><h2>2027</h2><table>
 <tr><td>June 10 (Thurs.), 11 (Fri.)</td></tr><tr><td>July 21 (Wed.), 22 (Thurs.)</td></tr>
 <tr><td>Sept. 21 (Tues.), 22 (Wed.)</td></tr><tr><td>Oct. 28 (Thurs.), 29 (Fri.)</td></tr>
 <tr><td>Dec. 16 (Thurs.), 17 (Fri.)</td></tr></table></html>""")
+BOJ_FIVE = html.fromstring("""<html><h2>2026</h2><table>
+<tr><td>May 27 (Wed.), 28 (Thurs.)</td></tr>
+<tr><td>June 15 (Mon.), 16 (Tues.)</td></tr>
+<tr><td>July 30 (Thurs.), 31 (Fri.)</td></tr>
+<tr><td>Sept. 17 (Thurs.), 18 (Fri.)</td></tr>
+<tr><td>Oct. 29 (Thurs.), 30 (Fri.)</td></tr></table></html>""")
 
 
 def test_parse_fed_uses_final_day_and_tags_assets() -> None:
@@ -160,6 +166,24 @@ def test_build_macro_calendar_protects_against_anomalous_drop() -> None:
             start_date="2026-09-24",
             previous=previous,
         )
+
+
+def test_build_macro_calendar_allows_small_schedule_from_prior_count() -> None:
+    previous = {
+        "events": [
+            {"date": f"2026-{month:02d}-15", "source": BOJ_URL}
+            for month in (5, 6, 7, 9, 10)
+        ]
+    }
+    calendar = build_macro_calendar(
+        FED,
+        ECB,
+        BOJ_FIVE,
+        updated_at="2026-04-20",
+        start_date="2026-04-20",
+        previous=previous,
+    )
+    assert sum(event["source"] == BOJ_URL for event in calendar["events"]) == 5
 
 
 def test_main_keeps_output_when_source_fetch_fails(

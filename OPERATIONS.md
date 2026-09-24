@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 20745)
-Total output lines: 833
-
 # AIMS — Operations Guide
 
 This document covers data sources, scoring methodology, report generation, the publication workflow, required secrets, troubleshooting, and manual recovery.
@@ -311,7 +308,225 @@ Re-run after material changes to the feature set, scoring logic, or once #78's d
 Where the backtest above measures the scoring engine against history offline, `track_signal_performance.py` (delegating to `src/aims/signal_performance.py`) measures the top-5 quantitative signals actually published each day, using only committed `data/analysis/*.json` artifacts — no live price fetch. It runs in the daily workflow after score history (daily interval only) and rewrites a single cumulative artifact, `data/performance/signals.json`, plus the public `content/performance/_index.md` page, each run.
 
 - **What's measured.** Each daily artifact's top-5 reliable, tradable instruments (same eligibility as the report's "Top opportunities" section, #76) become individually tagged "slot observations" — one per instrument per horizon, carrying that instrument's asset class and the artifact's market regime label (#77) — paired with the equal-weight average forward return of the _entire_ reliable universe that date as a benchmark. Grouping the flat pool of slot observations by tag yields the by-asset-class and by-regime breakdowns without requiring every date to have complete coverage in every group. Default horizons: 1d/5d/20d.
-- **Reused machinery.** Forward returns are reconstructed by chaining `ret_1d` across consecutive artifacts (`aims.performance.build_bar_series`/`forward_return`, the same #97 stance-evaluation bar-chaining), self-checked against `ret_5d` and invalidating the affected link on m…4745 tokens truncated…` in the freshness column had no data returned from Stooq. Symbols with old dates may be delisted or have restricted access.
+- **Reused machinery.** Forward returns are reconstructed by chaining `ret_1d` across consecutive artifacts (`aims.performance.build_bar_series`/`forward_return`, the same #97 stance-evaluation bar-chaining), self-checked against `ret_5d` and invalidating the affected link on mismatch rather than producing a wrong return.
+- **Pending vs. incomplete.** A slot is `pending` when the forward window hasn't matured yet (not enough later artifacts chained) and `incomplete` when it matured but the chain is broken or unmatched — this distinction lets the artifact and page distinguish "wait for more data" from "this observation is permanently unusable."
+- **Slack.** When present, `notify_slack.py --signal-performance` appends a trailing `20d top-5 excess ...` line (trailing 20-day top-5 vs. benchmark excess return and hit rate); omitted until matured observations exist at that horizon.
+- **Same informational caveat as backtesting.** Excludes fees, slippage, financing, and order timing; rests on small overlapping samples early in accumulation; not an investable or executable track record. Format reference: `data/schema/signal_performance.schema.json`.
+
+### Assumptions and limitations
+
+- Scores are cross-sectional: they reflect relative, not absolute, performance. A score of 80 in a falling market still means that instrument fell less than most others.
+- Volatility and drawdown are historical. They do not predict future risk.
+- Missing or stale data can distort percentile ranks when the universe is small.
+- Short history (< 60 bars) triggers the `insufficient_history` gate and excludes an instrument from reliable rankings.
+- Score/rank deltas in `data/history/` and the Signal History report section compare each instrument only against the most recent prior report. If the analyzed instrument universe changes between reports (e.g. a mapping addition or removal), deltas reflect both genuine market moves and the change in cross-sectional population, and should be interpreted with care until the universe is stable across both dates.
+
+---
+
+<a id="report-generation"></a>
+
+## 4. Report generation
+
+### Script
+
+```sh
+uv run .agents/skills/market-analysis/scripts/generate_report.py \
+    --input data/analysis/YYYY-MM-DD.json \
+    --output content/results/
+```
+
+The script reads the JSON artifact produced by `market_analysis.py generate` and writes a Hugo-compatible Markdown file to `content/results/YYYY-MM-DD-market-analysis.md`.
+
+Before report generation, `generate_history.py` reads the current and all earlier
+available `data/analysis/YYYY-MM-DD.json` files and writes the deterministic,
+versioned `data/history/YYYY-MM-DD.json` artifact. Version 1.0.0 records previous
+rank/score, deltas (positive rank delta means improvement), new and dropped top-5
+signals, consecutive reliable and top-5 available-report counts, and added/removed
+risk gates. Missing calendar dates are intentionally ignored. The format reference
+is `data/schema/history.schema.json`; candidates with a different configured bar
+interval are excluded, and numeric history remains separate from OKF.
+
+### Output format
+
+The report includes:
+
+- TOML front matter: title, date, draft status, summary, ticker symbols, market regime, scoring metadata
+- Market regime section
+- Top opportunities (up to 5 reliable instruments)
+- Changes versus the previous available report and persistent top signals
+- Instruments to avoid (unreliable instruments)
+- Key risks (triggered risk gates)
+- Full instrument scores table
+- Data freshness table (per-symbol latest bar date)
+- Methodology summary
+- Financial disclaimer
+
+### Determinism
+
+The generator is fully deterministic: identical input JSON always produces identical Markdown output. It does not call `datetime.now()` and uses only the `generated_at` timestamp from the artifact.
+
+### Draft status
+
+`draft = false` is set in all generated reports. Draft reports can be created manually using `hugo new results/YYYY-MM-DD-description.md`.
+
+---
+
+<a id="publication-workflow"></a>
+
+## 5. Publication workflow
+
+### Daily schedule
+
+`.github/workflows/daily-market-analysis.yml` runs at **01:00 UTC** every day.
+
+Pipeline order:
+
+1. Validate CFD instrument master
+2. Validate instrument mappings (`validate_instrument_mappings.py`) — a typo'd `provider`/`provider_interval` value fails the run instead of silently shrinking the symbol universe
+3. Set analysis date (default: today UTC) and compute the interval-aware output stem (see below)
+4. Load symbols from `data/mappings/canonical_instrument_mappings.csv` for the configured `--provider`/`--interval` (the mapping file is the single source of truth; there is no separate `data/*_symbols.txt` file to keep in sync)
+5. Initialize `data/prices/fetch_status_<interval>.json` and fetch market data from the configured provider (lookback window scaled per interval by `aims.policy.fetch_window_days`), recording per-symbol outcomes in fetch status
+6. Generate JSON analysis artifact (`data/analysis/<stem>.json`) using `--mapping` and `--fetch-status`; fail if coverage gates are violated. Each instrument entry is enriched with `canonical_id`, `display_name`, and `asset_class` from the mapping. Bars dated on or after `--analysis-date` are dropped before scoring (see "Bar boundary policy" above).
+7. Validate artifact
+8. Generate score history (`data/history/<stem>.json`)
+9. Generate Hugo Markdown report (`content/results/<stem>-market-analysis.md`), grouped by asset class when the artifact carries more than one
+10. Build Hugo site (validation only — catches template or content errors before commit)
+11. Create (or update) a pull-request branch `generated/analysis-<stem>` with both artifacts and the report, then merge it directly (squash, delete branch)
+12. A Slack notification summarizes new/persistent signals and risk-gate changes and links to the analysis PR.
+
+**Interval-aware output stem:** `<stem>` is the analysis date (`YYYY-MM-DD`) for the default `d` interval, and `YYYY-MM-DD-<interval>` for `w`/`m` (see `aims.market_analysis.artifact_interval_suffix`). This keeps existing daily filenames unchanged while preventing a manual `w`/`m` dispatch from overwriting the same date's daily artifact, history, report, or PR branch.
+
+### Merging the analysis PR
+
+Step 11 calls `gh pr merge --squash --delete-branch` directly rather than `--auto`: `main` has no branch protection or required status checks, and GitHub only allows `--auto` to be enabled on a PR whose merge is otherwise blocked by such requirements, so `--auto` fails outright here. All validation (artifact/history schema checks, Hugo build) has already run earlier in the same job, so merging immediately is safe. If the merge fails for any reason, the step fails the job (no error-masking) and the failure Slack notification fires.
+
+**Known gotcha — PRs stuck in `action_required`:** pull-request-triggered `ci.yml` runs on `generated/analysis-*` branches can be gated with conclusion `action_required` and zero jobs executed, even though the PR was opened by `github-actions[bot]` pushing to a branch in the same repository (not a fork). When this happens, the merge step above will fail (and notify) rather than merging. A repository maintainer must approve the pending workflow run (Actions tab → the run → **Approve and run**) or re-run it; only an authorized human/maintainer token can do this, the workflow's own `GITHUB_TOKEN` cannot self-approve. If this recurs daily, check **Settings → Actions → General** for an approval requirement (e.g. "Require approval for all outside collaborators") that is being applied to `github-actions[bot]`-authored pull requests, and relax it only if the operational risk is acceptable.
+
+### Manual dispatch
+
+The workflow supports `workflow_dispatch` with optional inputs:
+
+| Input                 | Default    | Description                                                                                                                                                                                                                    |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `analysis_date`       | Today UTC  | Override the analysis date (YYYY-MM-DD)                                                                                                                                                                                        |
+| `interval`            | `d`        | Price bar interval: `d` (daily), `w` (weekly), `m` (monthly). `w`/`m` currently only cover the mapping rows that exist for those intervals (the five original indices) and write to interval-suffixed output paths (see above) |
+| `dry_run`             | `false`    | When `true`, skips PR creation, merge, and Slack success notification                                                                                                                                                          |
+| `min_success_ratio`   | `0.8`      | Minimum symbol fetch success ratio for coverage gate                                                                                                                                                                           |
+| `max_missing_symbols` | `4`        | Maximum allowed missing symbols for coverage gate (scaled for the ~20-instrument mapped universe)                                                                                                                              |
+| `provider`            | `yfinance` | Market data provider: `yfinance` or `stooq`                                                                                                                                                                                    |
+
+### Deployment gate
+
+GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), which runs only after Python linting, type checking, and tests all pass. The daily analysis workflow commits only content files (JSON and Markdown), not Python source, so existing tests remain stable.
+
+`ci.yml` runs on three deploy-relevant triggers:
+
+- `push` to `main` (human merges).
+- `workflow_run` on "Daily market analysis" completion: bot merges performed with `GITHUB_TOKEN` create no push event, so the daily workflow finishing (successfully) re-runs CI/CD against the head of `main` and deploys it. Deploys are idempotent snapshots of `main`, so a redundant run after a dry run is harmless.
+- `workflow_dispatch` (`gh workflow run ci.yml`): manual full CI + deploy of current `main` — the recovery path when a deploy failed or the site is stale.
+
+The AIMS-specific prerequisite job validates the OKF shadow content and builds the site with Hugo, then uploads the generated `site/` directory as a Pages artifact. Deployment is delegated to the pinned `dceoy/gha-for-devops` `github-pages-deploy.yml` reusable workflow, which performs the deployment and one bounded in-run retry. If the deployment still fails, the local AIMS follow-up job sends a Slack failure notification when `SLACK_WEBHOOK_URL` is configured — otherwise check the run under the Actions tab and the deployment status via `gh api repos/<owner>/<repo>/deployments?environment=github-pages`.
+
+### Rollback
+
+If a published report or artifact needs to be removed, see [Delete a published report](#delete-a-published-report) in Manual recovery. Reverting a bad _code_ change (as opposed to a bad daily _report_) is a normal `git revert` on `main`, gated by the same CI checks as any other change.
+
+---
+
+<a id="github-actions-secrets"></a>
+
+## 6. GitHub Actions secrets
+
+| Secret                    | Required | Description                                                                                                                                                                                                                                                                        |
+| ------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SLACK_WEBHOOK_URL`       | Optional | Slack incoming webhook URL for success and failure notifications. If not set, the workflow skips Slack notification steps.                                                                                                                                                         |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Optional | Long-lived Claude Code OAuth token for the qualitative action step. Generate it with `claude setup-token`, store it as a repository Actions secret, and never place it in files or logs. When unset, the qualitative steps are skipped and the quantitative pipeline is unchanged. |
+| `GITHUB_TOKEN`            | Built-in | Used automatically by `gh` and `git push` in the `update-cfd-instruments` and `daily-market-analysis` workflows. No manual configuration needed.                                                                                                                                   |
+
+**How to add `SLACK_WEBHOOK_URL`:** Go to the repository → Settings → Secrets and variables → Actions → New repository secret. Name: `SLACK_WEBHOOK_URL`. Value: the `https://hooks.slack.com/services/…` URL from your Slack app's Incoming Webhooks configuration.
+
+**Never commit secret values.** Generate `CLAUDE_CODE_OAUTH_TOKEN` locally with `claude setup-token`, then add it at **Settings → Secrets and variables → Actions → New repository secret**. Rotate it by generating and replacing the secret; revoke it from the Claude account's connected-app/session settings (or by signing out affected Claude Code sessions), then replace the GitHub secret before re-enabling runs. The token is passed only to the pinned action and is never read or recorded by the Python finalizer.
+
+**Repository variables:**
+
+| Variable                | Default   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AI_COMMENTARY_ENABLED` | unset/off | Rendering switch for AI commentary (#94/#95). While unset or not `true`, qualitative artifacts are committed in shadow mode but `generate_report.py` is never passed `--qualitative`, so published reports are unchanged. Flip to `true` only after the shadow-mode exit criteria recorded on issue #98 are met; the flip is a reviewed change, not a silent default. The `ai_commentary` workflow-dispatch input (`on`/`off`) overrides it per run. |
+
+---
+
+<a id="required-permissions"></a>
+
+## 7. Required permissions
+
+The `daily-market-analysis.yml` workflow uses:
+
+| Permission             | Scope                  | Reason                                      |
+| ---------------------- | ---------------------- | ------------------------------------------- |
+| `contents: write`      | `analyze` job          | Create and push to analysis branch; open PR |
+| `pull-requests: write` | `analyze` job          | Create analysis pull requests               |
+| `contents: read`       | Workflow-level default | Checkout                                    |
+
+The `ci.yml` workflow adds:
+
+| Permission        | Scope                         | Reason                          |
+| ----------------- | ----------------------------- | ------------------------------- |
+| `id-token: write` | `hugo-deploy-to-gh-pages` job | OIDC token for Pages deployment |
+| `pages: write`    | `hugo-deploy-to-gh-pages` job | Deploy to GitHub Pages          |
+
+---
+
+<a id="troubleshooting"></a>
+
+## 8. Troubleshooting
+
+### Fetch failed for symbol
+
+```text
+ERROR: fetch failed for ^SPX
+```
+
+The data provider may be temporarily unavailable or the symbol may be invalid. Per-symbol fetch failures are non-fatal — a `WARNING` is logged and the fetch loop continues. The symbol is passed to the `generate` step which marks it as `missing_data` in the artifact and report when coverage policy still passes. The workflow fails before publishing when coverage gates detect a systemic data-source failure (too many missing symbols or success ratio below threshold). It also fails when no symbols at all can be fetched.
+
+**Fix:** Check `data/mappings/canonical_instrument_mappings.csv` for typos in `provider_symbol`. Verify the symbol on the provider's site (e.g. <https://finance.yahoo.com> or <https://stooq.com>). Remove permanently unavailable rows to keep the analysis clean. Re-run the workflow after the data source recovers.
+
+### Artifact validation failure
+
+```text
+ERROR: instrument[0] missing required key: 'symbol'
+```
+
+The generated JSON does not match the expected schema. This usually means a bug in `src/aims/market_analysis.py`.
+
+**Fix:** Run the generate step locally, then run `validate_analysis.py` with `--input` to reproduce the error.
+
+### Hugo build failure
+
+```text
+Error: ... template: ...
+```
+
+A generated Markdown file has invalid front matter or content that causes Hugo to fail.
+
+**Fix:** Run `hugo --gc --minify` locally with the failing content file, fix the generator, and regenerate.
+
+### Mapping validation errors
+
+```text
+ERROR: row 5: unknown provider 'bloomberg'; known: csv, stooq
+WARNING: CFD instrument ('TestBroker', 'US30') has no canonical mapping entry
+```
+
+Run `validate_instrument_mappings.py` locally to see all errors before committing. Common causes:
+
+- **Unknown provider:** only `stooq` and `csv` are registered. Add the provider to `_PROVIDER_REGISTRY` before using it in a mapping.
+- **Broker/instrument not found in cfd_instruments.csv:** the CFD product has not been fetched yet. Run `update-cfd-instruments` first, or leave the broker columns blank to skip the reference check.
+- **Duplicate provider mapping:** two different `canonical_id` values claim the same `(provider, provider_symbol, provider_interval)` triple. Each provider symbol/interval combination must map to exactly one canonical instrument.
+- **Unmapped tradable CFD warning:** a tradable entry in `cfd_instruments.csv` has no row in `canonical_instrument_mappings.csv`. Add a mapping row or accept the warning as informational.
+
+### Stale data warning
+
+Reports include a freshness table. Symbols with `n/a` in the freshness column had no data returned from Stooq. Symbols with old dates may be delisted or have restricted access.
 
 ### Qualitative step failed
 

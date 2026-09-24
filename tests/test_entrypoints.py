@@ -33,6 +33,7 @@ _SCRIPTS = [
     ".agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py",
     ".agents/skills/qualitative-analysis/scripts/evaluate_stances.py",
     ".agents/skills/qualitative-analysis/scripts/validate_performance.py",
+    ".agents/skills/qualitative-analysis/scripts/update_macro_calendar.py",
     ".agents/skills/qualitative-analysis/scripts/prompt_regression.py",
     ".agents/skills/qualitative-analysis/scripts/validate_prompt_regression.py",
     ".agents/skills/qualitative-analysis/scripts/check_citation_links.py",
@@ -87,6 +88,10 @@ _SCRIPT_SYMBOLS = [
     (
         ".agents/skills/qualitative-analysis/scripts/validate_performance.py",
         ["validate_artifact"],
+    ),
+    (
+        ".agents/skills/qualitative-analysis/scripts/update_macro_calendar.py",
+        ["build_macro_calendar", "parse_fed", "parse_ecb", "parse_boj"],
     ),
     (
         ".agents/skills/qualitative-analysis/scripts/prompt_regression.py",

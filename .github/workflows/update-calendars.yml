@@ -25,6 +25,11 @@ jobs:
             .agents/skills/qualitative-analysis/scripts/update_calendars.py \
             --mapping data/mappings/canonical_instrument_mappings.csv \
             --output data/calendars/earnings.json
+      - name: Refresh official macro calendars
+        run: |
+          uv run python \
+            .agents/skills/qualitative-analysis/scripts/update_macro_calendar.py \
+            --output data/calendars/macro_events.json
       - name: Validate calendars
         run: |
           for CAL in data/calendars/*.json; do
@@ -34,8 +39,8 @@ jobs:
           done
       - name: Ignore metadata-only update
         run: |
-          if git diff --quiet -I '"updated_at":' -- data/calendars/earnings.json; then
-            git restore data/calendars/earnings.json
+          if git diff --quiet -I '"updated_at":' -- data/calendars/earnings.json data/calendars/macro_events.json; then
+            git restore data/calendars/earnings.json data/calendars/macro_events.json
           fi
       - name: Set update metadata
         id: metadata
@@ -45,10 +50,10 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1   # v8.1.1
         with:
-          add-paths: data/calendars/earnings.json
+          add-paths: data/calendars/earnings.json data/calendars/macro_events.json
           branch: chore/refresh-calendars-${{ steps.metadata.outputs.date_compact }}
           base: main
           commit-message: "chore(data): refresh event calendars ${{ steps.metadata.outputs.date }}"
           title: "chore(data): refresh event calendars ${{ steps.metadata.outputs.date }}"
-          body: Automated earnings-calendar refresh from yfinance. Macro events in data/calendars/macro_events.json are maintained by hand (see OPERATIONS.md).
+          body: Automated earnings-calendar refresh from yfinance and central-bank schedule refresh from official Fed, ECB, and BOJ pages (see OPERATIONS.md).
           labels: agent:github-actions

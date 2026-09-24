@@ -669,7 +669,7 @@ Review the printed proposal, then promote or retire through a reviewed OKF PR (n
 
 ### Refresh event calendars manually
 
-Trigger **Actions → Update event calendars → Run workflow** (earnings only), or run `update_calendars.py` locally. Macro events are hand-maintained — see [§11](#11-ai-qualitative-analysis-layer-operations).
+Trigger **Actions → Update event calendars → Run workflow** to refresh earnings and official Fed, ECB, and BOJ schedules, or run `update_calendars.py` and `update_macro_calendar.py` locally. The macro updater parses official institution pages, checks source event counts, and leaves the existing file untouched if retrieval or sanity checks fail.
 
 ### Refresh CFD instruments manually
 
@@ -754,7 +754,7 @@ Operational reference for the implemented layer (#90–#95). The binding design 
 
 Two schema-validated files under `data/calendars/` (schema: `data/schema/calendar.schema.json`) drive the deterministic "Upcoming Events" report section, the Slack event lines, and the #92 prompt context:
 
-- **`macro_events.json`** — central-bank decision dates (FOMC, ECB, BOJ), hand-maintained from officially published yearly schedules (sources recorded per event). Refresh cadence: when each institution publishes next year's schedule (typically mid-year), extend the file through a reviewed PR and re-run `validate_calendar.py`. **Correcting a wrong date:** edit the event's `date`, keep the `source` URL pointing at the official schedule, and open a reviewed PR — the next daily run picks it up.
+- **`macro_events.json`** — central-bank decision dates (FOMC, ECB, BOJ), refreshed weekly from official institution schedules through a reviewed PR. The updater records each meeting's final day, filters past dates, and fails closed if a source returns too few events. **Correcting a wrong date:** update the parser or source mapping with tests in a reviewed PR; the next refresh uses the official dates.
 - **`earnings.json`** — per-equity earnings dates fetched from yfinance, refreshed weekly by `update-calendars.yml` (Mondays 05:30 UTC) through an auto-created PR. Dates are provider estimates and can shift; the weekly refresh converges on the confirmed date.
 
 Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering windows are relative to the analysis date (7 days in reports/Slack by default, 14 days in the qualitative prompt), so output stays deterministic.

@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 20687)
-Total output lines: 819
+Warning: truncated output (original token count: 20745)
+Total output lines: 833
 
 # AIMS — Operations Guide
 
@@ -14,13 +14,13 @@ This document covers data sources, scoring methodology, report generation, the p
 1. [Data sources](#1-data-sources)
 2. [Instrument master](#2-instrument-master)
 3. [Scoring methodology](#3-scoring-methodology)
-4. [Report generation](#4-report-generation)
-5. [Publication workflow](#5-publication-workflow)
-6. [GitHub Actions secrets](#6-github-actions-secrets)
-7. [Required permissions](#7-required-permissions)
-8. [Troubleshooting](#8-troubleshooting)
-9. [Manual recovery](#9-manual-recovery)
-10. [AI qualitative analysis layer (design)](#10-ai-qualitative-analysis-layer-design)
+4. [Report generation](#report-generation)
+5. [Publication workflow](#publication-workflow)
+6. [GitHub Actions secrets](#github-actions-secrets)
+7. [Required permissions](#required-permissions)
+8. [Troubleshooting](#troubleshooting)
+9. [Manual recovery](#manual-recovery)
+10. [AI qualitative analysis layer (design)](#ai-qualitative-analysis-layer-design)
 11. [AI qualitative analysis layer (operations)](#11-ai-qualitative-analysis-layer-operations)
 12. [Stance evaluation, accountability, and OKF theme curation](#12-stance-evaluation-accountability-and-okf-theme-curation)
 
@@ -228,7 +228,274 @@ The daily workflow evaluates systemic data-source health before publishing resul
 | `min_success_ratio`   | `0.8`   | Minimum fraction of configured symbols with fetched data |
 | `max_missing_symbols` | `1`     | Maximum allowed count of symbols with no fetched data    |
 
-**Isolated missing symbols:** When coverage policy passes, the workflow still generates an arti…10687 tokens truncated…TC, mirroring the analysis artifact.
+**Isolated missing symbols:** When coverage policy passes, the workflow still generates an artifact and marks affected instruments with the `missing_data` risk gate. One missing symbol out of five configured symbols (80% success ratio) is within policy.
+
+**Systemic data-source failure:** When coverage policy fails (too many missing symbols, success ratio below threshold, empty symbol universe, or all symbols failed), the `generate` step may write a diagnostic JSON artifact with `metadata.coverage.passed: false`, then exits with a non-zero status. The automated workflow stops before artifact validation, Hugo report generation, pull-request creation, and Slack success notification. Diagnostic artifacts are for local inspection only — do not validate or publish them manually. The failure Slack notification still links to the GitHub Actions run.
+
+**Artifact validation contract:** `validate_analysis.py` accepts `metadata.coverage.passed: false` as structurally valid JSON. Publication safety comes from the workflow gate: `generate` must exit `0` before validation, report generation, or PR creation run. Only artifacts with `coverage.passed: true` reach the public pipeline.
+
+Override coverage gates locally or in manual workflow runs via `market_analysis.py generate --min-success-ratio` and `--max-missing-symbols`, or through the `workflow_dispatch` inputs of the same name (defaults: `0.8` and `1`).
+
+**Current-run fetch status:** The daily workflow initializes `data/prices/fetch_status_<interval>.json` before fetching, records per-symbol success or failure during each `fetch` call, and passes that file to `generate --fetch-status`. Coverage gates use this fetch-status file as the source of truth, not merely the presence of pre-existing local price CSVs. A stale on-disk price file cannot mask a failed fetch in the current run. `generate` rejects fetch-status files whose `interval` or `analysis_date` do not match the current run.
+
+**Bar boundary policy:** `generate --analysis-date DATE` scores only bars strictly before `DATE`; any bar dated on or after `DATE` is dropped before scoring. This excludes in-progress intraday bars for markets still open when the scheduled run fires (e.g. `^N225`, `^HSI`, `*.T` — Tokyo/Hong Kong sessions are mid-day at the 01:00 UTC schedule), and rejects look-ahead when backfilling a past `analysis_date` against a `--data-dir` that holds newer bars. The tradeoff is one extra day of reporting lag for markets that had already closed by fetch time, in exchange for every instrument's `data_freshness` being computed the same way and a rerun of a past date reproducing the same artifact.
+
+### Market regime
+
+The market regime label is derived from breadth: the share of reliable instruments whose latest close is above their 20-day moving average. Percentile-based composite scores are relative by construction — their median stays near 50 for any universe of meaningful size regardless of market direction — so breadth is used as an absolute directional measure instead. Reliable instruments without MA20 data are excluded from the ratio.
+
+| Label       | Share above MA20                       |
+| ----------- | -------------------------------------- |
+| Bullish     | ≥ 65%                                  |
+| Neutral     | > 35% and < 65%                        |
+| Bearish     | ≤ 35%                                  |
+| Unavailable | No reliable instruments with MA20 data |
+
+The label is computed once, at artifact generation time, and stored as `metadata.market_regime` (`{label, positive_count, reliable_count, breadth, thresholds}`) — the authoritative, auditable source for the regime shown in reports and Slack notifications. Both consumers call `regime_from_artifact()` (`src/aims/reports.py`), which reads the stored value and only recomputes it from reliable-instrument MA20 breadth as a fallback for artifacts generated before this field existed (schema version < 1.1.0). This is informational only: it never modifies scores, ranks, or risk gates.
+
+### Scoring version
+
+`SCORING_VERSION = "1.0.0"` in `src/aims/market_analysis.py`. Increment this when the feature set or scoring logic changes in a way that makes old and new scores incomparable.
+
+### Feature diagnostics and the scoring v2 evaluation process
+
+The composite score averages 10 feature percentile ranks, and 8 of the 10 are correlated momentum/trend variants. `run_backtest` (`src/aims/backtest.py`) reports two informational-only diagnostics per artifact, never used to adjust scores, ranks, or gates:
+
+- **`feature_diagnostics.information_coefficient`**: for each forward horizon and feature, the mean daily cross-sectional Spearman rank correlation between that feature's raw value and the forward return at that horizon, averaged over the dates with at least two valid (feature, forward-return) pairs (`{mean, n}`; `mean` is `null` when `n` is 0). This is the standard "IC" measure of a feature's predictive power.
+- **`feature_diagnostics.feature_correlation`**: a symmetric feature × feature matrix of mean daily cross-sectional Spearman correlation, showing how redundant the momentum/trend features are with each other.
+
+**Scoring v2 adoption process** — a scoring change is a separate, evidence-gated decision from adding these diagnostics, and must not be inferred from a single backtest run:
+
+1. Measure ICs and feature correlations over the expanded universe (#76) and the deepest available history (#78) — short or narrow samples produce noisy ICs.
+2. Propose a v2 feature set/weighting from the evidence — e.g. dropping features with persistently near-zero IC (`ret_1d` is a common candidate per the measured example above), adding volatility-adjusted or longer-horizon momentum, or treating risk features (`vol_20d`, `mdd_60d`) as gates/penalties rather than averaged ranks.
+3. Run v1 and v2 side by side over the same walk-forward window (`run_backtest` with each feature set) and compare out-of-sample bucket monotonicity and net-of-cost top-k excess return (#80) — adopt v2 only if both improve.
+4. Only then bump `SCORING_VERSION`, update this document and the OKF scoring-methodology concept, and refresh golden tests.
+
+No ML-fitted or optimizer-fitted weights — hand-set weights justified by measured ICs, keeping the engine deterministic and dependency-light.
+
+### Backtest cost model, benchmark, and significance
+
+`run_backtest` reports gross top-k forward returns only by default; costs, a benchmark, and a significance test are opt-in and additive — they never change `score_instruments` or the composite score.
+
+- **Cost model**: each top-k forward-return observation is treated as an independent round-trip (this backtest reports cross-sectional forward returns per date, not a single compounding equity curve), so the cost is `2 × spread_bps` (entry + exit) plus `financing_rate_annual × horizon / 365` (holding-period financing), deducted once per observation. Per-instrument overrides come from an optional `--cost-mapping` CSV (`symbol,spread_bps,financing_rate_annual`); symbols absent from it use conservative placeholders (`DEFAULT_SPREAD_BPS = 10.0`, `DEFAULT_FINANCING_RATE_ANNUAL = 0.05` in `src/aims/backtest.py`) until real broker spread/financing data is wired in. `metrics[h].top_k.average_return` stays gross; `net_average_return` is net of this cost.
+- **Benchmark**: `metrics[h].benchmark.average_return` is the equal-weight average forward return across the _entire_ reliable universe that date (all score buckets pooled), not just the top-k selection. `top_k.excess_return` / `net_excess_return` are the gross/net top-k average minus this benchmark, per horizon.
+- **Significance**: a deterministic moving-block bootstrap (`_moving_block_bootstrap_ci`, seeded, block-resampled to preserve short-range autocorrelation) on the mean daily net excess return, computed at the finest configured horizon (most daily observations to resample). Reported at `significance` with `{horizon, mean_net_excess_return, confidence, confidence_interval, block_size, iterations, seed, n}`; `confidence_interval` is `null` with fewer than two observations.
+- **Regime breakdown**: `regime_breakdown.regimes` buckets the same per-date net top-k and benchmark averages (at the significance horizon) by that date's breadth-based market regime label (`market_regime_metadata`, the same MA20-breadth measure persisted in daily analysis artifacts, #77) — showing whether the strategy's edge concentrates in a particular regime.
+- **Limitations**: overlapping forward horizons (e.g. daily observations at a 20-day horizon) overstate the effective independent sample size; the bootstrap partially compensates via block resampling but this is not a substitute for a longer out-of-sample window. The cost model has no order-book simulation, intraday slippage, or portfolio-level margin constraints.
+
+### Committed backtest artifact (#76)
+
+`data/backtests/` holds a committed walk-forward backtest artifact for the full daily `yfinance` universe (`data/mappings/canonical_instrument_mappings.csv`, all 33 mapped daily instruments across equity indices, commodities, and equities — including the `tradable=false` informational rows, since the backtest measures the scoring engine's cross-sectional behavior, not broker-executable signals), generated from the persistent price store (#78) after #79's IC diagnostics and #80's cost/benchmark/significance metrics landed, so it is not superseded by shallow-history or gross-only numbers. CI validates every file under `data/backtests/*.json` against `validate_backtest.py` (`ci.yml`'s `validate-market-data-config` job).
+
+**Regenerating it:**
+
+```bash
+uv run python .agents/skills/market-analysis/scripts/market_analysis.py update-store \
+    --mapping data/mappings/canonical_instrument_mappings.csv \
+    --interval d --provider yfinance --store-dir <store-dir>
+uv run python .agents/skills/market-analysis/scripts/backtest.py \
+    --symbols "$(uv run python -c "
+from pathlib import Path
+from aims.market_analysis import load_instrument_mappings, symbols_from_mappings
+rows = load_instrument_mappings(Path('data/mappings/canonical_instrument_mappings.csv'))
+print(','.join(symbols_from_mappings(rows, 'yfinance', 'd')))
+")" \
+    --data-dir <store-dir> --output-dir data/backtests \
+    --horizons 1,5,20,60 --top-k 5 --buckets 4 --min-history 60
+```
+
+Re-run after material changes to the feature set, scoring logic, or once #78's deep store has accumulated materially more history; a stale artifact is a documentation problem, not a correctness one (the daily pipeline never reads `data/backtests/`).
+
+### Signal performance tracking (#82)
+
+Where the backtest above measures the scoring engine against history offline, `track_signal_performance.py` (delegating to `src/aims/signal_performance.py`) measures the top-5 quantitative signals actually published each day, using only committed `data/analysis/*.json` artifacts — no live price fetch. It runs in the daily workflow after score history (daily interval only) and rewrites a single cumulative artifact, `data/performance/signals.json`, plus the public `content/performance/_index.md` page, each run.
+
+- **What's measured.** Each daily artifact's top-5 reliable, tradable instruments (same eligibility as the report's "Top opportunities" section, #76) become individually tagged "slot observations" — one per instrument per horizon, carrying that instrument's asset class and the artifact's market regime label (#77) — paired with the equal-weight average forward return of the _entire_ reliable universe that date as a benchmark. Grouping the flat pool of slot observations by tag yields the by-asset-class and by-regime breakdowns without requiring every date to have complete coverage in every group. Default horizons: 1d/5d/20d.
+- **Reused machinery.** Forward returns are reconstructed by chaining `ret_1d` across consecutive artifacts (`aims.performance.build_bar_series`/`forward_return`, the same #97 stance-evaluation bar-chaining), self-checked against `ret_5d` and invalidating the affected link on m…4745 tokens truncated…` in the freshness column had no data returned from Stooq. Symbols with old dates may be delisted or have restricted access.
+
+### Qualitative step failed
+
+```text
+WARNING: AI commentary: step failed; quantitative report unaffected
+```
+
+The qualitative prepare/action/finalize chain is fail-open: evidence problems, OAuth/action failures, subscription usage limits, timeouts, or output that stays invalid after the single retry never block quantitative publication. The Slack success message carries the warning above.
+
+**Fix:** Open the step log. For authentication failures, replace `CLAUDE_CODE_OAUTH_TOKEN` with a fresh `claude setup-token` value. For usage-limit failures, wait for the Claude subscription quota window to reset or skip qualitative analysis; the workflow does not fall back to metered API billing. For validation errors, the finalizer lists each violated rule. Repeated failures can be silenced with `skip_qualitative` while investigating.
+
+### AI commentary absent or withheld by gates
+
+Commentary can be absent for benign reasons: the secret is unset, rendering is off (shadow mode), the evidence bundle was empty, or the #93 gates withheld content. Gate outcomes are recorded in the artifact itself — `metadata.gates` names the market-level gates and per-instrument `qualitative_gates`; the Slack summary shows `withheld by gates (...)`. Gated entries are working as designed: they are excluded from rendering, not retried. A market-narrative gate withholds the whole artifact from rendering while it still merges for shadow-mode measurement.
+
+### 100% test coverage requirement
+
+All implementation modules under `src/aims/` are included in the pytest coverage check. If you add new code paths to `src/aims/`, add corresponding tests.
+
+---
+
+<a id="manual-recovery"></a>
+
+## 9. Manual recovery
+
+### Re-run the daily workflow
+
+Trigger it from **Actions → Daily market analysis → Run workflow** with the desired `analysis_date`. Use `dry_run = true` to test fetch, scoring, and artifact generation without opening a pull request or sending a success Slack notification.
+
+### Recover from a coverage gate failure
+
+1. Inspect the failed GitHub Actions run log for `ERROR: coverage gate failed` messages and the saved artifact (if generated locally).
+2. Verify data-provider availability and symbol validity in `data/mappings/canonical_instrument_mappings.csv`.
+3. Re-run the workflow manually once the data source has recovered.
+4. For temporary outages affecting multiple symbols, wait for recovery rather than lowering coverage thresholds in automation.
+
+### Re-fetch data for a symbol
+
+```sh
+uv run .agents/skills/market-analysis/scripts/market_analysis.py \
+    fetch --symbol ^SPX --start 2023-01-01 --end 2024-12-31
+```
+
+### Regenerate an artifact from saved data (explicit symbols)
+
+```sh
+uv run .agents/skills/market-analysis/scripts/market_analysis.py \
+    generate --symbols "^SPX,^DJI,^NDX" --output data/analysis/ \
+    --analysis-date YYYY-MM-DD
+```
+
+### Regenerate an artifact using canonical mapping
+
+```sh
+uv run .agents/skills/market-analysis/scripts/market_analysis.py \
+    generate --mapping data/mappings/canonical_instrument_mappings.csv \
+    --provider stooq --interval d --output data/analysis/ \
+    --analysis-date YYYY-MM-DD
+```
+
+`--mapping` and `--symbols` are mutually exclusive. With `--mapping`, the symbol list is derived from the mapping file for the given `--provider` and `--interval`, and each instrument entry in the artifact is enriched with `canonical_id` and `display_name`. Reports render these as "Display Name / symbol" (e.g. "S&P 500 / ^SPX").
+
+### Regenerate a report from an existing artifact
+
+```sh
+uv run .agents/skills/market-analysis/scripts/generate_report.py \
+    --input data/analysis/2024-01-01.json \
+    --output content/results/
+```
+
+### Send a test Slack notification
+
+```sh
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..." \
+uv run .agents/skills/market-analysis/scripts/notify_slack.py \
+    --artifact data/analysis/2024-01-01.json \
+    --report-url https://dceoy.github.io/aims/results/2024-01-01-market-analysis/
+```
+
+### Delete a published report
+
+1. Delete `content/results/YYYY-MM-DD-market-analysis.md` and `data/analysis/YYYY-MM-DD.json`.
+2. Commit and push to `main`.
+3. CI will rebuild and redeploy without the deleted report.
+
+### Regenerate a qualitative artifact for a past date
+
+Requires the committed analysis artifact for that date. Evidence for a past date can be re-fetched, but feeds only serve recent items — re-fetched bundles for old dates may be thin; prefer the originally committed bundle when it exists.
+
+```sh
+# 1. (only if the bundle is missing) rebuild the evidence bundle
+uv run .agents/skills/qualitative-analysis/scripts/fetch_evidence.py \
+    --analysis-date YYYY-MM-DD --output data/evidence/
+uv run .agents/skills/qualitative-analysis/scripts/validate_evidence.py \
+    --input data/evidence/YYYY-MM-DD.json
+
+# 2. prepare the deterministic action request
+uv run .agents/skills/qualitative-analysis/scripts/qualitative_analysis.py \
+    prepare \
+    --analysis data/analysis/YYYY-MM-DD.json \
+    --evidence data/evidence/YYYY-MM-DD.json \
+    --calendar data/calendars/macro_events.json \
+    --calendar data/calendars/earnings.json \
+    --run-dir data/run/qualitative/
+# 3. Run the same pinned Claude Code Action workflow with the OAuth secret,
+#    then pass structured_output to `finalize --attempt 1` (and at most once
+#    more with `--attempt 2` when the first finalizer emits retry=true).
+uv run .agents/skills/qualitative-analysis/scripts/validate_qualitative.py \
+    --input data/qualitative/YYYY-MM-DD.json \
+    --analysis data/analysis/YYYY-MM-DD.json \
+    --evidence data/evidence/YYYY-MM-DD.json
+```
+
+Commit the artifacts through a reviewed PR.
+
+### Regenerate the stance-evaluation artifact and page
+
+Deterministic; needs only committed analysis and qualitative artifacts (no API key, no price fetch). See [§12](#12-stance-evaluation-accountability-and-okf-theme-curation).
+
+```sh
+uv run .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
+    --input data/analysis/YYYY-MM-DD.json \
+    --analysis-dir data/analysis \
+    --qualitative-dir data/qualitative \
+    --output data/performance \
+    --page-output content/evaluation/_index.md
+uv run .agents/skills/qualitative-analysis/scripts/validate_performance.py \
+    --input data/performance/YYYY-MM-DD.json
+```
+
+### Regenerate the signal-performance artifact and page
+
+Deterministic; rebuilt in full from every committed daily analysis artifact each run (no API key, no price fetch). See [§3](#3-scoring-methodology).
+
+```sh
+uv run .agents/skills/market-analysis/scripts/track_signal_performance.py \
+    --analysis-dir data/analysis \
+    --output data/performance/signals.json \
+    --page-output content/performance/_index.md
+uv run .agents/skills/market-analysis/scripts/validate_signal_performance.py \
+    --input data/performance/signals.json
+```
+
+### Run the OKF theme curation pass
+
+```sh
+uv run .agents/skills/aims-okf-curator/scripts/curate_themes.py \
+    --qualitative-dir data/qualitative --concepts-dir okf/concepts
+```
+
+Review the printed proposal, then promote or retire through a reviewed OKF PR (never auto-merged). See [§12](#12-stance-evaluation-accountability-and-okf-theme-curation).
+
+### Refresh event calendars manually
+
+Trigger **Actions → Update event calendars → Run workflow** to refresh earnings and official Fed, ECB, and BOJ schedules, or run `update_calendars.py` and `update_macro_calendar.py` locally. The macro updater parses official institution pages, compares event counts with the prior future schedule, and leaves the existing file untouched if retrieval or sanity checks fail. A macro refresh failure is reported as a warning and does not block an earnings calendar PR.
+
+### Refresh CFD instruments manually
+
+Trigger **Actions → Update CFD instruments → Run workflow**.
+
+---
+
+<a id="ai-qualitative-analysis-layer-design"></a>
+
+## 10. AI qualitative analysis layer (design)
+
+This section is the design contract for the AI qualitative analysis roadmap (#98). It was written before implementation (#89) so that later issues (#90–#97) implement against agreed rules instead of re-litigating them. Issues #90–#95 are implemented against this contract (evidence ingestion, calendars, the qualitative skill, the deterministic gates, the renderer, and the shadow-mode workflow integration); operational details live in [§11](#11-ai-qualitative-analysis-layer-operations). Rendering stays off until the shadow-mode exit criteria in this section are met and recorded on #98.
+
+### Purpose and boundaries
+
+The quantitative pipeline cannot see _why_ — news, earnings, disclosures, and macro events that explain or contradict the rankings. The qualitative layer adds grounded AI interpretation around the quantitative signal while leaving every existing guarantee intact:
+
+- **The quantitative artifact stays authoritative for all numbers.** The qualitative artifact may reference scores, ranks, features, risk gates, and the market regime; it never restates them authoritatively and never modifies them. This mirrors the OKF guardrail that LLM prose is never the source of truth for numeric facts.
+- **The LLM call is the single non-deterministic step.** It produces a committed, schema-validated JSON artifact (`data/qualitative/<stem>.json`). Everything downstream — validation, gating, report rendering, Hugo build — stays deterministic. Report generation without a qualitative artifact remains byte-identical to today's output.
+- **Fail-open.** Any qualitative failure (missing OAuth token, action/model/quota error, timeout, gate withholding) publishes the quantitative report unchanged. Quantitative coverage gates are never weakened. Qualitative-step failures are non-fatal warnings; quantitative failures remain fatal exactly as now.
+
+### Artifact contract (#92)
+
+`data/qualitative/<stem>.json`, versioned by its own `QUALITATIVE_VERSION` (starting at `1.0.0`), validated by a hand-rolled `validate_qualitative.py` following the `validate_analysis.py` pattern. The format reference is `data/schema/qualitative.schema.json`. Key points:
+
+- **Scope:** per-instrument entries cover only the top-K published signals (K=5, matching `history.py`'s `DEFAULT_TOP_K`), plus one market-level narrative and up to five macro themes. One LLM call per day. No commentary on the rest of the universe — cost and review surface stay bounded.
+- **Closed enums:** stance is `supportive` / `neutral` / `conflicting` (relative to the quantitative signal); confidence is `low` / `medium` / `high`. A `conflicting` stance — the model disagreeing with the signal on outlook — is legitimate, expected output.
+- **Machine-checkable claims:** drivers carry structured fields instead of burying assertions in prose. A `direction_claim` (`up`/`down`/`none` over a `1d`/`5d`/`20d`/`60d` window) states realized price action, including an explicit no-movement claim so "flat" assertions are checkable too instead of living unverified in free text; `numeric_claims` entries (`value`, `unit`, `refers_to`) declare every number used. Free text is display-only and may not contain numeric tokens undeclared in `numeric_claims` (whitelist: feature names, ISO dates, and — when the analysis artifact is supplied for cross-checking — numerals embedded in covered instruments' own names, e.g. the 500 in "S&P 500", so reciting a proper name is never mistaken for an undeclared claim).
+- **Provenance metadata:** model ID, prompt version and prompt-file SHA-256, the bar interval (`d`/`w`/`m`, carried from the analysis artifact so a manual weekly/monthly dispatch's qualitative artifact keeps the same `-w`/`-m` filename suffix as its analysis/evidence siblings), and content hashes of the inputs (analysis artifact, evidence bundle, calendar when it exists), so any artifact traces to exactly what produced it. `generated_at` is analysis-date midnight UTC, mirroring the analysis artifact.
 
 ### Grounding rules (#90, #92)
 
@@ -270,7 +537,7 @@ No investment advice or trading automation; no vector databases, embeddings pipe
 
 ## 11. AI qualitative analysis layer (operations)
 
-Operational reference for the implemented layer (#90–#95). The binding design contract is [§10](#10-ai-qualitative-analysis-layer-design); the runner is the `qualitative-analysis` agent skill (`.agents/skills/qualitative-analysis/`).
+Operational reference for the implemented layer (#90–#95). The binding design contract is [§10](#ai-qualitative-analysis-layer-design); the runner is the `qualitative-analysis` agent skill (`.agents/skills/qualitative-analysis/`).
 
 ### Evidence sources
 
@@ -306,7 +573,7 @@ Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering win
 
 ### Shadow mode, rendering switch, and cost
 
-Shadow mode is the default state: with `CLAUDE_CODE_OAUTH_TOKEN` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#6-github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
+Shadow mode is the default state: with `CLAUDE_CODE_OAUTH_TOKEN` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
 
 Quota controls: one Claude Code Action invocation per run, plus at most one regeneration retry; top-K evidence bounds the prompt and `--max-turns 1` prevents open-ended agent loops. The action has no tools. Both invocations use the pinned model and subscription OAuth allowance. Changing the model or committed prompt requires the §12 regression harness.
 

@@ -95,9 +95,7 @@ def test_parse_fed_includes_published_next_meeting_note() -> None:
         <p>Note: A two-day meeting is scheduled for January 25-26, 2028.</p>
         </html>"""
     )
-    assert [event["date"] for event in parse_fed(page_with_heading)] == [
-        "2028-01-26"
-    ]
+    assert [event["date"] for event in parse_fed(page_with_heading)] == ["2028-01-26"]
 
 
 def test_parse_fed_uses_final_day_and_tags_assets() -> None:

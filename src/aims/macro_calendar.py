@@ -49,6 +49,12 @@ _FED_MONTH_LABEL_PATTERN: Final = re.compile(
     rf"^\s*({_BOJ_MONTH_PATTERN})(?:\s*/\s*({_BOJ_MONTH_PATTERN}))?\s*$",
     re.IGNORECASE,
 )
+_FED_NEXT_MEETING_PATTERN: Final = re.compile(
+    rf"\btwo-day meeting is scheduled for\s+"
+    rf"({_BOJ_MONTH_PATTERN})\.?\s+(\d{{1,2}})\s*[-–—]\s*"
+    rf"(\d{{1,2}}),\s*(20\d{{2}})\b",
+    re.IGNORECASE,
+)
 _ASSET_CLASSES: Final[list[str]] = ["equity_index", "equity", "commodity"]
 _ECB_IDS: Final[list[str]] = ["cac", "dax", "stoxx50"]
 _BOJ_IDS: Final[list[str]] = ["mufg", "nkx", "sony", "toyota"]
@@ -85,6 +91,30 @@ def parse_fed(root: Any) -> list[dict[str, Any]]:
     months: tuple[int, int | None] | None = None
     for fragment in root.itertext():
         label = " ".join(fragment.split())
+        next_meeting_match = _FED_NEXT_MEETING_PATTERN.search(label)
+        if next_meeting_match:
+            event_month = _MONTH_ABBR[next_meeting_match.group(1)[:3].lower()]
+            event_year = int(next_meeting_match.group(4))
+            try:
+                start_date = date(
+                    event_year, event_month, int(next_meeting_match.group(2))
+                )
+                event_date = date(
+                    event_year, event_month, int(next_meeting_match.group(3))
+                )
+            except ValueError:
+                continue
+            if event_date <= start_date:
+                continue
+            events.append(
+                _event(
+                    event_date,
+                    "FOMC rate decision",
+                    FED_URL,
+                    asset_classes=_ASSET_CLASSES,
+                )
+            )
+            continue
         year_match = re.search(r"(20\d{2})\s+FOMC Meetings", label)
         if year_match:
             year = int(year_match.group(1))
@@ -122,7 +152,7 @@ def parse_fed(root: Any) -> list[dict[str, Any]]:
                     asset_classes=_ASSET_CLASSES,
                 )
             )
-    return events
+    return _unique(events)
 
 
 def parse_ecb(root: Any) -> list[dict[str, Any]]:

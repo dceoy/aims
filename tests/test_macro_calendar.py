@@ -54,6 +54,9 @@ BOJ_FIVE = html.fromstring("""<html><h2>2026</h2><table>
 <tr><td>July 30 (Thurs.), 31 (Fri.)</td></tr>
 <tr><td>Sept. 17 (Thurs.), 18 (Fri.)</td></tr>
 <tr><td>Oct. 29 (Thurs.), 30 (Fri.)</td></tr></table></html>""")
+BOJ_2026_FINAL = html.fromstring("""<html><h2>2026</h2><table>
+<tr><td>Oct. 29 (Thurs.), 30 (Fri.)</td></tr>
+<tr><td>Dec. 17 (Thurs.), 18 (Fri.)</td></tr></table></html>""")
 
 
 def test_parse_fed_handles_cross_month_labels_and_year_rollover() -> None:
@@ -69,6 +72,31 @@ def test_parse_fed_handles_cross_month_labels_and_year_rollover() -> None:
         "2027-05-01",
         "2027-02-01",
         "2028-01-01",
+    ]
+
+
+def test_parse_fed_includes_published_next_meeting_note() -> None:
+    note = html.fromstring(
+        "<p>Note: A two-day meeting is scheduled for January 25-26, 2028.</p>"
+    )
+    assert [event["date"] for event in parse_fed(note)] == ["2028-01-26"]
+    invalid_day = html.fromstring(
+        "<p>Note: A two-day meeting is scheduled for February 30-31, 2028.</p>"
+    )
+    assert parse_fed(invalid_day) == []
+    reversed_days = html.fromstring(
+        "<p>Note: A two-day meeting is scheduled for January 26-25, 2028.</p>"
+    )
+    assert parse_fed(reversed_days) == []
+
+    page_with_heading = html.fromstring(
+        """<html><h2>2028 FOMC Meetings</h2>
+        <p>January</p><p>25-26</p>
+        <p>Note: A two-day meeting is scheduled for January 25-26, 2028.</p>
+        </html>"""
+    )
+    assert [event["date"] for event in parse_fed(page_with_heading)] == [
+        "2028-01-26"
     ]
 
 
@@ -121,6 +149,11 @@ def test_parse_ecb_uses_day_two_and_ignores_nondecision_days() -> None:
         "followed by press conference</p>"
     )
     assert parse_ecb(multiple_dates) == []
+
+
+def test_parse_boj_uses_final_day_for_2026_meetings() -> None:
+    events = parse_boj(BOJ_2026_FINAL)
+    assert [event["date"] for event in events] == ["2026-10-30", "2026-12-18"]
 
 
 def test_parse_boj_uses_last_day_and_skips_headers() -> None:

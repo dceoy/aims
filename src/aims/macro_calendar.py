@@ -102,9 +102,7 @@ def parse_fed(root: Any) -> list[dict[str, Any]]:
             )
             months = (start_month, end_month)
             continue
-        date_match = re.fullmatch(
-            r"\s*(\d{1,2})\s*[-–—]\s*(\d{1,2})\s*\*?\s*", label
-        )
+        date_match = re.fullmatch(r"\s*(\d{1,2})\s*[-–—]\s*(\d{1,2})\s*\*?\s*", label)
         if months and date_match:
             start_month, end_month = months
             start_day, end_day = map(int, date_match.groups())

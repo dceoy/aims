@@ -56,6 +56,22 @@ BOJ_FIVE = html.fromstring("""<html><h2>2026</h2><table>
 <tr><td>Oct. 29 (Thurs.), 30 (Fri.)</td></tr></table></html>""")
 
 
+def test_parse_fed_handles_cross_month_labels_and_year_rollover() -> None:
+    root = html.fromstring(
+        """<html><h2>2027 FOMC Meetings</h2><table>
+        <tr><th>Apr/May</th><td>30-1</td></tr>
+        <tr><th>Jan/Feb</th><td>31-1</td></tr>
+        <tr><th>Dec/Jan</th><td>31-1</td></tr>
+        <tr><th>February</th><td>30-31</td></tr>
+        </table></html>"""
+    )
+    assert [event["date"] for event in parse_fed(root)] == [
+        "2027-05-01",
+        "2027-02-01",
+        "2028-01-01",
+    ]
+
+
 def test_parse_fed_uses_final_day_and_tags_assets() -> None:
     events = parse_fed(FED)
     assert len(events) == 8
@@ -147,6 +163,32 @@ def test_build_macro_calendar_filters_past_and_guards_empty_source() -> None:
             updated_at="2026-09-24",
             start_date="2026-09-24",
         )
+
+
+def test_build_macro_calendar_preserves_future_macro_releases() -> None:
+    future_release = {
+        "date": "2027-03-01",
+        "title": "US CPI release",
+        "category": "macro_release",
+        "canonical_ids": ["spy"],
+        "asset_classes": ["equity"],
+        "source": "https://example.test/cpi",
+    }
+    past_release = {
+        **future_release,
+        "date": "2026-09-23",
+        "title": "Past CPI release",
+    }
+    calendar = build_macro_calendar(
+        FED,
+        ECB,
+        BOJ,
+        updated_at="2026-09-24",
+        start_date="2026-09-24",
+        previous={"events": [future_release, past_release]},
+    )
+    assert future_release in calendar["events"]
+    assert past_release not in calendar["events"]
 
 
 def test_build_macro_calendar_protects_against_anomalous_drop() -> None:

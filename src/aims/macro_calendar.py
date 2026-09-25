@@ -45,6 +45,10 @@ _BOJ_MONTH_PATTERN: Final = (
     r"Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|"
     r"Nov(?:ember)?|Dec(?:ember)?"
 )
+_FED_MONTH_LABEL_PATTERN: Final = re.compile(
+    rf"^\s*({_BOJ_MONTH_PATTERN})(?:\s*/\s*({_BOJ_MONTH_PATTERN}))?\s*$",
+    re.IGNORECASE,
+)
 _ASSET_CLASSES: Final[list[str]] = ["equity_index", "equity", "commodity"]
 _ECB_IDS: Final[list[str]] = ["cac", "dax", "stoxx50"]
 _BOJ_IDS: Final[list[str]] = ["mufg", "nkx", "sony", "toyota"]
@@ -78,22 +82,43 @@ def parse_fed(root: Any) -> list[dict[str, Any]]:
     """Extract the final day of each published FOMC meeting."""
     events = []
     year = None
-    month = None
+    months: tuple[int, int | None] | None = None
     for fragment in root.itertext():
         label = " ".join(fragment.split())
         year_match = re.search(r"(20\d{2})\s+FOMC Meetings", label)
         if year_match:
             year = int(year_match.group(1))
-            month = None
+            months = None
             continue
         if year is None:
             continue
-        month = _MONTHS.get(label.lower(), month)
-        match = re.fullmatch(r"\s*(\d{1,2})\s*[-–—]\s*(\d{1,2})\s*\*?\s*", label)
-        if month and match:
+        month_match = _FED_MONTH_LABEL_PATTERN.fullmatch(label)
+        if month_match:
+            start_month = _MONTH_ABBR[month_match.group(1)[:3].lower()]
+            end_month = (
+                _MONTH_ABBR[month_match.group(2)[:3].lower()]
+                if month_match.group(2)
+                else None
+            )
+            months = (start_month, end_month)
+            continue
+        date_match = re.fullmatch(
+            r"\s*(\d{1,2})\s*[-–—]\s*(\d{1,2})\s*\*?\s*", label
+        )
+        if months and date_match:
+            start_month, end_month = months
+            start_day, end_day = map(int, date_match.groups())
+            event_month = start_month
+            if end_day < start_day:
+                event_month = end_month or (start_month % 12) + 1
+            event_year = year + int(event_month < start_month)
+            try:
+                event_date = date(event_year, event_month, end_day)
+            except ValueError:
+                continue
             events.append(
                 _event(
-                    date(year, month, int(match.group(2))),
+                    event_date,
                     "FOMC rate decision",
                     FED_URL,
                     asset_classes=_ASSET_CLASSES,
@@ -222,8 +247,14 @@ def build_macro_calendar(
                 f"expected at least {minimum} based on the previous schedule"
             )
             raise ValueError(message)
+    preserved_events = [
+        event
+        for event in (previous or {}).get("events", [])
+        if event.get("category") == "macro_release"
+        and event.get("date", "") > start.isoformat()
+    ]
     events = sorted(
-        (event for group in parsed.values() for event in group),
+        [event for group in parsed.values() for event in group] + preserved_events,
         key=itemgetter("date", "title"),
     )
     return {

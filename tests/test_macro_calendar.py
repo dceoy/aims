@@ -154,6 +154,28 @@ def test_parse_boj_uses_final_day_for_2026_meetings() -> None:
     assert [event["date"] for event in events] == ["2026-10-30", "2026-12-18"]
 
 
+def test_parse_boj_binds_year_captions_to_their_own_tables() -> None:
+    root = html.fromstring(
+        """<html>
+        <h2>2026</h2><table><caption>Table : 2026</caption>
+        <tr><th>Date of MPM</th></tr>
+        <tr><td>Oct. 29 (Thurs.), 30 (Fri.)</td></tr>
+        <tr><td>Dec. 17 (Thurs.), 18 (Fri.)</td></tr>
+        </table>
+        <h2>2027</h2><table><caption>Table : 2027</caption>
+        <tr><th>Date of MPM</th></tr>
+        <tr><td>Jan. 21 (Thurs.), 22 (Fri.)</td></tr>
+        <tr><td>Mar. 17 (Wed.), 18 (Thurs.)</td></tr>
+        </table></html>"""
+    )
+    assert [event["date"] for event in parse_boj(root)] == [
+        "2026-10-30",
+        "2026-12-18",
+        "2027-01-22",
+        "2027-03-18",
+    ]
+
+
 def test_parse_boj_uses_last_day_and_skips_headers() -> None:
     events = parse_boj(BOJ)
     assert len(events) == 8

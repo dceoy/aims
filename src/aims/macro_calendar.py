@@ -78,9 +78,13 @@ def _year_tables(tree: Any) -> dict[int, list[Any]]:
         match = re.search(r"\b(20\d{2})\b", _text(heading))
         if match:
             year = int(match.group(1))
-            following = heading.xpath("following::table[1]")
-            if following:
-                result[year] = following[0].xpath(".//tr")
+            table = (
+                heading.xpath("ancestor::table[1]")
+                if heading.tag.lower() == "caption"
+                else heading.xpath("following::table[1]")
+            )
+            if table:
+                result[year] = table[0].xpath(".//tr")
     return result
 
 

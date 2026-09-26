@@ -25,6 +25,7 @@ to `src/aims/`.
 | `fetch_evidence.py`             | Build `data/evidence/<stem>.json` from yfinance news + macro feeds      |
 | `validate_evidence.py`          | Validate an evidence bundle against `data/schema/evidence.schema.json`  |
 | `update_calendars.py`           | Refresh `data/calendars/earnings.json` from yfinance earnings dates     |
+| `update_macro_calendar.py`      | Refresh the macro calendar from official Fed/ECB/BOJ pages              |
 | `validate_calendar.py`          | Validate a calendar file against `data/schema/calendar.schema.json`     |
 | `qualitative_analysis.py`       | Deterministic `prepare` and untrusted-output `finalize` boundaries      |
 | `validate_qualitative.py`       | Validate a qualitative artifact (shape, enums, caps, grounding)         |

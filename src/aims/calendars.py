@@ -1,9 +1,9 @@
 r"""Earnings and macro-event calendars for AIMS reports and notifications.
 
 Calendars are versioned, schema-validated JSON files under ``data/calendars/``:
-``macro_events.json`` is maintained by hand from officially published yearly
-schedules (see OPERATIONS.md), while ``earnings.json`` is refreshed from
-yfinance earnings dates by the updater CLI in this module.
+``macro_events.json`` is refreshed from official Fed, ECB, and BOJ pages by
+``aims.macro_calendar``; ``earnings.json`` is refreshed from yfinance earnings
+dates by the updater CLI in this module.
 
 Usage:
     uv run .agents/skills/qualitative-analysis/scripts/update_calendars.py \

@@ -11,13 +11,13 @@ This document covers data sources, scoring methodology, report generation, the p
 1. [Data sources](#1-data-sources)
 2. [Instrument master](#2-instrument-master)
 3. [Scoring methodology](#3-scoring-methodology)
-4. [Report generation](#4-report-generation)
-5. [Publication workflow](#5-publication-workflow)
-6. [GitHub Actions secrets](#6-github-actions-secrets)
-7. [Required permissions](#7-required-permissions)
-8. [Troubleshooting](#8-troubleshooting)
-9. [Manual recovery](#9-manual-recovery)
-10. [AI qualitative analysis layer (design)](#10-ai-qualitative-analysis-layer-design)
+4. [Report generation](#report-generation)
+5. [Publication workflow](#publication-workflow)
+6. [GitHub Actions secrets](#github-actions-secrets)
+7. [Required permissions](#required-permissions)
+8. [Troubleshooting](#troubleshooting)
+9. [Manual recovery](#manual-recovery)
+10. [AI qualitative analysis layer (design)](#ai-qualitative-analysis-layer-design)
 11. [AI qualitative analysis layer (operations)](#11-ai-qualitative-analysis-layer-operations)
 12. [Stance evaluation, accountability, and OKF theme curation](#12-stance-evaluation-accountability-and-okf-theme-curation)
 
@@ -323,6 +323,8 @@ Where the backtest above measures the scoring engine against history offline, `t
 
 ---
 
+<a id="report-generation"></a>
+
 ## 4. Report generation
 
 ### Script
@@ -368,6 +370,8 @@ The generator is fully deterministic: identical input JSON always produces ident
 `draft = false` is set in all generated reports. Draft reports can be created manually using `hugo new results/YYYY-MM-DD-description.md`.
 
 ---
+
+<a id="publication-workflow"></a>
 
 ## 5. Publication workflow
 
@@ -429,6 +433,8 @@ If a published report or artifact needs to be removed, see [Delete a published r
 
 ---
 
+<a id="github-actions-secrets"></a>
+
 ## 6. GitHub Actions secrets
 
 | Secret                    | Required | Description                                                                                                                                                                                                                                                                        |
@@ -449,6 +455,8 @@ If a published report or artifact needs to be removed, see [Delete a published r
 
 ---
 
+<a id="required-permissions"></a>
+
 ## 7. Required permissions
 
 The `daily-market-analysis.yml` workflow uses:
@@ -467,6 +475,8 @@ The `ci.yml` workflow adds:
 | `pages: write`    | `hugo-deploy-to-gh-pages` job | Deploy to GitHub Pages          |
 
 ---
+
+<a id="troubleshooting"></a>
 
 ## 8. Troubleshooting
 
@@ -537,6 +547,8 @@ Commentary can be absent for benign reasons: the secret is unset, rendering is o
 All implementation modules under `src/aims/` are included in the pytest coverage check. If you add new code paths to `src/aims/`, add corresponding tests.
 
 ---
+
+<a id="manual-recovery"></a>
 
 ## 9. Manual recovery
 
@@ -669,13 +681,15 @@ Review the printed proposal, then promote or retire through a reviewed OKF PR (n
 
 ### Refresh event calendars manually
 
-Trigger **Actions → Update event calendars → Run workflow** (earnings only), or run `update_calendars.py` locally. Macro events are hand-maintained — see [§11](#11-ai-qualitative-analysis-layer-operations).
+Trigger **Actions → Update event calendars → Run workflow** to refresh earnings and official Fed, ECB, and BOJ schedules, or run `update_calendars.py` and `update_macro_calendar.py` locally. The macro updater parses official institution pages, compares event counts with the prior future schedule, and leaves the existing file untouched if retrieval or sanity checks fail. A macro refresh failure is reported as a warning and does not block an earnings calendar PR.
 
 ### Refresh CFD instruments manually
 
 Trigger **Actions → Update CFD instruments → Run workflow**.
 
 ---
+
+<a id="ai-qualitative-analysis-layer-design"></a>
 
 ## 10. AI qualitative analysis layer (design)
 
@@ -738,7 +752,7 @@ No investment advice or trading automation; no vector databases, embeddings pipe
 
 ## 11. AI qualitative analysis layer (operations)
 
-Operational reference for the implemented layer (#90–#95). The binding design contract is [§10](#10-ai-qualitative-analysis-layer-design); the runner is the `qualitative-analysis` agent skill (`.agents/skills/qualitative-analysis/`).
+Operational reference for the implemented layer (#90–#95). The binding design contract is [§10](#ai-qualitative-analysis-layer-design); the runner is the `qualitative-analysis` agent skill (`.agents/skills/qualitative-analysis/`).
 
 ### Evidence sources
 
@@ -754,7 +768,7 @@ Operational reference for the implemented layer (#90–#95). The binding design 
 
 Two schema-validated files under `data/calendars/` (schema: `data/schema/calendar.schema.json`) drive the deterministic "Upcoming Events" report section, the Slack event lines, and the #92 prompt context:
 
-- **`macro_events.json`** — central-bank decision dates (FOMC, ECB, BOJ), hand-maintained from officially published yearly schedules (sources recorded per event). Refresh cadence: when each institution publishes next year's schedule (typically mid-year), extend the file through a reviewed PR and re-run `validate_calendar.py`. **Correcting a wrong date:** edit the event's `date`, keep the `source` URL pointing at the official schedule, and open a reviewed PR — the next daily run picks it up.
+- **`macro_events.json`** — central-bank decision dates (FOMC, ECB, BOJ), refreshed weekly from official institution schedules through a reviewed PR. The updater records each meeting's final day, filters past dates, and fails closed if a source returns too few events. **Correcting a wrong date:** update the parser or source mapping with tests in a reviewed PR; the next refresh uses the official dates.
 - **`earnings.json`** — per-equity earnings dates fetched from yfinance, refreshed weekly by `update-calendars.yml` (Mondays 05:30 UTC) through an auto-created PR. Dates are provider estimates and can shift; the weekly refresh converges on the confirmed date.
 
 Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering windows are relative to the analysis date (7 days in reports/Slack by default, 14 days in the qualitative prompt), so output stays deterministic.
@@ -774,7 +788,7 @@ Events tag instruments via `canonical_ids` and/or `asset_classes`; rendering win
 
 ### Shadow mode, rendering switch, and cost
 
-Shadow mode is the default state: with `CLAUDE_CODE_OAUTH_TOKEN` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#6-github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
+Shadow mode is the default state: with `CLAUDE_CODE_OAUTH_TOKEN` set, the daily PR carries analysis, history, evidence, and qualitative artifacts while the published report stays byte-identical to a quantitative-only run. Rendering is controlled by the `AI_COMMENTARY_ENABLED` repository variable ([§6](#github-actions-secrets)) plus the `ai_commentary` dispatch input; the `skip_qualitative` input disables the qualitative steps for a single run.
 
 Quota controls: one Claude Code Action invocation per run, plus at most one regeneration retry; top-K evidence bounds the prompt and `--max-turns 1` prevents open-ended agent loops. The action has no tools. Both invocations use the pinned model and subscription OAuth allowance. Changing the model or committed prompt requires the §12 regression harness.
 

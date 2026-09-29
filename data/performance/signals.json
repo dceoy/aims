@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "as_of": "2026-09-28",
+    "as_of": "2026-09-29",
     "config": {
       "horizons": [
         1,
@@ -11,8 +11,8 @@
       "top_k": 5
     },
     "disclaimer": "Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.",
-    "generated_at": "2026-09-28T00:00:00+00:00",
-    "git_commit": "967fa2c",
+    "generated_at": "2026-09-29T00:00:00+00:00",
+    "git_commit": "a5b9d45",
     "inputs": {
       "analysis_dates": [
         "2026-06-29",
@@ -89,12 +89,13 @@
         "2026-09-21",
         "2026-09-22",
         "2026-09-23",
-        "2026-09-28"
+        "2026-09-28",
+        "2026-09-29"
       ]
     }
   },
   "signal_evaluation": {
-    "dates_evaluated": 75,
+    "dates_evaluated": 76,
     "horizons": {
       "1d": {
         "benchmark_average_return": 0.000345,
@@ -161,7 +162,7 @@
         "count": 189,
         "excess_return": -0.000671,
         "hit_rate": 0.47619,
-        "incomplete": 181,
+        "incomplete": 186,
         "pending": 5,
         "top5_average_return": -0.000327
       },
@@ -202,8 +203,8 @@
         "count": 13,
         "excess_return": -0.016519,
         "hit_rate": 0.307692,
-        "incomplete": 258,
-        "pending": 104,
+        "incomplete": 262,
+        "pending": 105,
         "top5_average_return": -0.014391
       },
       "5d": {
@@ -271,8 +272,8 @@
         "count": 110,
         "excess_return": 0.004015,
         "hit_rate": 0.518182,
-        "incomplete": 240,
-        "pending": 25,
+        "incomplete": 244,
+        "pending": 26,
         "top5_average_return": 0.006685
       }
     }
@@ -891,11 +892,15 @@
     "2026-08-27: GC=F: broken bar chain within 20d forward window",
     "2026-08-27: GC=F: broken bar chain within 5d forward window",
     "2026-08-27: ZC=F: broken bar chain within 1d forward window",
+    "2026-08-27: ZC=F: broken bar chain within 20d forward window",
     "2026-08-27: ZC=F: broken bar chain within 5d forward window",
     "2026-08-27: ZS=F: broken bar chain within 1d forward window",
+    "2026-08-27: ZS=F: broken bar chain within 20d forward window",
     "2026-08-27: ZS=F: broken bar chain within 5d forward window",
     "2026-08-27: ZW=F: broken bar chain within 1d forward window",
+    "2026-08-27: ZW=F: broken bar chain within 20d forward window",
     "2026-08-27: ZW=F: broken bar chain within 5d forward window",
+    "2026-08-27: ^GDAXI: broken bar chain within 20d forward window",
     "2026-08-28: ZC=F: broken bar chain within 1d forward window",
     "2026-08-28: ZC=F: broken bar chain within 5d forward window",
     "2026-08-28: ZS=F: broken bar chain within 1d forward window",
@@ -939,9 +944,13 @@
     "2026-09-17: ZS=F: broken bar chain within 1d forward window",
     "2026-09-17: ZS=F: broken bar chain within 5d forward window",
     "2026-09-18: AAPL: broken bar chain within 1d forward window",
+    "2026-09-18: AAPL: broken bar chain within 5d forward window",
     "2026-09-18: META: broken bar chain within 1d forward window",
+    "2026-09-18: META: broken bar chain within 5d forward window",
     "2026-09-18: MSFT: broken bar chain within 1d forward window",
+    "2026-09-18: MSFT: broken bar chain within 5d forward window",
     "2026-09-18: ZC=F: broken bar chain within 1d forward window",
+    "2026-09-18: ZC=F: broken bar chain within 5d forward window",
     "2026-09-18: ^FTSE: broken bar chain within 1d forward window",
     "2026-09-21: AAPL: broken bar chain within 1d forward window",
     "2026-09-21: META: broken bar chain within 1d forward window",
@@ -958,6 +967,11 @@
     "2026-09-23: ZS=F: broken bar chain within 1d forward window",
     "2026-09-23: ^FTSE: broken bar chain within 1d forward window",
     "2026-09-23: ^HSI: broken bar chain within 1d forward window",
+    "2026-09-28: AAPL: broken bar chain within 1d forward window",
+    "2026-09-28: META: broken bar chain within 1d forward window",
+    "2026-09-28: MSFT: broken bar chain within 1d forward window",
+    "2026-09-28: ^GSPC: broken bar chain within 1d forward window",
+    "2026-09-28: ^NDX: broken bar chain within 1d forward window",
     "AAPL: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
     "AMZN: conflicting ret_1d for bar 2026-07-24 across analysis artifacts; keeping the latest value",
     "BZ=F: conflicting ret_1d for bar 2026-08-07 across analysis artifacts; keeping the latest value",

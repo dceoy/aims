@@ -1,6 +1,6 @@
 +++
 title = "Signal Performance"
-date = "2026-09-29T00:00:00+00:00"
+date = "2026-09-30T00:00:00+00:00"
 draft = false
 summary = "Realized forward returns of the published top-5 signals vs. an equal-weight benchmark."
 source_files = ["data/performance/signals.json"]
@@ -8,7 +8,7 @@ source_files = ["data/performance/signals.json"]
 
 ## Signal Performance
 
-As of **2026-09-29**, 76 daily analysis artifact(s) evaluated.
+As of **2026-09-30**, 77 daily analysis artifact(s) evaluated.
 
 > Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.
 
@@ -50,7 +50,7 @@ As of **2026-09-29**, 76 daily analysis artifact(s) evaluated.
 | 20d / Bullish     |    12 | -1.86% |      25% |
 | 20d / Unavailable |     1 | +0.89% |     100% |
 
-## Warnings (746)
+## Warnings (762)
 
 - 2026-06-29: ^DJI: broken bar chain within 20d forward window
 - 2026-06-29: ^GDAXI: broken bar chain within 1d forward window
@@ -72,4 +72,4 @@ As of **2026-09-29**, 76 daily analysis artifact(s) evaluated.
 - 2026-06-30: ^NDX: broken bar chain within 20d forward window
 - 2026-07-01: ^DJI: broken bar chain within 20d forward window
 - 2026-07-01: ^GDAXI: broken bar chain within 1d forward window
-- … and 726 more
+- … and 742 more

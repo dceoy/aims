@@ -1,0 +1,603 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-f4b7cdc56e537b16",
+      "published_at": "2026-09-29T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "ECB amends monetary policy implementation guidelines as part of regular review",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260929~050089e922.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-dedc6811fd0347b1",
+      "published_at": "2026-09-29T20:00:00+00:00",
+      "snippet": "Agencies publish resolution plan feedback letters for 15 banking organizations",
+      "source": "Federal Reserve press releases",
+      "title": "Agencies publish resolution plan feedback letters for 15 banking organizations",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260929a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-ea2a62f9af3cec4a",
+      "published_at": "2026-09-30T02:20:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Frank Elderson: Supervisory risk appetite, efficiency and effectiveness",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260930~d495288355.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e6e0dd433f747521",
+      "published_at": "2026-09-30T13:00:00+00:00",
+      "snippet": "Federal Reserve Board finalizes changes to enhance the transparency and public accountability of its stress test and reduce volatility in its stress test-related capital requirements",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board finalizes changes to enhance the transparency and public accountability of its stress test and reduce volatility in its stress test-related capital requirements",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260930a.htm"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-1e0f9ded09d9ca2f",
+      "published_at": "2026-09-30T14:00:00+00:00",
+      "snippet": "We estimate light-duty electric vehicles in the United States consumed 8% more electricity during the first six months of 2026 than in the last half of 2025 (2H25) in our Monthly Energy Review, down from the 13-24% growth seen in six-month periods in recent years. The slowing electric vehicle electricity consumption growth followed a decline in sales after U.S. federal tax credits expired in September 2025. Overall, U.S. light-duty electric vehicle electricity use has more than doubled since 1H2",
+      "source": "U.S. EIA Today in Energy",
+      "title": "U.S. electricity use for electric vehicles increasing at a slower pace in 2026",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68224"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-a28329a84f60bffb",
+      "published_at": "2026-09-30T15:45:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Isabel Schnabel: Monetary policy in a world of overlapping shocks",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260930_1~7c6c120482.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-153653ef6b6066b1",
+      "published_at": "2026-09-30T17:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Christine Lagarde: Interview with La Croix",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in260930~10084a5f3d.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-7c867501f5e6b45b",
+      "published_at": "2026-10-01T04:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Sources of Changes in Current Account Balances and Market Operations (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/fm/juqf/juqf09.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-397d79c744d49300",
+      "published_at": "2026-10-01T13:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Christine Lagarde: Where AI risks meet",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261001~cf3c630379.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-8d1c31f5c7c0d97d",
+      "published_at": "2026-10-01T14:00:00+00:00",
+      "snippet": "U.S. propane exports increased to 2 million barrels per day (b/d) in the first half of 2026, 11% more than during the same period in 2025. Increased U.S. propane production and changing trade flows, particularly increased exports to India and other countries in South Asia, drove propane exports to a record high of 2.1 million (b/d) in April 2026. Since then, total propane exports, including exports to India, have continued at levels well above the five-year average.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "U.S. exports of propane reached records in the first half of 2026",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68244"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-358fa21833c2b97f",
+      "published_at": "2026-10-01T15:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Isabel Schnabel: Central banks on-chain",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261001_1~a0be67193b.en.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-008bf0d50657b9d1",
+      "published_at": "2026-10-01T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Tankan (Sept.): Comprehensive Data Set",
+      "url": "http://www.boj.or.jp/en/statistics/tk/tankan09b.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-0f35b9b11b149f76",
+      "published_at": "2026-10-01T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Monetary Base (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/mb/mb.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-3591c60e320e588d",
+      "published_at": "2026-10-01T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Average Contract Interest Rates on Loans and Discounts (Aug.)",
+      "url": "http://www.boj.or.jp/en/statistics/dl/loan/yaku/yaku2608.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-747a3cf721fc0f69",
+      "published_at": "2026-10-02T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Japanese Government Bonds Held by the Bank of Japan",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei260930.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c9f87d287d822835",
+      "published_at": "2026-10-02T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Collateral Accepted by the Bank of Japan (End of Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/col/col2609.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-1144784318faf03b",
+      "published_at": "2026-10-02T11:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Boris Vuj\u010di\u0107: Resilience, integration and competitiveness: building the future of European banking",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261002_1~419efe18e0.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-ae75c04968efd14e",
+      "published_at": "2026-10-02T13:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Decisions taken by the Governing Council of the ECB (in addition to decisions setting interest rates)",
+      "url": "https://www.ecb.europa.eu//press/govcdec/otherdec/2026/html/ecb.gc261002~54c6b5672b.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e541486a037c8e74",
+      "published_at": "2026-10-02T14:00:00+00:00",
+      "snippet": "U.S. natural gas production hit an all-time high in July 2026, driven primarily by increased output in the Permian Basin, according to our latest Natural Gas Monthly.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "U.S. natural gas production reached a record high in July 2026",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68225"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-a35b8e10b8cc9c55",
+      "published_at": "2026-10-02T15:00:00+00:00",
+      "snippet": "Federal Reserve Board issues enforcement action with Ontario Bancorporation, Inc.",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board issues enforcement action with Ontario Bancorporation, Inc.",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261002a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-45081bc7476d7a11",
+      "published_at": "2026-10-02T20:00:00+00:00",
+      "snippet": "Federal Reserve Board announces it will extend, until November 4, the comment period on its proposal to modernize Regulation O",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board announces it will extend, until November 4, the comment period on its proposal to modernize Regulation O",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261002a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-81d475317c456280",
+      "published_at": "2026-10-02T20:45:00+00:00",
+      "snippet": "Federal Reserve Board announces approval of application by Fleur Capital Corporation",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board announces approval of application by Fleur Capital Corporation",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261002a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e6f3a5fe19f15cc8",
+      "published_at": "2026-10-04T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Sources of Changes in Current Account Balances (Projections for Oct.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/fm/juqp/juqp2610.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-6a321c25efd9a9e5",
+      "published_at": "2026-10-05T00:20:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Opening Remarks by Deputy Governor UCHIDA at the ECONDAT 2026 Fall Meeting (AI, Big Data, and Monetary Policy)",
+      "url": "http://www.boj.or.jp/en/about/press/koen_2026/ko261005a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-d9a0adbd3af94b87",
+      "published_at": "2026-10-05T00:20:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "8th Conference on Nontraditional Data, Machine Learning, and Natural Language Processing in Macroeconomics (ECONDAT 2026 Fall Meeting)",
+      "url": "http://www.boj.or.jp/en/research/conf/conf2610a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-526680d94c5377e9",
+      "published_at": "2026-10-05T05:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Output Gap, Potential Growth Rate, and Labor Market Indicators",
+      "url": "http://www.boj.or.jp/en/research/research_data/gap/index.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-244c1f5ae2e03bf0",
+      "published_at": "2026-10-05T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: Diagnostic Challenges for ECB Monetary Policy",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261005~1d8d998ef4.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-4d2180a16e35a955",
+      "published_at": "2026-10-05T14:00:00+00:00",
+      "snippet": "Petroleum markets in the third quarter of 2026 (3Q26) were characterized by increasing prices for crude oil and petroleum products amid persistent conflict in the Middle East.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Crude oil prices and refinery margins generally increased throughout the third quarter",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68245"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-65b780f838b761bf",
+      "published_at": "2026-10-05T20:30:00+00:00",
+      "snippet": "Federal Reserve Board announces approval of application by Isabella Bank Corporation",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board announces approval of application by Isabella Bank Corporation",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261005a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-38ae245b8e1bfe2f",
+      "published_at": "2026-10-06T07:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: Interview with Ansa",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261006~bc94400297.en.html"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-10-06",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 0
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 0
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 0
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [],
+      "sources": {
+        "feed:boj_news": {
+          "item_count": 10,
+          "status": "success"
+        },
+        "feed:ecb_press": {
+          "item_count": 10,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 4,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "item_count": 6,
+          "status": "success"
+        },
+        "yfinance:6758.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:7203.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:8306.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AAPL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AMZN": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:BZ=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:CL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GOOGL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:HG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:JPM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:META": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:MSFT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NVDA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:PL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:SI=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:TSLA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:UNH": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:XOM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZS=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZW=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FCHI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FTSE": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GDAXI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GSPC": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^HSI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^N225": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^RUT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^STOXX50E": {
+          "item_count": 0,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2026-10-06T00:00:00+00:00",
+    "git_commit": "016c187",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-10-06T07:23:43.100075+00:00"
+  },
+  "version": "1.0.0"
+}

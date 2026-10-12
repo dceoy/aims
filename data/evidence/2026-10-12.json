@@ -1,0 +1,505 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-244c1f5ae2e03bf0",
+      "published_at": "2026-10-05T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: Diagnostic Challenges for ECB Monetary Policy",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261005~1d8d998ef4.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-4d2180a16e35a955",
+      "published_at": "2026-10-05T14:00:00+00:00",
+      "snippet": "Petroleum markets in the third quarter of 2026 (3Q26) were characterized by increasing prices for crude oil and petroleum products amid persistent conflict in the Middle East.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Crude oil prices and refinery margins generally increased throughout the third quarter",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68245"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-65b780f838b761bf",
+      "published_at": "2026-10-05T20:30:00+00:00",
+      "snippet": "Federal Reserve Board announces approval of application by Isabella Bank Corporation",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board announces approval of application by Isabella Bank Corporation",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261005a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-38ae245b8e1bfe2f",
+      "published_at": "2026-10-06T07:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: Interview with Ansa",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261006~bc94400297.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-17f90bca9cda2e8e",
+      "published_at": "2026-10-06T13:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Frank Elderson: Effective supervision through timely remediation",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261006_1~0df91e4e44.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-6ccd61e34fea00f4",
+      "published_at": "2026-10-06T13:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Money in the digital age: digital euro, tokenisation and the role of central banks",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261006~0da978f159.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-4f0c432940c19aa4",
+      "published_at": "2026-10-06T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Monetary Base and the Bank of Japan's Transactions (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/mbt/mbt2609.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c5db0def844ce9ad",
+      "published_at": "2026-10-06T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Bank of Japan's Transactions with the Government (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/tseifu/release/2026/seifu2609.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c3655a2d4af6303c",
+      "published_at": "2026-10-07T01:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Bank of Japan Accounts (September 30)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/acmai/release/2026/ac260930.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-4fc1f413e79b09a0",
+      "published_at": "2026-10-07T05:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Consumption Activity Index",
+      "url": "http://www.boj.or.jp/en/research/research_data/cai/index.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-a9f0434ac8be82bb",
+      "published_at": "2026-10-07T06:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Amounts Outstanding in the Call Money Market (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/market/short/call/call.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-f3c05e54d9c6690a",
+      "published_at": "2026-10-07T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Results of the September 2026 survey on credit terms and conditions in euro-denominated securities financing and OTC derivatives markets (SESFOD)",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261007~6447350434.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-73af460f73d32314",
+      "published_at": "2026-10-07T14:00:00+00:00",
+      "snippet": "We expect energy expenditures this winter to vary because of diverging trends in energy prices among fuels and regional variation in forecast temperatures. We expect that lower prices for natural gas and propane will drive decreases in expenditures this year for the half of U.S. households heating with those fuels. Higher prices for electricity and heating oil drive increased expenditures for households heating with those fuels in our forecast.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Mixed outlook for energy expenditures this winter",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68264"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-b93baff173f0fda6",
+      "published_at": "2026-10-07T18:00:00+00:00",
+      "snippet": "Minutes of the Federal Open Market Committee, September 15-16, 2026",
+      "source": "Federal Reserve press releases",
+      "title": "Minutes of the Federal Open Market Committee, September 15-16, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261007a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-7532cefe3eb631f4",
+      "published_at": "2026-10-07T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Direct Investment by Region and Industry (2nd quarter 2026)",
+      "url": "http://www.boj.or.jp/en/statistics/br/bop_06/bpdata/diiqcy.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e1a097b54274ca4c",
+      "published_at": "2026-10-08T05:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Regional Economic Report (Summary) (Oct. 2026)",
+      "url": "http://www.boj.or.jp/en/research/brp/rer/rer261008.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-55eda94aa0524517",
+      "published_at": "2026-10-08T06:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Interview with Corriere della Sera",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261008~3184e7d0d0.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-218e21edc87d4277",
+      "published_at": "2026-10-08T11:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Meeting of 9-10 September 2026",
+      "url": "https://www.ecb.europa.eu//press/accounts/2026/html/ecb.mg261008~a10153d090.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-9486c42f10708133",
+      "published_at": "2026-10-08T20:30:00+00:00",
+      "snippet": "Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firm\u2019s failure to sufficiently detect and report certain suspicious activity related to money laundering",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firm\u2019s failure to sufficiently detect and report certain suspicious activity related to money laundering",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261008a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c23ce2b38bf5065c",
+      "published_at": "2026-10-09T02:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "IMES Discussion Paper Series (2026)",
+      "url": "http://www.boj.or.jp/en/research/imes/dps/dps26.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-51720b032b89254d",
+      "published_at": "2026-10-09T07:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Amendment to \"Prices of Eligible Collateral\"",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/mpr261009a.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-b1f54b120ac5b332",
+      "published_at": "2026-10-09T09:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Twenty-fifth Meeting of the \"Council for Cooperation on Financial Stability\"",
+      "url": "http://www.boj.or.jp/en/finsys/macpru/mac261009a.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity",
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-3e58b504a1f4d157",
+      "published_at": "2026-10-09T14:00:00+00:00",
+      "snippet": "Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into the economic condition of American families",
+      "source": "Federal Reserve press releases",
+      "title": "Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into the economic condition of American families",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/other20261009a.htm"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-10-12",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 0
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 0
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 0
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [],
+      "sources": {
+        "feed:boj_news": {
+          "item_count": 10,
+          "status": "success"
+        },
+        "feed:ecb_press": {
+          "item_count": 7,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 2,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "item_count": 4,
+          "status": "success"
+        },
+        "yfinance:6758.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:7203.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:8306.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AAPL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AMZN": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:BZ=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:CL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GOOGL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:HG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:JPM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:META": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:MSFT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NVDA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:PL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:SI=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:TSLA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:UNH": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:XOM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZS=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZW=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FCHI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FTSE": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GDAXI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GSPC": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^HSI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^N225": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^RUT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^STOXX50E": {
+          "item_count": 0,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2026-10-12T00:00:00+00:00",
+    "git_commit": "5f80ebf",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-10-12T07:09:59.789759+00:00"
+  },
+  "version": "1.0.0"
+}

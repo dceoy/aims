@@ -238,3 +238,23 @@ jobs:
             --run-url \
             "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --message "${message}"
+  dependabot-auto-merge:
+    if: >
+      github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
+    needs:
+      - github-actions-lint-and-scan
+      - markdown-lint
+      - python-lint-and-scan
+      - python-test
+      - github-codeql-analysis
+      - okf-hugo-build
+      - validate-market-data-config
+    uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@main  # zizmor: ignore[unpinned-uses]
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      checks: read
+      statuses: read
+    with:
+      unconditional: true

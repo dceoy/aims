@@ -53,26 +53,6 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "msft"
-      ],
-      "category": "earnings",
-      "date": "2026-10-28",
-      "source": "yfinance",
-      "title": "MSFT earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "aapl"
-      ],
-      "category": "earnings",
-      "date": "2026-10-29",
-      "source": "yfinance",
-      "title": "AAPL earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
         "amzn"
       ],
       "category": "earnings",
@@ -89,6 +69,16 @@
       "date": "2026-10-30",
       "source": "yfinance",
       "title": "XOM earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "earnings",
+      "date": "2026-11-02",
+      "source": "yfinance",
+      "title": "AAPL earnings release"
     },
     {
       "asset_classes": [],
@@ -116,7 +106,7 @@
         "mufg"
       ],
       "category": "earnings",
-      "date": "2026-11-12",
+      "date": "2026-11-13",
       "source": "yfinance",
       "title": "8306.T earnings release"
     },
@@ -134,7 +124,7 @@
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-09-21"
+    "updated_at": "2026-10-12"
   },
   "version": "1.0.0"
 }

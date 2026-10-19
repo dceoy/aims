@@ -3,22 +3,12 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "jpm"
+        "meta"
       ],
       "category": "earnings",
-      "date": "2026-10-13",
+      "date": "2026-10-21",
       "source": "yfinance",
-      "title": "JPM earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "unh"
-      ],
-      "category": "earnings",
-      "date": "2026-10-13",
-      "source": "yfinance",
-      "title": "UNH earnings release"
+      "title": "META earnings release"
     },
     {
       "asset_classes": [],
@@ -43,12 +33,12 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "meta"
+        "msft"
       ],
       "category": "earnings",
       "date": "2026-10-28",
       "source": "yfinance",
-      "title": "META earnings release"
+      "title": "MSFT earnings release"
     },
     {
       "asset_classes": [],
@@ -119,12 +109,32 @@
       "date": "2026-11-17",
       "source": "yfinance",
       "title": "NVDA earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "earnings",
+      "date": "2027-01-12",
+      "source": "yfinance",
+      "title": "UNH earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "earnings",
+      "date": "2027-01-14",
+      "source": "yfinance",
+      "title": "JPM earnings release"
     }
   ],
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-10-12"
+    "updated_at": "2026-10-19"
   },
   "version": "1.0.0"
 }

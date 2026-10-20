@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
-from urllib.error import URLError
 
 import pytest
+import requests
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -435,18 +435,23 @@ def test_build_failure_payload_no_run_url_omits_actions_block(
 
 def test_send_notification_success(ns: ModuleType) -> None:
     mock_response = MagicMock()
-    mock_response.__enter__ = MagicMock(return_value=mock_response)
-    mock_response.__exit__ = MagicMock(return_value=False)
-    mock_response.status = 200
-
-    with patch("urllib.request.urlopen", return_value=mock_response):
+    with patch("aims.notifications.requests.post", return_value=mock_response) as post:
         ns.send_notification("https://hooks.slack.com/test", {"text": "hello"})
+    post.assert_called_once_with(
+        "https://hooks.slack.com/test",
+        json={"text": "hello"},
+        timeout=ns._TIMEOUT,
+    )
+    mock_response.raise_for_status.assert_called_once_with()
 
 
 def test_send_notification_url_error(ns: ModuleType) -> None:
     with (
-        patch("urllib.request.urlopen", side_effect=URLError("connection refused")),
-        pytest.raises(URLError),
+        patch(
+            "aims.notifications.requests.post",
+            side_effect=requests.ConnectionError("connection refused"),
+        ),
+        pytest.raises(requests.ConnectionError),
     ):
         ns.send_notification("https://hooks.slack.com/test", {"text": "hello"})
 
@@ -475,7 +480,7 @@ def test_main_success_mode(ns: ModuleType, tmp_path: Path) -> None:
 
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("aims.notifications.requests.post", return_value=mock_response),
     ):
         result = ns.main([
             "--artifact",
@@ -496,7 +501,7 @@ def test_main_success_with_history(ns: ModuleType, tmp_path: Path) -> None:
     mock_response.__exit__ = MagicMock(return_value=False)
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("aims.notifications.requests.post", return_value=mock_response),
     ):
         assert (
             ns.main(["--artifact", str(artifact_path), "--history", str(history_path)])
@@ -529,7 +534,7 @@ def test_main_failure_mode(ns: ModuleType) -> None:
 
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("aims.notifications.requests.post", return_value=mock_response),
     ):
         result = ns.main([
             "--failure",
@@ -549,7 +554,10 @@ def test_main_url_error(ns: ModuleType, tmp_path: Path) -> None:
 
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", side_effect=URLError("err")),
+        patch(
+            "aims.notifications.requests.post",
+            side_effect=requests.ConnectionError("err"),
+        ),
     ):
         result = ns.main([
             "--artifact",
@@ -604,13 +612,15 @@ def test_main_failure_mode_no_run_url(ns: ModuleType) -> None:
 
     captured_payload: dict[str, Any] = {}
 
-    def _capture_urlopen(req: Any, timeout: float) -> MagicMock:  # noqa: ARG001
-        captured_payload.update(json.loads(req.data.decode()))
+    def _capture_post(url: str, *, json: dict[str, Any], timeout: int) -> MagicMock:
+        assert url == "https://hooks.slack.com/test"
+        assert timeout == ns._TIMEOUT
+        captured_payload.update(json)
         return mock_response
 
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", side_effect=_capture_urlopen),
+        patch("aims.notifications.requests.post", side_effect=_capture_post),
     ):
         result = ns.main(["--failure"])
     assert result == 0
@@ -662,7 +672,7 @@ def test_main_success_with_pr_url(ns: ModuleType, tmp_path: Path) -> None:
     mock_response.__exit__ = MagicMock(return_value=False)
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("aims.notifications.requests.post", return_value=mock_response),
     ):
         result = ns.main([
             "--artifact",
@@ -758,7 +768,7 @@ def test_main_success_with_performance(ns: ModuleType, tmp_path: Path) -> None:
     mock_response.__exit__ = MagicMock(return_value=False)
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("aims.notifications.requests.post", return_value=mock_response),
     ):
         result = ns.main([
             "--artifact",
@@ -873,7 +883,7 @@ def test_main_success_with_signal_performance(ns: ModuleType, tmp_path: Path) ->
     mock_response.__exit__ = MagicMock(return_value=False)
     with (
         patch.dict("os.environ", {"SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"}),
-        patch("urllib.request.urlopen", return_value=mock_response),
+        patch("aims.notifications.requests.post", return_value=mock_response),
     ):
         result = ns.main([
             "--artifact",

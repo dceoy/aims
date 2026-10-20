@@ -5,12 +5,13 @@ from __future__ import annotations
 import argparse
 import csv
 import re
-import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+
+import requests
 
 CLICK_URL = "https://www.click-sec.com/corp/guide/cfd/lineup/"
 RAKUTEN_URL = "https://www.rakuten-sec.co.jp/web/rcfd/lineup/"
@@ -249,9 +250,9 @@ def load_mappings(path: Path) -> Mappings:
 
 
 def fetch_events(url: str) -> list[tuple[str, Any]]:
-    request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        html = response.read().decode("utf-8", errors="replace")
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+    response.raise_for_status()
+    html = response.content.decode("utf-8", errors="replace")
     parser = LineupHTMLParser()
     parser.feed(html)
     parser.close()

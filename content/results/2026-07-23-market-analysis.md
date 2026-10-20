@@ -3,7 +3,41 @@ title = "Market Analysis 2026-07-23"
 date = "2026-07-23T00:00:00+00:00"
 draft = false
 summary = "Bullish market: 26 reliable instruments. Top signal: ZW=F (score 80.3)."
-ticker_symbols = ["6758.T", "7203.T", "8306.T", "AAPL", "AMZN", "BZ=F", "CL=F", "GC=F", "GOOGL", "HG=F", "JPM", "META", "MSFT", "NG=F", "NVDA", "PL=F", "SI=F", "TSLA", "UNH", "XOM", "ZC=F", "ZS=F", "ZW=F", "^DJI", "^FCHI", "^FTSE", "^GDAXI", "^GSPC", "^HSI", "^N225", "^NDX", "^RUT", "^STOXX50E"]
+ticker_symbols = [
+  "6758.T",
+  "7203.T",
+  "8306.T",
+  "AAPL",
+  "AMZN",
+  "BZ=F",
+  "CL=F",
+  "GC=F",
+  "GOOGL",
+  "HG=F",
+  "JPM",
+  "META",
+  "MSFT",
+  "NG=F",
+  "NVDA",
+  "PL=F",
+  "SI=F",
+  "TSLA",
+  "UNH",
+  "XOM",
+  "ZC=F",
+  "ZS=F",
+  "ZW=F",
+  "^DJI",
+  "^FCHI",
+  "^FTSE",
+  "^GDAXI",
+  "^GSPC",
+  "^HSI",
+  "^N225",
+  "^NDX",
+  "^RUT",
+  "^STOXX50E",
+]
 source_files = ["data/analysis/2026-07-23.json", "data/history/2026-07-23.json"]
 market_regime = "Bullish"
 data_source = "yfinance"

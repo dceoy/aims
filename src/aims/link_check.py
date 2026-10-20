@@ -21,11 +21,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import urllib.error
-import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Final
+
+import requests
 
 DEFAULT_DAYS: Final[int] = 14
 DEFAULT_LIMIT: Final[int] = 20
@@ -82,18 +82,23 @@ def check_url(url: str, timeout: float = DEFAULT_TIMEOUT) -> str | None:
         return "not an HTTP(S) URL"
     reason: str | None = None
     for method in ("HEAD", "GET"):
-        request = urllib.request.Request(
-            url, method=method, headers={"User-Agent": _USER_AGENT}
-        )
         try:
-            with urllib.request.urlopen(request, timeout=timeout):
-                return None
-        except urllib.error.HTTPError as exc:
-            reason = f"HTTP {exc.code}"
-        except urllib.error.URLError as exc:
-            return f"unreachable: {exc.reason}"
-        except TimeoutError:
+            response = requests.request(
+                method,
+                url,
+                headers={"User-Agent": _USER_AGENT},
+                timeout=timeout,
+            )
+            response.raise_for_status()
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "unknown"
+            reason = f"HTTP {status}"
+        except requests.Timeout:
             return "timed out"
+        except requests.RequestException as exc:
+            return f"unreachable: {exc}"
+        else:
+            return None
     return reason
 
 

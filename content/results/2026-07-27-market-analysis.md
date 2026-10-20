@@ -3,7 +3,41 @@ title = "Market Analysis 2026-07-27"
 date = "2026-07-27T00:00:00+00:00"
 draft = false
 summary = "Bearish market: 26 reliable instruments. Top signal: JPM (score 79.1)."
-ticker_symbols = ["6758.T", "7203.T", "8306.T", "AAPL", "AMZN", "BZ=F", "CL=F", "GC=F", "GOOGL", "HG=F", "JPM", "META", "MSFT", "NG=F", "NVDA", "PL=F", "SI=F", "TSLA", "UNH", "XOM", "ZC=F", "ZS=F", "ZW=F", "^DJI", "^FCHI", "^FTSE", "^GDAXI", "^GSPC", "^HSI", "^N225", "^NDX", "^RUT", "^STOXX50E"]
+ticker_symbols = [
+  "6758.T",
+  "7203.T",
+  "8306.T",
+  "AAPL",
+  "AMZN",
+  "BZ=F",
+  "CL=F",
+  "GC=F",
+  "GOOGL",
+  "HG=F",
+  "JPM",
+  "META",
+  "MSFT",
+  "NG=F",
+  "NVDA",
+  "PL=F",
+  "SI=F",
+  "TSLA",
+  "UNH",
+  "XOM",
+  "ZC=F",
+  "ZS=F",
+  "ZW=F",
+  "^DJI",
+  "^FCHI",
+  "^FTSE",
+  "^GDAXI",
+  "^GSPC",
+  "^HSI",
+  "^N225",
+  "^NDX",
+  "^RUT",
+  "^STOXX50E",
+]
 source_files = ["data/analysis/2026-07-27.json", "data/history/2026-07-27.json"]
 market_regime = "Bearish"
 data_source = "yfinance"

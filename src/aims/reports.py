@@ -59,6 +59,14 @@ def _toml_escape(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def _toml_array(key: str, values: list[str]) -> str:
+    items = [f'"{_toml_escape(value)}"' for value in values]
+    inline = f"{key} = [{', '.join(items)}]"
+    if len(inline) <= 80:
+        return inline
+    return f"{key} = [\n" + "\n".join(f"  {item}," for item in items) + "\n]"
+
+
 def _format_pct(value: float | None) -> str:
     if value is None:
         return "n/a"
@@ -168,7 +176,7 @@ def _build_front_matter(
     n_reliable = len(reliable)
 
     all_symbols = sorted(str(i.get("symbol", "")) for i in instruments)
-    symbols_toml = ", ".join(f'"{_toml_escape(s)}"' for s in all_symbols)
+    symbols_toml = _toml_array("ticker_symbols", all_symbols)
 
     stem = f"{date_str}{artifact_interval_suffix(artifact)}"
     source_files = [f"data/analysis/{stem}.json"]
@@ -179,7 +187,7 @@ def _build_front_matter(
             f"data/evidence/{stem}.json",
             f"data/qualitative/{stem}.json",
         ])
-    sources_toml = ", ".join(f'"{_toml_escape(path)}"' for path in source_files)
+    sources_toml = _toml_array("source_files", source_files)
 
     if reliable:
         top = max(reliable, key=lambda i: float(i.get("score", 0)))
@@ -198,8 +206,8 @@ def _build_front_matter(
         f'date = "{_toml_escape(generated_at)}"',
         "draft = false",
         f'summary = "{_toml_escape(summary)}"',
-        f"ticker_symbols = [{symbols_toml}]",
-        f"source_files = [{sources_toml}]",
+        symbols_toml,
+        sources_toml,
         f'market_regime = "{_toml_escape(regime)}"',
         f'data_source = "{_toml_escape(data_source)}"',
         f'scoring_version = "{_toml_escape(scoring_version)}"',

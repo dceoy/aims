@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -577,29 +577,18 @@ def test_build_rows_fetches_parses_and_requires_rows(
 def test_fetch_events_uses_request_and_parses_response(
     updater: ModuleType, mocker: MockerFixture
 ) -> None:
-    class Response:
-        def __enter__(self) -> Self:
-            return self
-
-        def __exit__(self, *args: object) -> None:
-            return None
-
-        @staticmethod
-        def read() -> bytes:
-            return b"<h2>Heading</h2><table><tr><td>A</td></tr></table>"
-
-    urlopen = mocker.patch.object(
-        updater.urllib.request, "urlopen", return_value=Response()
-    )
+    response = mocker.MagicMock()
+    response.content = b"<h2>Heading</h2><table><tr><td>A</td></tr></table>"
+    get = mocker.patch.object(updater.requests, "get", return_value=response)
 
     assert updater.fetch_events("https://example.test") == [
         ("h2", "Heading"),
         ("table", [[updater.Cell("A")]]),
     ]
-    request = urlopen.call_args.args[0]
-    assert request.full_url == "https://example.test"
-    assert request.headers["User-agent"] == "Mozilla/5.0"
-    assert urlopen.call_args.kwargs == {"timeout": 30}
+    get.assert_called_once_with(
+        "https://example.test", headers={"User-Agent": "Mozilla/5.0"}, timeout=30
+    )
+    response.raise_for_status.assert_called_once_with()
 
 
 def test_write_csv_creates_parent_and_writes_field_order(

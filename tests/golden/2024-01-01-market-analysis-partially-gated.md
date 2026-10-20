@@ -4,7 +4,11 @@ date = "2024-01-01T01:00:00+00:00"
 draft = false
 summary = "Bullish market: 2 reliable instruments. Top signal: ^SPX (score 72.5)."
 ticker_symbols = ["^DJI", "^NDX", "^SPX"]
-source_files = ["data/analysis/2024-01-01.json", "data/evidence/2024-01-01.json", "data/qualitative/2024-01-01.json"]
+source_files = [
+  "data/analysis/2024-01-01.json",
+  "data/evidence/2024-01-01.json",
+  "data/qualitative/2024-01-01.json",
+]
 market_regime = "Bullish"
 data_source = "stooq"
 scoring_version = "1.0.0"

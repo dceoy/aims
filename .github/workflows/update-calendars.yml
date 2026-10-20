@@ -53,6 +53,7 @@ jobs:
           echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
           echo "date_compact=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
       - name: Create pull request
+        id: create_pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1   # v8.1.1
         with:
           add-paths: |
@@ -64,3 +65,10 @@ jobs:
           title: "chore(data): refresh event calendars ${{ steps.metadata.outputs.date }}"
           body: Automated earnings-calendar refresh from yfinance and central-bank schedule refresh from official Fed, ECB, and BOJ pages (see OPERATIONS.md).
           labels: agent:github-actions
+
+      - name: Enable pull request auto-merge
+        if: steps.create_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.create_pr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --squash --delete-branch

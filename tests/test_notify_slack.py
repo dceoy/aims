@@ -612,9 +612,7 @@ def test_main_failure_mode_no_run_url(ns: ModuleType) -> None:
 
     captured_payload: dict[str, Any] = {}
 
-    def _capture_post(
-        url: str, *, json: dict[str, Any], timeout: int
-    ) -> MagicMock:
+    def _capture_post(url: str, *, json: dict[str, Any], timeout: int) -> MagicMock:
         assert url == "https://hooks.slack.com/test"
         assert timeout == ns._TIMEOUT
         captured_payload.update(json)

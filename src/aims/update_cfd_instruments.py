@@ -250,9 +250,7 @@ def load_mappings(path: Path) -> Mappings:
 
 
 def fetch_events(url: str) -> list[tuple[str, Any]]:
-    response = requests.get(
-        url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30
-    )
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
     response.raise_for_status()
     html = response.content.decode("utf-8", errors="replace")
     parser = LineupHTMLParser()

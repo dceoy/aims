@@ -323,9 +323,7 @@ def test_main_uses_current_dates_by_default(
 def test_page_downloads_and_parses_html(mocker: MockerFixture) -> None:
     response = mocker.MagicMock()
     response.content = b"<html><body>page</body></html>"
-    opener = mocker.patch(
-        "aims.macro_calendar.requests.get", return_value=response
-    )
+    opener = mocker.patch("aims.macro_calendar.requests.get", return_value=response)
     root = macro_calendar._page("https://example.test")
     assert root.tag == "html"
     opener.assert_called_once()

@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import json
-import urllib.error
 from typing import TYPE_CHECKING, Any
 
 import pytest
+import requests
 
 from aims import link_check
 
@@ -63,37 +63,46 @@ def test_check_url_rejects_non_http() -> None:
     assert link_check.check_url("ftp://example.com/x") == "not an HTTP(S) URL"
 
 
+def _response(status: int = 200) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status
+    response.url = "https://example.com/x"
+    return response
+
+
 def test_check_url_ok(mocker: Any) -> None:
-    mocker.patch("urllib.request.urlopen", return_value=mocker.MagicMock())
+    mocker.patch("aims.link_check.requests.request", return_value=_response())
     assert link_check.check_url("https://example.com/ok") is None
 
 
 def test_check_url_head_fails_get_succeeds(mocker: Any) -> None:
-    error = urllib.error.HTTPError(
-        "https://example.com/x", 405, "Method Not Allowed", None, None
-    )
     mocked = mocker.patch(
-        "urllib.request.urlopen", side_effect=[error, mocker.MagicMock()]
+        "aims.link_check.requests.request",
+        side_effect=[_response(405), _response()],
     )
     assert link_check.check_url("https://example.com/x") is None
     assert mocked.call_count == 2
+    assert [call.args[0] for call in mocked.call_args_list] == ["HEAD", "GET"]
 
 
 def test_check_url_reports_http_error_after_get_retry(mocker: Any) -> None:
-    error = urllib.error.HTTPError(
-        "https://example.com/x", 404, "Not Found", None, None
+    mocker.patch(
+        "aims.link_check.requests.request",
+        side_effect=[_response(404), _response(404)],
     )
-    mocker.patch("urllib.request.urlopen", side_effect=[error, error])
     assert link_check.check_url("https://example.com/x") == "HTTP 404"
 
 
 def test_check_url_reports_unreachable_and_timeout(mocker: Any) -> None:
     mocker.patch(
-        "urllib.request.urlopen",
-        side_effect=urllib.error.URLError("no route"),
+        "aims.link_check.requests.request",
+        side_effect=requests.ConnectionError("no route"),
     )
     assert link_check.check_url("https://example.com/x") == "unreachable: no route"
-    mocker.patch("urllib.request.urlopen", side_effect=TimeoutError)
+    mocker.patch(
+        "aims.link_check.requests.request",
+        side_effect=requests.Timeout("timed out"),
+    )
     assert link_check.check_url("https://example.com/x") == "timed out"
 
 

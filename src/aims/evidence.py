@@ -24,7 +24,6 @@ import html
 import json
 import re
 import subprocess
-import urllib.request
 
 # Bundles fetch only curated feeds and provider news; entities/DTDs are not
 # resolved by ElementTree.fromstring, and all text is length-capped after.
@@ -36,6 +35,7 @@ from operator import itemgetter
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
+import requests
 import yfinance as yf
 
 if TYPE_CHECKING:
@@ -171,11 +171,12 @@ def parse_timestamp(value: str) -> str | None:
 
 def fetch_url(url: str) -> str:
     """Fetch *url* and return its decoded body (network boundary)."""
-    request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
-    with urllib.request.urlopen(request, timeout=_FETCH_TIMEOUT) as resp:
-        charset = resp.headers.get_content_charset() or "utf-8"
-        body: str = resp.read().decode(charset, errors="replace")
-    return body
+    response = requests.get(
+        url, headers={"User-Agent": _USER_AGENT}, timeout=_FETCH_TIMEOUT
+    )
+    response.raise_for_status()
+    charset = response.encoding or "utf-8"
+    return response.content.decode(charset, errors="replace")
 
 
 def fetch_symbol_news(symbol: str) -> list[dict[str, Any]]:

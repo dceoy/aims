@@ -5,11 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import urllib.request
 from datetime import UTC, date, datetime
 from operator import itemgetter
 from pathlib import Path
 from typing import Any, Final
+
+import requests
 
 from lxml import html
 
@@ -61,11 +62,11 @@ _BOJ_IDS: Final[list[str]] = ["mufg", "nkx", "sony", "toyota"]
 
 
 def _page(url: str) -> Any:
-    request = urllib.request.Request(
-        url, headers={"User-Agent": "AIMS calendar updater"}
+    response = requests.get(
+        url, headers={"User-Agent": "AIMS calendar updater"}, timeout=30
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return html.fromstring(response.read())
+    response.raise_for_status()
+    return html.fromstring(response.content)
 
 
 def _text(node: Any) -> str:

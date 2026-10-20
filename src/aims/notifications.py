@@ -21,10 +21,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Any, Final
+
+import requests
 
 from aims.calendars import (
     DEFAULT_WINDOW_DAYS,
@@ -347,15 +347,8 @@ def build_failure_payload(
 
 
 def send_notification(webhook_url: str, payload: dict[str, Any]) -> None:
-    data = json.dumps(payload).encode()
-    req = urllib.request.Request(
-        webhook_url,
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=_TIMEOUT) as _resp:
-        pass
+    response = requests.post(webhook_url, json=payload, timeout=_TIMEOUT)
+    response.raise_for_status()
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -515,7 +508,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         send_notification(webhook_url, payload)
-    except urllib.error.URLError as exc:
+    except requests.RequestException as exc:
         print(f"ERROR: failed to send Slack notification: {exc}")
         return 1
     print("Slack notification sent.")

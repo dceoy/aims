@@ -183,19 +183,17 @@ def test_parse_timestamp(value: str, expected: str | None) -> None:
 
 def test_fetch_url_decodes_charset(mocker: MockerFixture) -> None:
     response = mocker.MagicMock()
-    response.headers.get_content_charset.return_value = "iso-8859-1"
-    response.read.return_value = "caf\xe9".encode("iso-8859-1")
-    response.__enter__.return_value = response
-    mocker.patch.object(ev.urllib.request, "urlopen", return_value=response)
+    response.encoding = "iso-8859-1"
+    response.content = "caf\xe9".encode("iso-8859-1")
+    mocker.patch.object(ev.requests, "get", return_value=response)
     assert ev.fetch_url("https://example.org/feed") == "café"
 
 
 def test_fetch_url_defaults_to_utf8(mocker: MockerFixture) -> None:
     response = mocker.MagicMock()
-    response.headers.get_content_charset.return_value = None
-    response.read.return_value = b"plain"
-    response.__enter__.return_value = response
-    mocker.patch.object(ev.urllib.request, "urlopen", return_value=response)
+    response.encoding = None
+    response.content = b"plain"
+    mocker.patch.object(ev.requests, "get", return_value=response)
     assert ev.fetch_url("https://example.org/feed") == "plain"
 
 

@@ -33,8 +33,8 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Final
 from urllib.error import URLError
-from urllib.request import urlopen
 
+import requests
 import yfinance as yf
 
 from aims.policy import (
@@ -396,8 +396,12 @@ class StooqProvider(MarketDataProvider):
             f"&d2={end.strftime('%Y%m%d')}"
             f"&i={interval}"
         )
-        with urlopen(url, timeout=30) as resp:
-            content = resp.read().decode("utf-8")
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            raise URLError(str(exc)) from exc
+        content = response.content.decode("utf-8")
         return self._parse_csv(content, symbol, interval)
 
     def _parse_csv(self, content: str, symbol: str, interval: str) -> list[OhlcvBar]:

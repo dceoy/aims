@@ -10,6 +10,7 @@ from urllib.error import URLError
 
 import pandas as pd
 import pytest
+import requests
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -126,10 +127,10 @@ def test_parse_csv_sorted_ascending(ma: ModuleType) -> None:
 def test_stooq_provider_fetch_ohlcv(ma: ModuleType, mocker: MockerFixture) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n2024-01-02,100,110,90,105,1000\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     provider = ma.StooqProvider()
     start = datetime(2024, 1, 1, tzinfo=UTC)
     end = datetime(2024, 1, 31, tzinfo=UTC)
@@ -1330,10 +1331,10 @@ def test_cmd_fetch_success(
 ) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n2024-01-02,100,110,90,105,1000\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -1359,7 +1360,10 @@ def test_cmd_fetch_success(
 def test_cmd_fetch_url_error(
     ma: ModuleType, mocker: MockerFixture, tmp_path: Path
 ) -> None:
-    mocker.patch("aims.market_analysis.urlopen", side_effect=URLError("network error"))
+    mocker.patch(
+        "aims.market_analysis.requests.get",
+        side_effect=requests.ConnectionError("network error"),
+    )
     mocker.patch.object(
         sys,
         "argv",
@@ -1387,10 +1391,10 @@ def test_cmd_fetch_no_data(
 ) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -1418,10 +1422,10 @@ def test_cmd_fetch_no_validate_flag(
 ) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n2024-01-02,100,110,90,105,1000\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -1453,10 +1457,10 @@ def test_cmd_fetch_reports_quality_issues(
 ) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n2020-01-02,100,110,90,105,1000\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     mocker.patch.object(
         sys,
         "argv",
@@ -2161,7 +2165,7 @@ def test_cmd_init_fetch_status(ma: ModuleType, tmp_path: Path) -> None:
 def test_cmd_fetch_records_failed_status(
     ma: ModuleType, mocker: MockerFixture, tmp_path: Path
 ) -> None:
-    mocker.patch("aims.market_analysis.urlopen", side_effect=URLError("network error"))
+    mocker.patch("aims.market_analysis.requests.get", side_effect=requests.ConnectionError("network error"))
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["FAIL"], interval="d")
 
@@ -2185,10 +2189,10 @@ def test_cmd_fetch_records_success_status(
 ) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n2024-01-02,100,110,90,105,1000\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["AAPL.US"], interval="d")
 
@@ -2212,10 +2216,10 @@ def test_cmd_fetch_records_empty_result_status(
 ) -> None:
     csv_content = "Date,Open,High,Low,Close,Volume\n"
     mock_resp = mocker.MagicMock()
-    mock_resp.read.return_value = csv_content.encode()
+    mock_resp.content = csv_content.encode()
     mock_resp.__enter__ = mocker.MagicMock(return_value=mock_resp)
     mock_resp.__exit__ = mocker.MagicMock(return_value=False)
-    mocker.patch("aims.market_analysis.urlopen", return_value=mock_resp)
+    mocker.patch("aims.market_analysis.requests.get", return_value=mock_resp)
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["EMPTY"], interval="d")
 

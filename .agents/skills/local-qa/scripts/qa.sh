@@ -21,7 +21,7 @@ uv run python .agents/skills/update-cfd-instruments/scripts/validate_cfd_instrum
   --schema data/schema/cfd_instruments.schema.json
 
 # Markdown
-pnpm dlx oxfmt --write '**/*.md' '!tests/golden/*.md'
+pnpm dlx oxfmt --write '**/*.md'
 if [[ -f .markdownlint-cli2.jsonc ]]; then
   git ls-files -z -- '*.md' '*.mdx' | xargs -0 -t pnpm dlx markdownlint-cli2 --fix --config .markdownlint-cli2.jsonc
 else

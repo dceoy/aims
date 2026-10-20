@@ -370,9 +370,11 @@ def test_build_front_matter_source_files_with_history_include_suffix(
     }
     front_matter = gr._build_front_matter(artifact, "2024-06-07", history={})
     assert (
-        'source_files = ["data/analysis/2024-06-07-m.json",'
-        ' "data/history/2024-06-07-m.json"]' in front_matter
-    )
+        'source_files = [\n'
+        '  "data/analysis/2024-06-07-m.json",\n'
+        '  "data/history/2024-06-07-m.json",\n'
+        "]"
+    ) in front_matter
 
 
 # ── generate_and_save tests ─────────────────────────────────────────────────────

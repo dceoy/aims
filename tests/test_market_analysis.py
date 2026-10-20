@@ -6,8 +6,6 @@ import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
-from urllib.error import URLError
-
 import pandas as pd
 import pytest
 import requests
@@ -2165,7 +2163,10 @@ def test_cmd_init_fetch_status(ma: ModuleType, tmp_path: Path) -> None:
 def test_cmd_fetch_records_failed_status(
     ma: ModuleType, mocker: MockerFixture, tmp_path: Path
 ) -> None:
-    mocker.patch("aims.market_analysis.requests.get", side_effect=requests.ConnectionError("network error"))
+    mocker.patch(
+        "aims.market_analysis.requests.get",
+        side_effect=requests.ConnectionError("network error"),
+    )
     status_path = tmp_path / "fetch_status.json"
     ma.init_fetch_status(status_path, ["FAIL"], interval="d")
 

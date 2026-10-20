@@ -10,9 +10,8 @@ from operator import itemgetter
 from pathlib import Path
 from typing import Any, Final
 
-import requests
-
 from lxml import html
+import requests
 
 from aims.calendars import CALENDAR_VERSION
 

@@ -90,7 +90,6 @@ def check_url(url: str, timeout: float = DEFAULT_TIMEOUT) -> str | None:
                 timeout=timeout,
             )
             response.raise_for_status()
-            return None
         except requests.HTTPError as exc:
             status = exc.response.status_code if exc.response is not None else "unknown"
             reason = f"HTTP {status}"
@@ -98,6 +97,8 @@ def check_url(url: str, timeout: float = DEFAULT_TIMEOUT) -> str | None:
             return "timed out"
         except requests.RequestException as exc:
             return f"unreachable: {exc}"
+        else:
+            return None
     return reason
 
 

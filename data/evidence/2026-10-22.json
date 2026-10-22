@@ -1,0 +1,374 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-06cbc9d4be75e1fc",
+      "published_at": "2026-10-15T01:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Summary of the \"Meeting on Market Operations\" (October 2026)",
+      "url": "http://www.boj.or.jp/en/paym/market/mkt261015a.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-13a88566ab53af91",
+      "published_at": "2026-10-15T01:30:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Speech by Board Member KOEDA in Kumamoto (Economic Activity, Prices, and Monetary Policy in Japan)",
+      "url": "http://www.boj.or.jp/en/about/press/koen_2026/ko261015a.htm"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5695ede658215ed8",
+      "published_at": "2026-10-15T14:00:00+00:00",
+      "snippet": "Three regional transmission organizations (RTOs) set records for peak hourly load this past summer, according to data reported on Form EIA-930 and presented in the Hourly Electric Grid Monitor.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "PJM, ERCOT, and SWPP all set peak load records this summer",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68305"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-1aeb9161cc4057c0",
+      "published_at": "2026-10-16T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "BOJ Current Account Balances by Sector (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-68c8c704a8849e2f",
+      "published_at": "2026-10-16T14:00:00+00:00",
+      "snippet": "We estimate that U.S. generation from small-scale or rooftop solar photovoltaic systems (smaller than 1 megawatt of capacity) has increased from 18,812 gigawatthours (GWh) to 92,979 GWh over the last decade. The four states with the highest generation of small-scale solar in the country-California, Arizona, Texas, and Florida-are in regions with more abundant solar resources. Even though it is in a region with lower solar resources, New York ranks as the fifth-largest rooftop solar generation pr",
+      "source": "U.S. EIA Today in Energy",
+      "title": "U.S. small-scale solar generation has quadrupled in the last decade",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68324"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-43d80f80021ed340",
+      "published_at": "2026-10-17T05:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Christine Lagarde: IMFC Statement",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261017~7015ea3099.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-7db2d095759acef3",
+      "published_at": "2026-10-19T06:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Frank Elderson: From climate and nature risks to economic resilience and competitiveness",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261019~f0a3e053de.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c0057019cb3b41d2",
+      "published_at": "2026-10-19T14:00:00+00:00",
+      "snippet": "In the third quarter of 2026 (3Q26), 23% of new light-duty vehicles sold in the United States were hybrid electric, battery electric, or plug-in hybrid electric vehicles, down slightly from 24% in 3Q25. Between 3Q25 and 3Q26, hybrid electric vehicles continued to gain market share, reaching 16% of light-duty vehicle sales. Growth of hybrid electric vehicle sales has slowed this quarter as the average transaction price for a new vehicle passed $50,000-the first time this price has been reached so",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Hybrid sales rise while battery electric sales remain lower after tax credit expiration",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68325"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-92e84479ff93d74f",
+      "published_at": "2026-10-20T07:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Frank Elderson: Interview with Die Presse",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261020~97e2e4bc38.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5d1cbbda0a0468b7",
+      "published_at": "2026-10-21T04:15:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: Euro liquidity lines and the international monetary system",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021~401d6c4b70.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-b36c300bff22f5c1",
+      "published_at": "2026-10-21T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Pontes and Appia: unlocking opportunities for banks",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021_1~d190f2c349.en.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-45dd2af74e5af455",
+      "published_at": "2026-10-21T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Senior Loan Officer Opinion Survey (Oct.)",
+      "url": "http://www.boj.or.jp/en/statistics/dl/loan/loos/release/loos2610.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-48d80a9977975ab4",
+      "published_at": "2026-10-21T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Statistics on Securities Financing Transactions in Japan",
+      "url": "http://www.boj.or.jp/en/statistics/bis/repo/index.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-a1a385cdbf6a05f0",
+      "published_at": "2026-10-22T01:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Bank of Japan Accounts (October 20)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/acmai/release/2026/ac261020.htm"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-10-22",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 0
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 0
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 0
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [],
+      "sources": {
+        "feed:boj_news": {
+          "item_count": 6,
+          "status": "success"
+        },
+        "feed:ecb_press": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 3,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "error": "not well-formed (invalid token): line 1, column 1",
+          "status": "failed"
+        },
+        "yfinance:6758.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:7203.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:8306.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AAPL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AMZN": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:BZ=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:CL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GOOGL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:HG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:JPM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:META": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:MSFT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NVDA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:PL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:SI=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:TSLA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:UNH": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:XOM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZS=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZW=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FCHI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FTSE": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GDAXI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GSPC": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^HSI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^N225": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^RUT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^STOXX50E": {
+          "item_count": 0,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2026-10-22T00:00:00+00:00",
+    "git_commit": "f104fbe",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-10-22T05:54:04.208590+00:00"
+  },
+  "version": "1.0.0"
+}

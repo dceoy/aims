@@ -35,6 +35,7 @@ packages = ["src/aims"]
 
 [tool.uv]
 constraint-dependencies = ["urllib3>=2.8.0"]
+exclude-newer-package = { certifi = "2026-10-21T00:00:00Z" }
 package = true
 
 [tool.pytest.ini_options]

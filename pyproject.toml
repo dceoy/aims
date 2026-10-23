@@ -35,7 +35,6 @@ packages = ["src/aims"]
 
 [tool.uv]
 exclude-newer = "1 day"
-constraint-dependencies = ["urllib3>=2.8.0"]
 package = true
 
 [tool.pytest.ini_options]

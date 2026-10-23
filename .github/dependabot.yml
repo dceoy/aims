@@ -8,13 +8,21 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 10
-  - package-ecosystem: pip
+    groups:
+      dependencies:
+        patterns:
+          - '*'
+  - package-ecosystem: uv
     directory: /
     schedule:
       interval: daily
     cooldown:
       default-days: 7
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - '*'
   - package-ecosystem: gomod
     directory: /
     schedule:
@@ -22,3 +30,7 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - '*'

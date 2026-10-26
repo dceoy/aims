@@ -3,26 +3,6 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "meta"
-      ],
-      "category": "earnings",
-      "date": "2026-10-21",
-      "source": "yfinance",
-      "title": "META earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "tsla"
-      ],
-      "category": "earnings",
-      "date": "2026-10-21",
-      "source": "yfinance",
-      "title": "TSLA earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
         "googl"
       ],
       "category": "earnings",
@@ -129,12 +109,32 @@
       "date": "2027-01-14",
       "source": "yfinance",
       "title": "JPM earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "earnings",
+      "date": "2027-01-27",
+      "source": "yfinance",
+      "title": "META earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "earnings",
+      "date": "2027-01-27",
+      "source": "yfinance",
+      "title": "TSLA earnings release"
     }
   ],
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-10-19"
+    "updated_at": "2026-10-26"
   },
   "version": "1.0.0"
 }

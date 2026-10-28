@@ -1,0 +1,404 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5d1cbbda0a0468b7",
+      "published_at": "2026-10-21T04:15:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: Euro liquidity lines and the international monetary system",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021~401d6c4b70.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-b36c300bff22f5c1",
+      "published_at": "2026-10-21T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Pontes and Appia: unlocking opportunities for banks",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261021_1~d190f2c349.en.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-45dd2af74e5af455",
+      "published_at": "2026-10-21T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Senior Loan Officer Opinion Survey (Oct.)",
+      "url": "http://www.boj.or.jp/en/statistics/dl/loan/loos/release/loos2610.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-48d80a9977975ab4",
+      "published_at": "2026-10-21T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Statistics on Securities Financing Transactions in Japan",
+      "url": "http://www.boj.or.jp/en/statistics/bis/repo/index.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-a1a385cdbf6a05f0",
+      "published_at": "2026-10-22T01:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Bank of Japan Accounts (October 20)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/acmai/release/2026/ac261020.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-adac05b01210cb80",
+      "published_at": "2026-10-22T07:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Developments in Real Exports and Real Imports",
+      "url": "http://www.boj.or.jp/en/research/research_data/reri/index.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-04a42ffa5dd3760f",
+      "published_at": "2026-10-22T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Japanese Government Bonds Held by the Bank of Japan",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei261020.xlsx"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-d50e1c5497d7cccb",
+      "published_at": "2026-10-22T14:00:00+00:00",
+      "snippet": "The U.S. refinery fleet has run at higher-than-normal rates this year, with refinery utilization averaging more than 95% of capacity between May and September, the highest for those months since 1998. Tight global product supplies this year have boosted margins for petroleum products, particularly for diesel, incentivizing the increased run rates.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "U.S. refineries have been running at very high rates in 2026",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68344"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-fa71449d5d98b078",
+      "published_at": "2026-10-23T06:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Financial System Report (October 2026)",
+      "url": "http://www.boj.or.jp/en/research/brp/fsr/fsr261023.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-90e7a94b859fc649",
+      "published_at": "2026-10-23T08:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "ECB Consumer Expectations Survey results \u2013 September 2026",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261023~a3d201c97c.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-0990b9990e51095a",
+      "published_at": "2026-10-24T06:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Interview with Milano Finanza",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261024~ee2ba73cf3.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-dc5549c20c352450",
+      "published_at": "2026-10-26T05:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Frank Elderson: Taking action for nature \u2013 investing in economic resilience and prosperity",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261026~d903d7ad85.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e92b7c1f6014286c",
+      "published_at": "2026-10-26T09:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Survey on the Access to Finance of Enterprises: lending conditions tightened",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261026~bde7b6d11a.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-7ba1a590bdfdd2f7",
+      "published_at": "2026-10-26T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Services Producer Price Index (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/pi/cspi_release/sppi2609.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-aa9f112b0bac575c",
+      "published_at": "2026-10-27T00:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "October 2026 euro area bank lending survey",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c1efcf3f406dd36c",
+      "published_at": "2026-10-27T05:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Indicators for Core CPI",
+      "url": "http://www.boj.or.jp/en/research/research_data/cpi/index.htm"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-10-28",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 0
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 0
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 0
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [],
+      "sources": {
+        "feed:boj_news": {
+          "item_count": 8,
+          "status": "success"
+        },
+        "feed:ecb_press": {
+          "item_count": 7,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 1,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "error": "not well-formed (invalid token): line 1, column 1",
+          "status": "failed"
+        },
+        "yfinance:6758.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:7203.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:8306.T": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AAPL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:AMZN": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:BZ=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:CL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:GOOGL": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:HG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:JPM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:META": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:MSFT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NG=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:NVDA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:PL=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:SI=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:TSLA": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:UNH": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:XOM": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZC=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZS=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:ZW=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FCHI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^FTSE": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GDAXI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^GSPC": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^HSI": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^N225": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^RUT": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:^STOXX50E": {
+          "item_count": 0,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2026-10-28T00:00:00+00:00",
+    "git_commit": "d19ca3f",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-10-28T06:44:44.291676+00:00"
+  },
+  "version": "1.0.0"
+}

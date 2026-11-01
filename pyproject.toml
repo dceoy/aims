@@ -76,6 +76,7 @@ preview = true
 select = ["ALL"]
 ignore = [
   "CPY",  # flake8-copyright (CPY)
+  "noqa-comments",  # Keep existing noqa directives until a separate migration
   "ANN401",   # Dynamically typed expressions are acceptable in HTML parser events
   "COM812",   # missing-trailing-comma
   "FBT001",   # boolean-type-hint-positional-argument

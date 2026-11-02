@@ -8,43 +8,6 @@
       ],
       "canonical_ids": [],
       "category": "central_bank",
-      "date": "2026-10-28",
-      "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
-      "title": "FOMC rate decision"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "cac",
-        "dax",
-        "stoxx50"
-      ],
-      "category": "central_bank",
-      "date": "2026-10-29",
-      "source": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
-      "title": "ECB monetary policy decision"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "mufg",
-        "nkx",
-        "sony",
-        "toyota"
-      ],
-      "category": "central_bank",
-      "date": "2026-10-30",
-      "source": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
-      "title": "BOJ monetary policy decision"
-    },
-    {
-      "asset_classes": [
-        "equity_index",
-        "equity",
-        "commodity"
-      ],
-      "canonical_ids": [],
-      "category": "central_bank",
       "date": "2026-12-09",
       "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
       "title": "FOMC rate decision"
@@ -482,7 +445,7 @@
   "metadata": {
     "calendar_id": "macro_events",
     "source": "Official Fed, ECB, and BOJ schedules; see OPERATIONS.md",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-11-02"
   },
   "version": "1.0.0"
 }

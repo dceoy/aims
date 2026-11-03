@@ -1,0 +1,473 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-aa9f112b0bac575c",
+      "published_at": "2026-10-27T00:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "October 2026 euro area bank lending survey",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261027~506ef03145.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e082f6692a932ddc",
+      "published_at": "2026-10-29T10:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "ECB President Lagarde to step down on 7 February 2027",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261029~abbb6dc64b.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-7bb1ed32ccc4cad7",
+      "published_at": "2026-10-29T13:15:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Monetary policy decisions",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.mp261029~9a493adf17.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-3f8fb4f5c04a9fd7",
+      "published_at": "2026-10-29T14:00:00+00:00",
+      "snippet": "Colombia is importing more liquefied natural gas (LNG) as domestic production continues to fall. A potential drought this fall and winter could limit the availability of hydroelectric generation and boost the country's demand for natural gas power generation. Colombia's government has declared a national disaster in anticipation of a drought resulting from an expected strong El Ni\u00f1o.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "LNG imports make up increasing share of Colombia's natural gas supply",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68364"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5a18cf693d537850",
+      "published_at": "2026-10-29T14:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Christine Lagarde, Boris Vuj\u010di\u0107: Monetary policy statement (with Q&A)",
+      "url": "https://www.ecb.europa.eu//press/press_conference/monetary-policy-statement/2026/html/ecb.is261029~5c5ffe99e5.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e18cbd698f03340a",
+      "published_at": "2026-10-29T15:50:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Piero Cipollone: Next-day securities settlement, tokenisation and the transformation of Europe\u2019s financial infrastructure",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261029~e9b57c3495.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-f7a5e3b12e464e96",
+      "published_at": "2026-10-30T02:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Payment and Settlement Statistics (Sept.)",
+      "url": "http://www.boj.or.jp/en/statistics/set/kess/release/2026/kess2609.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-b4773e3faf0f49a7",
+      "published_at": "2026-10-30T03:02:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "(Reference) Outlook Report and Indicators Related to Underlying Inflation",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030b.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-f6199ad26b7d9309",
+      "published_at": "2026-10-30T03:02:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "(Reference) Decisions regarding a Change in the Pace of Sales of ETFs (October 2026)",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030c.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-cfd24200d39285b2",
+      "published_at": "2026-10-30T04:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Outlook for Economic Activity and Prices (October 2026, The Bank's View)",
+      "url": "http://www.boj.or.jp/en/mopo/outlook/gor2610a.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-ff07eebb8e616b9e",
+      "published_at": "2026-10-30T04:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Statement on Monetary Policy",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-1260862b53558088",
+      "published_at": "2026-10-30T05:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Amendment to \"Basic Principles for Disposal of ETFs and J-REITs\"",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/mpr261030a.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-6c387bb606c1272c",
+      "published_at": "2026-10-30T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Timetable and Schedule of U.S. Dollar Funds-Supplying Operations (November 2026-March 2027)",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/mpr261030b.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e4e5d02ed96a6daf",
+      "published_at": "2026-10-30T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Quarterly Schedule of Outright Purchases of Japanese Government Bonds (Competitive Auction Method) (October-December 2026) (Schedule Updates)",
+      "url": "http://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/mpr261030c.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-1f6ec96bbcb54db9",
+      "published_at": "2026-10-30T09:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Results of the ECB Survey of Professional Forecasters for the fourth quarter of 2026",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261030~e92c3c838c.en.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-2774e8644233c747",
+      "published_at": "2026-10-30T14:00:00+00:00",
+      "snippet": "Utility-scale solar developers are increasingly co-locating battery storage with new solar photovoltaic capacity. As of September 2026, over 16% of new utility-scale solar capacity added this year is co-located with operable battery storage, compared with 2% in 2017, according to data reported to EIA by operators.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "The share of solar generation with co-located battery storage is increasing",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68384"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-afccfc73c2e105be",
+      "published_at": "2026-10-30T14:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Decisions taken by the Governing Council of the ECB (in addition to decisions setting interest rates)",
+      "url": "https://www.ecb.europa.eu//press/govcdec/otherdec/2026/html/ecb.gc261030~e40f864093.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5d93c3ad7586ea40",
+      "published_at": "2026-10-30T16:10:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: AI adoption in Europe",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261030~08d9d540f0.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-65fe94cd74f1fdae",
+      "published_at": "2026-11-02T04:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Sources of Changes in Current Account Balances and Market Operations (Oct.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/fm/juqf/juqf10.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-8cce56905cab0362",
+      "published_at": "2026-11-02T05:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Outlook for Economic Activity and Prices (October 2026, full text)",
+      "url": "http://www.boj.or.jp/en/mopo/outlook/gor2610b.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-3457b0b63ae12e98",
+      "published_at": "2026-11-02T09:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Boris Vuj\u010di\u0107: Integrated, open and resilient: Europe\u2019s strengths in a fragmenting world",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp.261102~70003226e9.en.html"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-11-03",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 0
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 0
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 0
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [],
+      "sources": {
+        "feed:boj_news": {
+          "item_count": 10,
+          "status": "success"
+        },
+        "feed:ecb_press": {
+          "item_count": 9,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 2,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "error": "not well-formed (invalid token): line 1, column 1",
+          "status": "failed"
+        },
+        "yfinance:6758.T": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:7203.T": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:8306.T": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:AAPL": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:AMZN": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:BZ=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:CL=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:GC=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:GOOGL": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:HG=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:JPM": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:META": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:MSFT": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:NG=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:NVDA": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:PL=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:SI=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:TSLA": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:UNH": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:XOM": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:ZC=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:ZS=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:ZW=F": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^DJI": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^FCHI": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^FTSE": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^GDAXI": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^GSPC": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^HSI": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^N225": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^NDX": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^RUT": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        },
+        "yfinance:^STOXX50E": {
+          "error": "*** YAHOO! FINANCE IS CURRENTLY DOWN! ***",
+          "status": "failed"
+        }
+      }
+    },
+    "generated_at": "2026-11-03T00:00:00+00:00",
+    "git_commit": "8db0dfc",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-11-03T07:44:40.537252+00:00"
+  },
+  "version": "1.0.0"
+}

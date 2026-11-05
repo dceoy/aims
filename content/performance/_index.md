@@ -1,6 +1,6 @@
 +++
 title = "Signal Performance"
-date = "2026-11-04T00:00:00+00:00"
+date = "2026-11-05T00:00:00+00:00"
 draft = false
 summary = "Realized forward returns of the published top-5 signals vs. an equal-weight benchmark."
 source_files = ["data/performance/signals.json"]
@@ -8,7 +8,7 @@ source_files = ["data/performance/signals.json"]
 
 ## Signal Performance
 
-As of **2026-11-04**, 102 daily analysis artifact(s) evaluated.
+As of **2026-11-05**, 103 daily analysis artifact(s) evaluated.
 
 > Informational association only. These figures measure whether the published top-5 quantitative signals outperformed a naive equal-weight basket of the same day's reliable universe in committed data; they are not an investable or executable track record, exclude fees, slippage, financing, and order timing, rest on small overlapping samples, and are not investment advice.
 
@@ -16,40 +16,40 @@ As of **2026-11-04**, 102 daily analysis artifact(s) evaluated.
 
 | Horizon | Count |  Top-5 | Benchmark | Excess | Hit rate |
 | ------- | ----: | -----: | --------: | -----: | -------: |
-| 1d      |   309 | -0.07% |    -0.04% | -0.03% |      49% |
-| 5d      |   210 | +0.13% |    -0.26% | +0.39% |      56% |
-| 20d     |    38 | -3.62% |    -1.99% | -1.64% |      45% |
+| 1d      |   314 | -0.06% |    -0.02% | -0.04% |      48% |
+| 5d      |   215 | +0.06% |    -0.27% | +0.34% |      56% |
+| 20d     |    43 | -3.64% |    -2.06% | -1.58% |      47% |
 
 ### By Asset Class
 
 | Horizon / Group    | Count | Excess | Hit rate |
 | ------------------ | ----: | -----: | -------: |
 | 1d / commodity     |    99 | +0.01% |      46% |
-| 1d / equity        |   127 | -0.09% |      46% |
-| 1d / equity_index  |    71 | +0.03% |      55% |
+| 1d / equity        |   129 | -0.13% |      46% |
+| 1d / equity_index  |    74 | +0.04% |      55% |
 | 1d / unknown       |    12 | +0.00% |      50% |
-| 5d / commodity     |    72 | +1.20% |      61% |
-| 5d / equity        |    88 | -0.13% |      50% |
-| 5d / equity_index  |    41 | +0.17% |      59% |
+| 5d / commodity     |    73 | +0.95% |      60% |
+| 5d / equity        |    91 | -0.09% |      51% |
+| 5d / equity_index  |    42 | +0.26% |      60% |
 | 5d / unknown       |     9 | +0.00% |      67% |
-| 20d / equity       |    26 | -1.80% |      46% |
-| 20d / equity_index |    12 | -1.28% |      42% |
+| 20d / equity       |    29 | -1.64% |      48% |
+| 20d / equity_index |    14 | -1.45% |      43% |
 
 ### By Market Regime
 
 | Horizon / Group   | Count | Excess | Hit rate |
 | ----------------- | ----: | -----: | -------: |
-| 1d / Bearish      |    75 | +0.02% |      55% |
+| 1d / Bearish      |    80 | -0.05% |      54% |
 | 1d / Bullish      |    49 | +0.14% |      53% |
 | 1d / Neutral      |   157 | -0.01% |      46% |
 | 1d / Unavailable  |    28 | -0.53% |      39% |
 | 5d / Bearish      |    35 | +0.47% |      69% |
 | 5d / Bullish      |    30 | +0.39% |      47% |
-| 5d / Neutral      |   134 | +0.40% |      54% |
+| 5d / Neutral      |   139 | +0.32% |      55% |
 | 5d / Unavailable  |    11 | +0.01% |      64% |
 | 20d / Bearish     |    15 | -0.52% |      53% |
 | 20d / Bullish     |    12 | -1.86% |      25% |
-| 20d / Neutral     |    10 | -3.30% |      50% |
+| 20d / Neutral     |    15 | -2.57% |      53% |
 | 20d / Unavailable |     1 | +0.89% |     100% |
 
 ## Warnings (897)

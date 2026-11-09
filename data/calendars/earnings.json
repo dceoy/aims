@@ -3,26 +3,6 @@
     {
       "asset_classes": [],
       "canonical_ids": [
-        "sony"
-      ],
-      "category": "earnings",
-      "date": "2026-11-05",
-      "source": "yfinance",
-      "title": "6758.T earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
-        "toyota"
-      ],
-      "category": "earnings",
-      "date": "2026-11-05",
-      "source": "yfinance",
-      "title": "7203.T earnings release"
-    },
-    {
-      "asset_classes": [],
-      "canonical_ids": [
         "mufg"
       ],
       "category": "earnings",
@@ -93,6 +73,16 @@
     {
       "asset_classes": [],
       "canonical_ids": [
+        "aapl"
+      ],
+      "category": "earnings",
+      "date": "2027-01-28",
+      "source": "yfinance",
+      "title": "AAPL earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
         "xom"
       ],
       "category": "earnings",
@@ -113,6 +103,26 @@
     {
       "asset_classes": [],
       "canonical_ids": [
+        "sony"
+      ],
+      "category": "earnings",
+      "date": "2027-02-04",
+      "source": "yfinance",
+      "title": "6758.T earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "earnings",
+      "date": "2027-02-04",
+      "source": "yfinance",
+      "title": "7203.T earnings release"
+    },
+    {
+      "asset_classes": [],
+      "canonical_ids": [
         "amzn"
       ],
       "category": "earnings",
@@ -124,7 +134,7 @@
   "metadata": {
     "calendar_id": "earnings",
     "source": "yfinance get_earnings_dates via update_calendars.py",
-    "updated_at": "2026-11-02"
+    "updated_at": "2026-11-09"
   },
   "version": "1.0.0"
 }

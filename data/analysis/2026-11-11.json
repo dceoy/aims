@@ -1,0 +1,1171 @@
+{
+  "version": "1.2.0",
+  "metadata": {
+    "generated_at": "2026-11-11T00:00:00+00:00",
+    "git_commit": "4ce5958",
+    "data_source": "yfinance",
+    "data_freshness": {
+      "AAPL": "2026-11-10",
+      "AMZN": "2026-11-10",
+      "BZ=F": "2026-11-10",
+      "^FCHI": "2026-11-10",
+      "HG=F": "2026-11-10",
+      "ZC=F": "2026-11-10",
+      "^GDAXI": "2026-11-10",
+      "^DJI": "2026-11-10",
+      "^FTSE": "2026-11-10",
+      "GC=F": "2026-11-10",
+      "GOOGL": "2026-11-10",
+      "^HSI": "2026-11-10",
+      "JPM": "2026-11-10",
+      "META": "2026-11-10",
+      "MSFT": "2026-11-10",
+      "8306.T": "2026-11-10",
+      "NG=F": "2026-11-10",
+      "^NDX": "2026-11-10",
+      "^N225": "2026-11-10",
+      "NVDA": "2026-11-10",
+      "PL=F": "2026-11-10",
+      "^RUT": "2026-11-10",
+      "SI=F": "2026-11-10",
+      "6758.T": "2026-11-10",
+      "ZS=F": "2026-11-10",
+      "^GSPC": "2026-11-10",
+      "^STOXX50E": "2026-11-10",
+      "7203.T": "2026-11-10",
+      "TSLA": "2026-11-10",
+      "UNH": "2026-11-10",
+      "ZW=F": "2026-11-10",
+      "CL=F": "2026-11-10",
+      "XOM": "2026-11-10"
+    },
+    "scoring_version": "1.0.0",
+    "config": {
+      "interval": "d",
+      "stale_days": 5,
+      "max_gap_days": 7,
+      "min_history": 60,
+      "coverage_policy": {
+        "min_success_ratio": 0.8,
+        "max_missing_symbols": 4
+      },
+      "risk_target_annual_vol": 0.1,
+      "stop_atr_multiple": 2.0
+    },
+    "market_regime": {
+      "label": "Neutral",
+      "positive_count": 11,
+      "reliable_count": 25,
+      "breadth": 0.44,
+      "thresholds": {
+        "bullish": 0.65,
+        "bearish": 0.35
+      }
+    },
+    "coverage": {
+      "attempted_count": 33,
+      "fetched_count": 33,
+      "missing_symbols": [],
+      "success_ratio": 1.0,
+      "passed": true,
+      "violations": []
+    },
+    "price_history": {
+      "adjustment_drift": [
+        "BZ=F: adjustment drift on 2026-11-10: cached close 91.0100 -> fresh close 91.4900 (0.53%)",
+        "HG=F: adjustment drift on 2026-11-10: cached close 6.3155 -> fresh close 6.2195 (1.52%)",
+        "ZC=F: adjustment drift on 2026-11-10: cached close 440.7500 -> fresh close 449.0000 (1.87%)",
+        "GC=F: adjustment drift on 2026-11-10: cached close 4122.3999 -> fresh close 4030.2000 (2.24%)",
+        "^HSI: adjustment drift on 2026-11-10: cached close 24531.0508 -> fresh close 24557.0391 (0.11%)",
+        "NG=F: adjustment drift on 2026-11-10: cached close 3.2250 -> fresh close 3.2960 (2.20%)",
+        "PL=F: adjustment drift on 2026-11-10: cached close 1564.1000 -> fresh close 1538.9000 (1.61%)",
+        "SI=F: adjustment drift on 2026-11-10: cached close 52.7750 -> fresh close 51.1010 (3.17%)",
+        "ZS=F: adjustment drift on 2026-11-10: cached close 1194.0000 -> fresh close 1224.5000 (2.55%)",
+        "ZW=F: adjustment drift on 2026-11-10: cached close 590.0000 -> fresh close 592.7500 (0.47%)",
+        "CL=F: adjustment drift on 2026-11-10: cached close 85.3100 -> fresh close 86.0400 (0.86%)"
+      ],
+      "as_of": "2026-11-11",
+      "failed_symbols": [],
+      "price_series_hashes": {
+        "6758.T": "89d058400cc2332ec522e4626a1731a67ec05aca0a9c755e0640290c634dae3f",
+        "7203.T": "de832903dfc17e834b763a25c8ed0075660394abf81b6eedcb872bab442f8a2a",
+        "8306.T": "ea028f8e6ee7c456d00e1352e7a18fe51b41fcface510c368d9d557224f21f47",
+        "AAPL": "3f2f1138353e443d711a83d30d4987358df82ca32f0ac0d9097b48f18ef5c45c",
+        "AMZN": "7afd768b391d4aeb463f7adfb20a1b741743e182ee794959871a71a30d1fcc88",
+        "BZ=F": "868a8ab7f5d1e14668a0c5ad7577386dbbc4cdb5f449c9a6452ab9d97ae8a24a",
+        "CL=F": "6fe9d16e398067dfb55e80402d0216403ff0f0ddc330c567db6754997b1965aa",
+        "GC=F": "9302bdb6df13628ee21fd986a231458914d47e27ff050efccddb86d21bf30751",
+        "GOOGL": "3a50e5717607facadd9bbe7cef63307c852f0e9681fa95ed57a412d8699d3599",
+        "HG=F": "c3d48698e4ac52b85ecc0b6507d61167b84c0f71175d3ea5f4ba5b265ea9eff2",
+        "JPM": "b087e6904604ff31f5225f0c50a28126a47c717fcdbf77f22f715431fa5da7cf",
+        "META": "f37c0ebe0eb5c49565171812f43aa773e6afad05590db37b2cb4c46e17081ff1",
+        "MSFT": "f54e6b197f51e7be2a6768f316539fcf5a589f1f4a4d51f82dc5c70d60bb6e15",
+        "NG=F": "463a8de568f4d5e8fe206e434538116ca72c720fca0d980b912426f669c279c1",
+        "NVDA": "9c0f039f268e4c069b5e924e2ba76391b506d5c246ac6a4f4c201459e1c51d16",
+        "PL=F": "6a2cc365f0cc593b09e037d606df48b73a31309ead33f59d9c0ca2523732fe63",
+        "SI=F": "e633cbc0126132b95b7d487493f5d73ffc47d52cb6750077d4c9dee9383da66d",
+        "TSLA": "573fa0bd01ba5811189e20bc281fdfadf37b73d65194ea23380d5b7b6b6309f6",
+        "UNH": "3838c911775b01dd907cb2670762a0cfd3179a5bd707eb4e1da8dfac9dc63dca",
+        "XOM": "a486daa960bdb0d8de1ff189f247c8da1dffd50b828d87ef303f61bbac50a3c3",
+        "ZC=F": "d1b8040850a73c54727a264d528834f3512c6dd825076e1b693766e4c7ef29e6",
+        "ZS=F": "109821614be5703f70816593a236f3b8021997792d25a901b65dedafbbb4f072",
+        "ZW=F": "31af434bdbe344a4f217effaa3ffc134e27233e500b68cc91f6544d1eddd90b5",
+        "^DJI": "ad249ac2dd3b62ab6351d78cc8b96392adc5e9617fd8aa7801dc8c39bde620b6",
+        "^FCHI": "792724d9c5ce29061d09d3984780d9ff6e1df1e3b84e759c35c1926656d30323",
+        "^FTSE": "ecb55840f1716808b5d30566c73da9e27130fa69565d21afee31e81552eb3748",
+        "^GDAXI": "9b500c52d29f067662e53d69a32ebd1006ab24a06fc4c97bf2c9f2659213dce6",
+        "^GSPC": "a69b041a0cb89739c82589568df989e6ca2a154234ebf4532b7e1262b46dece9",
+        "^HSI": "457d586432b6f88fdfd8535e49f4c3dbb40e9dca6f80df64f22fc000c7d9e2ca",
+        "^N225": "cafe844f18d188fbbc15da67fd34d517296bdf4e7f48746ba0347429ebca71c5",
+        "^NDX": "66d4242979fd52b64c4e3fe51559b6423906897a6e0b0e921f92fbc0f87ae139",
+        "^RUT": "28b069c6d04fd05c65aca3031d9ebf2dfefd73fac150411c8eb47a08fb542a02",
+        "^STOXX50E": "bdc1b344b248cce5e1c68518e0b03a17336d7b4bb64d4c35be0566c434f061fc"
+      },
+      "provider": "yfinance"
+    }
+  },
+  "instruments": [
+    {
+      "symbol": "^FCHI",
+      "rank": 1,
+      "score": 79.09,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +5.8%; above MA20 by 3.7%; RSI14=72",
+      "features": {
+        "ret_1d": 0.005500836862118774,
+        "ret_5d": 0.0322032169915305,
+        "ret_20d": 0.057611303509341294,
+        "ret_60d": -0.02711960691265425,
+        "ma20_dist": 0.03709367050605361,
+        "ma50_dist": 0.03166865674957433,
+        "vol_20d": 0.12996572594453926,
+        "mdd_60d": 0.0908290255544595,
+        "rsi_14": 71.66631986374499,
+        "zscore_20d": 2.0263212207992147
+      },
+      "risk_context": {
+        "atr_14": 109.62789481026786,
+        "atr_14_pct": 0.013242339200199956,
+        "vol_target_multiplier": 0.7694336277756288,
+        "stop_distance": 219.25578962053572,
+        "stop_distance_pct": 0.026484678400399912
+      },
+      "canonical_id": "cac",
+      "display_name": "CAC 40",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "AMZN",
+      "rank": 2,
+      "score": 76.97,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +4.8%; above MA20 by 6.1%; RSI14=55",
+      "features": {
+        "ret_1d": 0.014760433632468706,
+        "ret_5d": 0.08049779600005347,
+        "ret_20d": 0.047528846713305706,
+        "ret_60d": 0.03658489016077593,
+        "ma20_dist": 0.06114084457457034,
+        "ma50_dist": 0.0656528876899739,
+        "vol_20d": 0.41575795879095984,
+        "mdd_60d": 0.09788682689340598,
+        "rsi_14": 55.366160789079636,
+        "zscore_20d": 1.9286016591787014
+      },
+      "risk_context": {
+        "atr_14": 10.676425388881139,
+        "atr_14_pct": 0.039415312073462244,
+        "vol_target_multiplier": 0.24052455974818585,
+        "stop_distance": 21.352850777762278,
+        "stop_distance_pct": 0.07883062414692449
+      },
+      "canonical_id": "amzn",
+      "display_name": "Amazon.com Inc.",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "^STOXX50E",
+      "rank": 3,
+      "score": 76.06,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +2.6%; above MA20 by 2.4%; RSI14=57",
+      "features": {
+        "ret_1d": 0.005948687409191189,
+        "ret_5d": 0.029832902086679658,
+        "ret_20d": 0.02608401116196335,
+        "ret_60d": -0.02169080379490551,
+        "ma20_dist": 0.0240442675503534,
+        "ma50_dist": 0.014230013642318818,
+        "vol_20d": 0.16018693516935567,
+        "mdd_60d": 0.06436493254509718,
+        "rsi_14": 57.48530890030096,
+        "zscore_20d": 2.3441378023431554
+      },
+      "risk_context": {
+        "atr_14": 93.772216796875,
+        "atr_14_pct": 0.014818922490550931,
+        "vol_target_multiplier": 0.6242706366425965,
+        "stop_distance": 187.54443359375,
+        "stop_distance_pct": 0.029637844981101863
+      },
+      "canonical_id": "stoxx50",
+      "display_name": "Euro Stoxx 50",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "^GDAXI",
+      "rank": 4,
+      "score": 74.24,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +4.3%; above MA20 by 2.4%; RSI14=60",
+      "features": {
+        "ret_1d": 0.0030555140194281627,
+        "ret_5d": 0.018667588936835733,
+        "ret_20d": 0.043054359332653336,
+        "ret_60d": 0.008385135882646777,
+        "ma20_dist": 0.023731920189702913,
+        "ma50_dist": 0.030673219674819733,
+        "vol_20d": 0.1642373317403368,
+        "mdd_60d": 0.06635378920723457,
+        "rsi_14": 59.921923280656834,
+        "zscore_20d": 1.5923194754452323
+      },
+      "risk_context": {
+        "atr_14": 393.5279017857143,
+        "atr_14_pct": 0.014936091100069854,
+        "vol_target_multiplier": 0.6088749673436148,
+        "stop_distance": 787.0558035714286,
+        "stop_distance_pct": 0.029872182200139707
+      },
+      "canonical_id": "dax",
+      "display_name": "DAX",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "AAPL",
+      "rank": 5,
+      "score": 72.73,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +2.1%; above MA20 by 1.2%; RSI14=53",
+      "features": {
+        "ret_1d": -0.006216295476360156,
+        "ret_5d": 0.05004524306897418,
+        "ret_20d": 0.021214935344528785,
+        "ret_60d": 0.14044966766607692,
+        "ma20_dist": 0.012426219284213901,
+        "ma50_dist": 0.033336244717570934,
+        "vol_20d": 0.26368399700145967,
+        "mdd_60d": 0.048751854596000045,
+        "rsi_14": 53.12414572821924,
+        "zscore_20d": 0.9967199342529659
+      },
+      "risk_context": {
+        "atr_14": 9.487860543387276,
+        "atr_14_pct": 0.027224068972274047,
+        "vol_target_multiplier": 0.37924182406657936,
+        "stop_distance": 18.975721086774552,
+        "stop_distance_pct": 0.05444813794454809
+      },
+      "canonical_id": "aapl",
+      "display_name": "Apple Inc.",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "^HSI",
+      "rank": 6,
+      "score": 68.48,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +1.2%; above MA20 by 3.4%; RSI14=62",
+      "features": {
+        "ret_1d": 0.00442104250709896,
+        "ret_5d": 0.043826814731093844,
+        "ret_20d": 0.011776914736424837,
+        "ret_60d": -0.022288246956976954,
+        "ma20_dist": 0.0335861973720554,
+        "ma50_dist": 0.007774560020965567,
+        "vol_20d": 0.21153923819239315,
+        "mdd_60d": 0.11821779995320213,
+        "rsi_14": 62.40315201874682,
+        "zscore_20d": 1.3381986319116421
+      },
+      "risk_context": {
+        "atr_14": 398.22265625,
+        "atr_14_pct": 0.01621623255297536,
+        "vol_target_multiplier": 0.4727255371367597,
+        "stop_distance": 796.4453125,
+        "stop_distance_pct": 0.03243246510595072
+      },
+      "canonical_id": "hsi",
+      "display_name": "Hang Seng",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "^FTSE",
+      "rank": 7,
+      "score": 63.33,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +1.0%; above MA20 by 0.0%; RSI14=50",
+      "features": {
+        "ret_1d": -0.0029028165072556567,
+        "ret_5d": 0.010640624021798883,
+        "ret_20d": 0.009511450996235293,
+        "ret_60d": 0.0029196762457905923,
+        "ma20_dist": 0.0004586994979604734,
+        "ma50_dist": 0.0056131628462957606,
+        "vol_20d": 0.11929006255318911,
+        "mdd_60d": 0.04206246278863839,
+        "rsi_14": 49.92807790911899,
+        "zscore_20d": 0.08576770557881692
+      },
+      "risk_context": {
+        "atr_14": 125.21435546875,
+        "atr_14_pct": 0.011646114068418962,
+        "vol_target_multiplier": 0.8382927953903282,
+        "stop_distance": 250.4287109375,
+        "stop_distance_pct": 0.023292228136837925
+      },
+      "canonical_id": "ftse",
+      "display_name": "FTSE 100",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "UNH",
+      "rank": 8,
+      "score": 62.12,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +7.2%; below MA20 by 0.5%; RSI14=42",
+      "features": {
+        "ret_1d": 0.018862230501737187,
+        "ret_5d": 0.001681319037870832,
+        "ret_20d": 0.07242689708880934,
+        "ret_60d": 0.030318355460970503,
+        "ma20_dist": -0.004970011007116218,
+        "ma50_dist": 0.03698879740553122,
+        "vol_20d": 0.3033632667480957,
+        "mdd_60d": 0.08369181674654107,
+        "rsi_14": 42.109457851057414,
+        "zscore_20d": -0.2475407384076855
+      },
+      "risk_context": {
+        "atr_14": 11.417855398995536,
+        "atr_14_pct": 0.028183885112095585,
+        "vol_target_multiplier": 0.3296378004889998,
+        "stop_distance": 22.835710797991073,
+        "stop_distance_pct": 0.05636777022419117
+      },
+      "canonical_id": "unh",
+      "display_name": "UnitedHealth Group Inc.",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "JPM",
+      "rank": 9,
+      "score": 60.0,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +3.2%; above MA20 by 1.2%; RSI14=55",
+      "features": {
+        "ret_1d": -2.917226508003523e-05,
+        "ret_5d": 0.012101296541043194,
+        "ret_20d": 0.032103354806654494,
+        "ret_60d": -0.052332625714864744,
+        "ma20_dist": 0.012186686345443235,
+        "ma50_dist": 0.004445326184917323,
+        "vol_20d": 0.2703253066197373,
+        "mdd_60d": 0.09377100315080868,
+        "rsi_14": 54.89054179404034,
+        "zscore_20d": 0.9195801636437417
+      },
+      "risk_context": {
+        "atr_14": 7.950714111328125,
+        "atr_14_pct": 0.02324294425436816,
+        "vol_target_multiplier": 0.3699246705772485,
+        "stop_distance": 15.90142822265625,
+        "stop_distance_pct": 0.04648588850873632
+      },
+      "canonical_id": "jpm",
+      "display_name": "JPMorgan Chase & Co.",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "ZS=F",
+      "rank": 10,
+      "score": 57.88,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -4.6%; below MA20 by 0.3%; RSI14=43",
+      "features": {
+        "ret_1d": 0.035736942271093364,
+        "ret_5d": 0.017871986699916853,
+        "ret_20d": -0.0461538461538461,
+        "ret_60d": 0.019779304601290848,
+        "ma20_dist": -0.0033675514543549624,
+        "ma50_dist": -0.03741087501670473,
+        "vol_20d": 0.16503465154214775,
+        "mdd_60d": 0.11069277108433735,
+        "rsi_14": 43.02521008403361,
+        "zscore_20d": -0.14609082610432428
+      },
+      "risk_context": {
+        "atr_14": 18.875,
+        "atr_14_pct": 0.01541445487954267,
+        "vol_target_multiplier": 0.6059333543929184,
+        "stop_distance": 37.75,
+        "stop_distance_pct": 0.03082890975908534
+      },
+      "canonical_id": "soybean",
+      "display_name": "Soybeans",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "^DJI",
+      "rank": 11,
+      "score": 57.27,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +1.1%; above MA20 by 0.1%; RSI14=46",
+      "features": {
+        "ret_1d": -0.003013172901187744,
+        "ret_5d": 0.008596255676075248,
+        "ret_20d": 0.010872613862011882,
+        "ret_60d": -0.022968493253982425,
+        "ma20_dist": 0.0005274681217755665,
+        "ma50_dist": 0.004043416283583816,
+        "vol_20d": 0.20035141459346786,
+        "mdd_60d": 0.051783573555892456,
+        "rsi_14": 45.504215984447136,
+        "zscore_20d": 0.05731390823564903
+      },
+      "risk_context": {
+        "atr_14": 766.9503348214286,
+        "atr_14_pct": 0.014683564497555052,
+        "vol_target_multiplier": 0.49912300446148355,
+        "stop_distance": 1533.900669642857,
+        "stop_distance_pct": 0.029367128995110105
+      },
+      "canonical_id": "dji",
+      "display_name": "Dow Jones Industrial Average",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "MSFT",
+      "rank": 12,
+      "score": 56.97,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -1.9%; above MA20 by 0.4%; RSI14=50",
+      "features": {
+        "ret_1d": -0.02204780016275898,
+        "ret_5d": 0.02335934113567406,
+        "ret_20d": -0.01893465605182454,
+        "ret_60d": 0.11203005575749359,
+        "ma20_dist": 0.003889092191478727,
+        "ma50_dist": 0.029671468858345786,
+        "vol_20d": 0.36449349656040314,
+        "mdd_60d": 0.06685070618050436,
+        "rsi_14": 50.07030101094488,
+        "zscore_20d": 0.21561886014235238
+      },
+      "risk_context": {
+        "atr_14": 17.29358128138951,
+        "atr_14_pct": 0.03243600823856575,
+        "vol_target_multiplier": 0.27435331753149184,
+        "stop_distance": 34.58716256277902,
+        "stop_distance_pct": 0.0648720164771315
+      },
+      "canonical_id": "msft",
+      "display_name": "Microsoft Corporation",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "^RUT",
+      "rank": 13,
+      "score": 53.64,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +1.4%; above MA20 by 1.1%; RSI14=54",
+      "features": {
+        "ret_1d": -0.006839660301283357,
+        "ret_5d": 0.0031751433076716573,
+        "ret_20d": 0.013656022743898433,
+        "ret_60d": -0.07723861445242475,
+        "ma20_dist": 0.011443578301470152,
+        "ma50_dist": -0.003946782951739983,
+        "vol_20d": 0.25159891588954963,
+        "mdd_60d": 0.1027286495077406,
+        "rsi_14": 54.42270052425832,
+        "zscore_20d": 0.7659587637179909
+      },
+      "risk_context": {
+        "atr_14": 49.642142159598215,
+        "atr_14_pct": 0.01759498692891803,
+        "vol_target_multiplier": 0.3974579924020793,
+        "stop_distance": 99.28428431919643,
+        "stop_distance_pct": 0.03518997385783606
+      },
+      "canonical_id": "rut",
+      "display_name": "Russell 2000",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "TSLA",
+      "rank": 14,
+      "score": 50.3,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d up +1.2%; below MA20 by 0.2%; RSI14=48",
+      "features": {
+        "ret_1d": 0.004576143478876471,
+        "ret_5d": -0.0469761636655035,
+        "ret_20d": 0.012125863229885736,
+        "ret_60d": 0.11930448701055618,
+        "ma20_dist": -0.002288183008205024,
+        "ma50_dist": 0.018286691602471927,
+        "vol_20d": 0.5855901359300988,
+        "mdd_60d": 0.15650613643303535,
+        "rsi_14": 47.87443520080672,
+        "zscore_20d": -0.04808577818937465
+      },
+      "risk_context": {
+        "atr_14": 18.30643572126116,
+        "atr_14_pct": 0.04820273784849753,
+        "vol_target_multiplier": 0.17076790380215162,
+        "stop_distance": 36.61287144252232,
+        "stop_distance_pct": 0.09640547569699506
+      },
+      "canonical_id": "tsla",
+      "display_name": "Tesla Inc.",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "^GSPC",
+      "rank": 15,
+      "score": 45.76,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -3.6%; below MA20 by 1.4%; RSI14=40",
+      "features": {
+        "ret_1d": -0.0038423836282327484,
+        "ret_5d": -0.006340369113306932,
+        "ret_20d": -0.03645145538205041,
+        "ret_60d": -0.028938430575991547,
+        "ma20_dist": -0.014386774189567679,
+        "ma50_dist": -0.019806919832812336,
+        "vol_20d": 0.21342102727269574,
+        "mdd_60d": 0.059496655533954584,
+        "rsi_14": 39.849625953054996,
+        "zscore_20d": -0.9670257530376681
+      },
+      "risk_context": {
+        "atr_14": 116.17933872767857,
+        "atr_14_pct": 0.015447469397043063,
+        "vol_target_multiplier": 0.4685573922958697,
+        "stop_distance": 232.35867745535714,
+        "stop_distance_pct": 0.030894938794086127
+      },
+      "canonical_id": "spx",
+      "display_name": "S&P 500",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "ZC=F",
+      "rank": 16,
+      "score": 42.73,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -7.0%; below MA20 by 1.3%; RSI14=35",
+      "features": {
+        "ret_1d": 0.022196926579396647,
+        "ret_5d": 0.014689265536723228,
+        "ret_20d": -0.06991196271361988,
+        "ret_60d": -0.030760928224500828,
+        "ma20_dist": -0.01329524228106804,
+        "ma50_dist": -0.08422480343466691,
+        "vol_20d": 0.13489294867571644,
+        "mdd_60d": 0.1910681399631676,
+        "rsi_14": 34.920634920634924,
+        "zscore_20d": -0.4956498656052868
+      },
+      "risk_context": {
+        "atr_14": 7.125,
+        "atr_14_pct": 0.01586859688195991,
+        "vol_target_multiplier": 0.741328594131341,
+        "stop_distance": 14.25,
+        "stop_distance_pct": 0.03173719376391982
+      },
+      "canonical_id": "corn",
+      "display_name": "Corn",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "META",
+      "rank": 17,
+      "score": 40.91,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -15.9%; below MA20 by 1.6%; RSI14=36",
+      "features": {
+        "ret_1d": 3.121370098768672e-05,
+        "ret_5d": 0.03278422039368034,
+        "ret_20d": -0.1588327676741803,
+        "ret_60d": 0.12728271732129692,
+        "ma20_dist": -0.015576188226657248,
+        "ma50_dist": -0.053208106893117564,
+        "vol_20d": 0.4037896914401166,
+        "mdd_60d": 0.2218521377688523,
+        "rsi_14": 35.92175134531399,
+        "zscore_20d": -0.2346310069104963
+      },
+      "risk_context": {
+        "atr_14": 23.89571271623884,
+        "atr_14_pct": 0.03725613459906559,
+        "vol_target_multiplier": 0.24765367249309866,
+        "stop_distance": 47.79142543247768,
+        "stop_distance_pct": 0.07451226919813118
+      },
+      "canonical_id": "meta",
+      "display_name": "Meta Platforms Inc.",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "GC=F",
+      "rank": 18,
+      "score": 38.48,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -3.5%; below MA20 by 1.0%; RSI14=43",
+      "features": {
+        "ret_1d": -0.020488528090442326,
+        "ret_5d": 0.02278957746768584,
+        "ret_20d": -0.03521410011092785,
+        "ret_60d": -0.11332582572098104,
+        "ma20_dist": -0.009670600735150612,
+        "ma50_dist": -0.04377355135049754,
+        "vol_20d": 0.24146150699585903,
+        "mdd_60d": 0.17159249923642833,
+        "rsi_14": 42.69512984837996,
+        "zscore_20d": -0.5258511352216341
+      },
+      "risk_context": {
+        "atr_14": 95.51426478794643,
+        "atr_14_pct": 0.02369963424771851,
+        "vol_target_multiplier": 0.41414468601703447,
+        "stop_distance": 191.02852957589286,
+        "stop_distance_pct": 0.04739926849543702
+      },
+      "canonical_id": "gold",
+      "display_name": "Gold",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "PL=F",
+      "rank": 19,
+      "score": 34.24,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -7.1%; below MA20 by 0.6%; RSI14=39",
+      "features": {
+        "ret_1d": -0.014283837724356596,
+        "ret_5d": 0.07435073874950882,
+        "ret_20d": -0.07149752519274466,
+        "ret_60d": -0.1462886690022055,
+        "ma20_dist": -0.006375991080652509,
+        "ma50_dist": -0.0790390088160482,
+        "vol_20d": 0.33747188398416467,
+        "mdd_60d": 0.25177601016147344,
+        "rsi_14": 39.49029111111572,
+        "zscore_20d": -0.1597286623095396
+      },
+      "risk_context": {
+        "atr_14": 36.221426827566965,
+        "atr_14_pct": 0.023537218957000346,
+        "vol_target_multiplier": 0.2963209818234587,
+        "stop_distance": 72.44285365513393,
+        "stop_distance_pct": 0.04707443791400069
+      },
+      "canonical_id": "platinum",
+      "display_name": "Platinum",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "ZW=F",
+      "rank": 20,
+      "score": 29.39,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -11.4%; below MA20 by 4.3%; RSI14=22",
+      "features": {
+        "ret_1d": 0.008078231292516946,
+        "ret_5d": -0.011671529804085035,
+        "ret_20d": -0.11430706014194991,
+        "ret_60d": -0.10797592174567339,
+        "ma20_dist": -0.04308344263949147,
+        "ma50_dist": -0.11801685848839033,
+        "vol_20d": 0.1436127942119238,
+        "mdd_60d": 0.2333767926988266,
+        "rsi_14": 21.599999999999994,
+        "zscore_20d": -1.0074392277717736
+      },
+      "risk_context": {
+        "atr_14": 12.5,
+        "atr_14_pct": 0.021088148460565163,
+        "vol_target_multiplier": 0.696316790915118,
+        "stop_distance": 25.0,
+        "stop_distance_pct": 0.04217629692113033
+      },
+      "canonical_id": "wheat",
+      "display_name": "Wheat",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "^NDX",
+      "rank": 21,
+      "score": 28.18,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -9.3%; below MA20 by 3.7%; RSI14=36",
+      "features": {
+        "ret_1d": -0.005978357593867667,
+        "ret_5d": -0.015594984105188336,
+        "ret_20d": -0.09253318548025902,
+        "ret_60d": -0.0751646330961766,
+        "ma20_dist": -0.03716791727600013,
+        "ma50_dist": -0.061792395025235605,
+        "vol_20d": 0.3396237053239782,
+        "mdd_60d": 0.14714933681134132,
+        "rsi_14": 35.630021792672466,
+        "zscore_20d": -1.1148668887775601
+      },
+      "risk_context": {
+        "atr_14": 726.2092633928571,
+        "atr_14_pct": 0.026178392465935542,
+        "vol_target_multiplier": 0.29444352214639063,
+        "stop_distance": 1452.4185267857142,
+        "stop_distance_pct": 0.052356784931871084
+      },
+      "canonical_id": "ndx",
+      "display_name": "NASDAQ 100",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "GOOGL",
+      "rank": 22,
+      "score": 21.21,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -18.8%; below MA20 by 7.6%; RSI14=25",
+      "features": {
+        "ret_1d": -0.0026721812596965933,
+        "ret_5d": 0.026247209711658392,
+        "ret_20d": -0.187687246666275,
+        "ret_60d": -0.16405601764268662,
+        "ma20_dist": -0.07563050451492662,
+        "ma50_dist": -0.13101261830921046,
+        "vol_20d": 0.48909407386428605,
+        "mdd_60d": 0.21404628764414219,
+        "rsi_14": 24.95772381537968,
+        "zscore_20d": -0.9038229179148348
+      },
+      "risk_context": {
+        "atr_14": 11.410001482282366,
+        "atr_14_pct": 0.03970353291258076,
+        "vol_target_multiplier": 0.2044596435403714,
+        "stop_distance": 22.820002964564733,
+        "stop_distance_pct": 0.07940706582516152
+      },
+      "canonical_id": "googl",
+      "display_name": "Alphabet Inc. Class A",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "SI=F",
+      "rank": 23,
+      "score": 16.67,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -13.6%; below MA20 by 4.8%; RSI14=32",
+      "features": {
+        "ret_1d": -0.027832688902230895,
+        "ret_5d": 0.030532193598937107,
+        "ret_20d": -0.13623836064671047,
+        "ret_60d": -0.22260929141712282,
+        "ma20_dist": -0.04771841166151915,
+        "ma50_dist": -0.14010897835446032,
+        "vol_20d": 0.4442346018423402,
+        "mdd_60d": 0.29322261672865424,
+        "rsi_14": 31.986321444319117,
+        "zscore_20d": -0.9968260264649429
+      },
+      "risk_context": {
+        "atr_14": 1.5733577183314733,
+        "atr_14_pct": 0.030789175647710262,
+        "vol_target_multiplier": 0.22510628299839242,
+        "stop_distance": 3.1467154366629466,
+        "stop_distance_pct": 0.061578351295420525
+      },
+      "canonical_id": "silver",
+      "display_name": "Silver",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "BZ=F",
+      "rank": 24,
+      "score": 14.55,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -13.4%; below MA20 by 14.5%; RSI14=32",
+      "features": {
+        "ret_1d": -0.01166686652927662,
+        "ret_5d": -0.1168918995049657,
+        "ret_20d": -0.13435522991409798,
+        "ret_60d": -0.0014189574210349276,
+        "ma20_dist": -0.1449852487961657,
+        "ma50_dist": -0.12300379185781196,
+        "vol_20d": 0.6041253804979255,
+        "mdd_60d": 0.22228835142428552,
+        "rsi_14": 32.291028999802606,
+        "zscore_20d": -1.9279407435426692
+      },
+      "risk_context": {
+        "atr_14": 5.6892852783203125,
+        "atr_14_pct": 0.06218477878633,
+        "vol_target_multiplier": 0.16552855289340618,
+        "stop_distance": 11.378570556640625,
+        "stop_distance_pct": 0.12436955757266
+      },
+      "canonical_id": "brent_crude",
+      "display_name": "Brent Crude Oil",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "NVDA",
+      "rank": 25,
+      "score": 2.42,
+      "is_reliable": true,
+      "risk_gates": [],
+      "explanation": "20d down -26.1%; below MA20 by 18.1%; RSI14=19",
+      "features": {
+        "ret_1d": -0.0547377784716222,
+        "ret_5d": -0.18288259037818522,
+        "ret_20d": -0.2609399779798558,
+        "ret_60d": -0.24857124410539122,
+        "ma20_dist": -0.1808733116223271,
+        "ma50_dist": -0.22516014874864196,
+        "vol_20d": 0.4843969107474839,
+        "mdd_60d": 0.29405619665698335,
+        "rsi_14": 19.275290456684402,
+        "zscore_20d": -2.4828295842237975
+      },
+      "risk_context": {
+        "atr_14": 9.289285932268415,
+        "atr_14_pct": 0.0550019892583277,
+        "vol_target_multiplier": 0.20644227446803434,
+        "stop_distance": 18.57857186453683,
+        "stop_distance_pct": 0.1100039785166554
+      },
+      "canonical_id": "nvda",
+      "display_name": "NVIDIA Corporation",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "NG=F",
+      "rank": 26,
+      "score": 75.45,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input"
+      ],
+      "explanation": "Suppressed: malformed_input",
+      "features": {
+        "ret_1d": 0.02423867937738522,
+        "ret_5d": 0.13851468930229416,
+        "ret_20d": 0.00395979636743915,
+        "ret_60d": 0.1712864716260274,
+        "ma20_dist": 0.11857734615774349,
+        "ma50_dist": 0.10418760596807283,
+        "vol_20d": 0.5422662340892909,
+        "mdd_60d": 0.2107976790164167,
+        "rsi_14": 72.79279194136708,
+        "zscore_20d": 1.8174529394417527
+      },
+      "risk_context": {
+        "atr_14": 0.15071426119123185,
+        "atr_14_pct": 0.04572641414344643,
+        "vol_target_multiplier": 0.1844112609518183,
+        "stop_distance": 0.3014285223824637,
+        "stop_distance_pct": 0.09145282828689286
+      },
+      "canonical_id": "natural_gas",
+      "display_name": "Natural Gas",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "6758.T",
+      "rank": 27,
+      "score": 74.24,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input",
+        "missing_bars"
+      ],
+      "explanation": "Suppressed: malformed_input, missing_bars",
+      "features": {
+        "ret_1d": -0.0139632301605771,
+        "ret_5d": 0.06833081190115986,
+        "ret_20d": 0.11090718405873101,
+        "ret_60d": 0.12566418703506899,
+        "ma20_dist": 0.05256620460078499,
+        "ma50_dist": 0.09497100298057821,
+        "vol_20d": 0.32956878922465854,
+        "mdd_60d": 0.10405340687455449,
+        "rsi_14": 63.808574277168496,
+        "zscore_20d": 1.6449954131060744
+      },
+      "risk_context": {
+        "atr_14": 149.28571428571428,
+        "atr_14_pct": 0.035233824471492634,
+        "vol_target_multiplier": 0.3034267906110265,
+        "stop_distance": 298.57142857142856,
+        "stop_distance_pct": 0.07046764894298527
+      },
+      "canonical_id": "sony",
+      "display_name": "Sony Group Corporation",
+      "asset_class": "equity",
+      "tradable": false
+    },
+    {
+      "symbol": "7203.T",
+      "rank": 28,
+      "score": 71.82,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input",
+        "missing_bars"
+      ],
+      "explanation": "Suppressed: malformed_input, missing_bars",
+      "features": {
+        "ret_1d": -0.022056717272987636,
+        "ret_5d": 0.11897738446411021,
+        "ret_20d": 0.17299433087098426,
+        "ret_60d": 0.14525327071452532,
+        "ma20_dist": 0.08592967221718596,
+        "ma50_dist": 0.12156464391630062,
+        "vol_20d": 0.651338948960404,
+        "mdd_60d": 0.10418201937854545,
+        "rsi_14": 63.903743315508024,
+        "zscore_20d": 1.7160761462691367
+      },
+      "risk_context": {
+        "atr_14": 119.60714285714286,
+        "atr_14_pct": 0.03503431249476944,
+        "vol_target_multiplier": 0.15352989431940017,
+        "stop_distance": 239.21428571428572,
+        "stop_distance_pct": 0.07006862498953888
+      },
+      "canonical_id": "toyota",
+      "display_name": "Toyota Motor Corporation",
+      "asset_class": "equity",
+      "tradable": false
+    },
+    {
+      "symbol": "8306.T",
+      "rank": 29,
+      "score": 55.15,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input",
+        "missing_bars"
+      ],
+      "explanation": "Suppressed: malformed_input, missing_bars",
+      "features": {
+        "ret_1d": 0.02049910873440286,
+        "ret_5d": 0.01537097250960695,
+        "ret_20d": -0.0077989601386482255,
+        "ret_60d": -0.021367521367521403,
+        "ma20_dist": 0.009878285411889195,
+        "ma50_dist": -0.0270875613450081,
+        "vol_20d": 0.4092535881769413,
+        "mdd_60d": 0.13708523024667116,
+        "rsi_14": 54.142011834319526,
+        "zscore_20d": 0.4508609225653483
+      },
+      "risk_context": {
+        "atr_14": 129.5,
+        "atr_14_pct": 0.03770014556040757,
+        "vol_target_multiplier": 0.24434727730906267,
+        "stop_distance": 259.0,
+        "stop_distance_pct": 0.07540029112081514
+      },
+      "canonical_id": "mufg",
+      "display_name": "Mitsubishi UFJ Financial Group Inc.",
+      "asset_class": "equity",
+      "tradable": false
+    },
+    {
+      "symbol": "XOM",
+      "rank": 30,
+      "score": 34.55,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input"
+      ],
+      "explanation": "Suppressed: malformed_input",
+      "features": {
+        "ret_1d": -0.0015783070089188111,
+        "ret_5d": -0.07319962245977418,
+        "ret_20d": -0.05520450660195941,
+        "ret_60d": 0.01864235341058862,
+        "ma20_dist": -0.06819030424399114,
+        "ma50_dist": -0.027122495902592803,
+        "vol_20d": 0.3093172989297223,
+        "mdd_60d": 0.12165553420185247,
+        "rsi_14": 33.91591153499073,
+        "zscore_20d": -1.775937655266047
+      },
+      "risk_context": {
+        "atr_14": 5.158571515764509,
+        "atr_14_pct": 0.03136481715496673,
+        "vol_target_multiplier": 0.3232926200571804,
+        "stop_distance": 10.317143031529017,
+        "stop_distance_pct": 0.06272963430993346
+      },
+      "canonical_id": "xom",
+      "display_name": "Exxon Mobil Corporation",
+      "asset_class": "equity",
+      "tradable": true
+    },
+    {
+      "symbol": "HG=F",
+      "rank": 31,
+      "score": 33.94,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input"
+      ],
+      "explanation": "Suppressed: malformed_input",
+      "features": {
+        "ret_1d": -0.017223628459264062,
+        "ret_5d": -0.024927478289836213,
+        "ret_20d": -0.06865826748736736,
+        "ret_60d": -0.041310230135754744,
+        "ma20_dist": -0.03790672665978436,
+        "ma50_dist": -0.0488723085017435,
+        "vol_20d": 0.2250575408512007,
+        "mdd_60d": 0.08605867938923914,
+        "rsi_14": 37.76010911511753,
+        "zscore_20d": -1.8919432654831407
+      },
+      "risk_context": {
+        "atr_14": 0.11753572736467634,
+        "atr_14_pct": 0.01889793812029067,
+        "vol_target_multiplier": 0.44433081256369067,
+        "stop_distance": 0.23507145472935267,
+        "stop_distance_pct": 0.03779587624058134
+      },
+      "canonical_id": "copper",
+      "display_name": "Copper",
+      "asset_class": "commodity",
+      "tradable": true
+    },
+    {
+      "symbol": "^N225",
+      "rank": 32,
+      "score": 30.3,
+      "is_reliable": false,
+      "risk_gates": [
+        "missing_bars"
+      ],
+      "explanation": "Suppressed: missing_bars",
+      "features": {
+        "ret_1d": 0.028652723073389508,
+        "ret_5d": -0.041569498362618584,
+        "ret_20d": -0.12416672872369927,
+        "ret_60d": -0.09721695324460922,
+        "ma20_dist": -0.04401640332534244,
+        "ma50_dist": -0.07039626241837346,
+        "vol_20d": 0.3480679295745029,
+        "mdd_60d": 0.18744286436028143,
+        "rsi_14": 38.48217831933593,
+        "zscore_20d": -1.1213543197849944
+      },
+      "risk_context": {
+        "atr_14": 1804.193080357143,
+        "atr_14_pct": 0.0298413111091675,
+        "vol_target_multiplier": 0.28730024085311573,
+        "stop_distance": 3608.386160714286,
+        "stop_distance_pct": 0.059682622218335
+      },
+      "canonical_id": "nkx",
+      "display_name": "Nikkei 225",
+      "asset_class": "equity_index",
+      "tradable": true
+    },
+    {
+      "symbol": "CL=F",
+      "rank": 33,
+      "score": 20.91,
+      "is_reliable": false,
+      "risk_gates": [
+        "malformed_input"
+      ],
+      "explanation": "Suppressed: malformed_input",
+      "features": {
+        "ret_1d": -0.009326396923715619,
+        "ret_5d": -0.104589403740047,
+        "ret_20d": -0.08604204935879534,
+        "ret_60d": 0.002446686240156648,
+        "ma20_dist": -0.11539726278921245,
+        "ma50_dist": -0.09968356690727181,
+        "vol_20d": 0.5477539892362242,
+        "mdd_60d": 0.1869980211010464,
+        "rsi_14": 35.671906424278674,
+        "zscore_20d": -1.955734230556614
+      },
+      "risk_context": {
+        "atr_14": 4.730000087193081,
+        "atr_14_pct": 0.05497443092587734,
+        "vol_target_multiplier": 0.18256370919258433,
+        "stop_distance": 9.460000174386161,
+        "stop_distance_pct": 0.10994886185175468
+      },
+      "canonical_id": "wti_crude",
+      "display_name": "WTI Crude Oil",
+      "asset_class": "commodity",
+      "tradable": true
+    }
+  ]
+}

@@ -43,7 +43,7 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    uses: dceoy/gha-for-devops/.github/workflows/github-actions-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
+    uses: dceoy/gha-for-devops/.github/workflows/github-actions-lint-and-scan.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       search-path: .github/workflows
       go-version: stable
@@ -55,7 +55,7 @@ jobs:
       || github.event_name == 'workflow_dispatch'
       || (github.event_name == 'workflow_run'
       && github.event.workflow_run.conclusion == 'success')
-    uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@main  # zizmor: ignore[unpinned-uses]
+    uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       search-path: .
   python-lint-and-scan:
@@ -67,7 +67,7 @@ jobs:
       && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
-    uses: dceoy/gha-for-devops/.github/workflows/python-package-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
+    uses: dceoy/gha-for-devops/.github/workflows/python-package-lint-and-scan.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       package-path: .
   python-test:
@@ -79,7 +79,7 @@ jobs:
       && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
-    uses: dceoy/gha-for-devops/.github/workflows/python-package-test.yml@main  # zizmor: ignore[unpinned-uses]
+    uses: dceoy/gha-for-devops/.github/workflows/python-package-test.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       package-path: .
   okf-hugo-build:
@@ -170,7 +170,7 @@ jobs:
     permissions:
       id-token: write
       pages: write
-    uses: dceoy/gha-for-devops/.github/workflows/github-pages-deploy.yml@main  # zizmor: ignore[unpinned-uses]
+    uses: dceoy/gha-for-devops/.github/workflows/github-pages-deploy.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       artifact-name: github-pages
       deployment-attempts: 2
@@ -233,7 +233,7 @@ jobs:
       - python-test
       - okf-hugo-build
       - validate-market-data-config
-    uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@main  # zizmor: ignore[unpinned-uses]
+    uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     permissions:
       contents: write
       pull-requests: write

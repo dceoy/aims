@@ -304,7 +304,7 @@
       ],
       "canonical_ids": [],
       "category": "central_bank",
-      "date": "2027-12-08",
+      "date": "2027-11-17",
       "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
       "title": "FOMC rate decision"
     },
@@ -445,7 +445,7 @@
   "metadata": {
     "calendar_id": "macro_events",
     "source": "Official Fed, ECB, and BOJ schedules; see OPERATIONS.md",
-    "updated_at": "2026-11-09"
+    "updated_at": "2026-11-16"
   },
   "version": "1.0.0"
 }

@@ -1,0 +1,2479 @@
+{
+  "items": [
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-485b18e83fff7d32",
+      "published_at": "2026-11-12T01:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Bank of Japan Accounts (November 10)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/acmai/release/2026/ac261110.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-67feda4ff683bcdc",
+      "published_at": "2026-11-12T01:30:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Speech by Board Member ASADA in Nagasaki (Economic Activity, Prices, and Monetary Policy in Japan)",
+      "url": "http://www.boj.or.jp/en/about/press/koen_2026/ko261112a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5e95c1e04667aef7",
+      "published_at": "2026-11-12T07:30:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Basic Figures on Fails (Oct.)",
+      "url": "http://www.boj.or.jp/en/statistics/set/bffail/sjgb2610.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-9d6dc4baa3eacd6f",
+      "published_at": "2026-11-12T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Japanese Government Bonds Held by the Bank of Japan",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/mei/release/2026/mei261110.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "cac"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ae0cf326763dae7e",
+      "published_at": "2026-11-12T08:23:00+00:00",
+      "snippet": "European stock indexes rose at the open, as the tech-light continent benefited from a rotation away from artificial-intelligence stocks.",
+      "source": "The Wall Street Journal",
+      "title": "European Stock Indexes Higher as Investors Rotate Away From AI",
+      "url": "https://www.wsj.com/finance/stocks/nikkei-falls-0-2-dragged-by-electronics-stocks-0da84013?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c8637a19103b62c5",
+      "published_at": "2026-11-12T14:00:00+00:00",
+      "snippet": "After decades of decline, crude oil production in Alaska is growing, driven by two projects on Alaska's North Slope. In our latest Short-Term Energy Outlook, we expect a 23,000 barrels per day (b/d) (6%) increase in 2026, followed by a 60,000 b/d (13%) rise in 2027. At a forecast 505,000 b/d in 2027, output would be the most since 2014.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "EIA forecasts Alaskan crude oil production to grow 13% in 2027",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68444"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d4a600d1b6f5051e",
+      "published_at": "2026-11-12T23:06:01+00:00",
+      "snippet": "Explosive growth is creating an increasingly expensive financial challenge.",
+      "source": "GuruFocus.com",
+      "title": "CoreWeave's $4 Billion Loan Plan Comes With a Catch",
+      "url": "https://finance.yahoo.com/technology/ai/articles/coreweaves-4-billion-loan-plan-230601586.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-38975a1e88410be7",
+      "published_at": "2026-11-13T02:41:15+00:00",
+      "snippet": "Investing.com -- Shares of Semiconductor Manufacturing International Corp (SMIC) rose nearly 5% on Friday after the Chinese chipmaker reported better-than-expected third-quarter results, with higher wafer shipments and improved factory utilisation driving stronger revenue and margins.",
+      "source": "Investing.com",
+      "title": "SMIC shares rise nearly 5% after third-quarter earnings beat estimates",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/smic-shares-rise-nearly-5-024115731.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-aeb66eda0e90b903",
+      "published_at": "2026-11-13T07:20:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Isabel Schnabel: Made in Europe",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261113~3883f1f187.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-51a3f75dabd37aa5",
+      "published_at": "2026-11-13T07:59:02+00:00",
+      "snippet": "TOKYO (AP) \u2014 TOKYO (AP) \u2014 Mitsubishi UFJ Financial Group Inc. (MUFG) on Friday reported net income of $5.",
+      "source": "Associated Press",
+      "title": "MUFG: Fiscal Q2 Earnings Snapshot",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/mufg-fiscal-q2-earnings-snapshot-075902996.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-beb83eece5e85024",
+      "published_at": "2026-11-13T08:47:06+00:00",
+      "snippet": "Investing.com -- Mitsubishi UFJ Financial Group reported a record first-half net profit of 1.63 trillion yen ($10.4 billion) on Friday, up 26% from a year earlier, and raised its full-year net profit target to 2.8 trillion yen from 2.7 trillion.",
+      "source": "Investing.com",
+      "title": "MUFG raises annual profit target, announces 200 billion yen buyback",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/mufg-raises-annual-profit-target-084706551.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-17f3211af830d023",
+      "published_at": "2026-11-13T14:00:00+00:00",
+      "snippet": "Prolonged drought conditions affecting the Colorado River Basin led to record low hydropower generation this summer in the Southwestern electricity supply region, which includes Arizona, New Mexico, and small parts of Nevada and California. Hydropower generation from April through August 2026 was 19% lower than during the same period last year and 28% lower than the 10-year average, according to the latest data from our Form EIA-923 survey",
+      "source": "U.S. EIA Today in Energy",
+      "title": "Hydropower generation in the Southwest fell to record lows this summer",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68445"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-50f9f5be0ee3e84e",
+      "published_at": "2026-11-13T17:57:46+00:00",
+      "snippet": "Soybeans are 9 to 14 cents higher across most contracts on Friday, with expiring November up 16 cents. The cmdtyView national average Cash Bean price is up 13 3/4 cents at $11.74 3/4. Soymeal futures are down $4.20 to $4.60, with Soy Oil futures 24 to 30 points higher. The...",
+      "source": "Barchart",
+      "title": "Soybeans Popping Higher on Friday Following Export Announcements",
+      "url": "https://www.barchart.com/story/news/8826320/soybeans-popping-higher-on-friday-following-export-announcements"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6b83f4874b8af5f1",
+      "published_at": "2026-11-14T12:19:18+00:00",
+      "snippet": "Key TakeawaysSony Group (SONY) could benefit from Grand Theft Auto VI\u2019s November 19 launch through PlayStation game sales, digital distribution, and platform royalties. Take-Two Interactive (TTWO) reported an 18% decline in quarterly net bookings to $1.",
+      "source": "TIKR",
+      "title": "Forget Take-Two: Sony Is the Overlooked Winner of GTA VI\u2019s Huge Preorders",
+      "url": "https://www.tikr.com/blog/forget-take-two-sony-is-the-overlooked-winner-of-gta-vis-huge-preorders?ref=yahoofinance&tlnk=yf-261114-x48mvw35"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0535cdd511db63b9",
+      "published_at": "2026-11-15T04:26:01+00:00",
+      "snippet": "Sony's TSMC tie-up is meant to protect its image sensor leadership, a bet that scale and cost control can hold up as mobile competition tightens.",
+      "source": "Motley Fool",
+      "title": "Sony: 3 Key Takeaways for Long-Term Investors",
+      "url": "https://www.fool.com/earnings/takeaways/2026/11/14/sony-3-key-takeaways-for-long-term-investors/"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-4d467c20c4a2e510",
+      "published_at": "2026-11-16T04:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Speech by Board Member TAKATA at a Meeting Held by the Tokushima Association of Corporate Executives (Economic Activity, Prices, and Monetary Policy in Japan: Japan's Money and Capital Market Transformation -- Will a Paradigm Shift Occur?)",
+      "url": "http://www.boj.or.jp/en/about/press/koen_2026/ko261116a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4c8f7ca96e36724d",
+      "published_at": "2026-11-16T05:20:52+00:00",
+      "snippet": "Investing.com -- New World Development shares plunged as much as 47% to a record low on Monday after the Hong Kong property developer proposed a HK$24.9 billion ($3.2 billion) rights issue, a massive capital-raising exercise aimed at easing its debt burden.",
+      "source": "Investing.com",
+      "title": "New World shares plunge 47% to record low on $3.2 billion rights issue",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/world-shares-plunge-47-record-052052173.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-e117ca78d805a6b8",
+      "published_at": "2026-11-16T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "BOJ Current Account Balances by Sector (Oct.)",
+      "url": "http://www.boj.or.jp/en/statistics/boj/other/cabs/cabs.xlsx"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-f4fb6d090b97291e",
+      "published_at": "2026-11-16T08:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Highlights of the Outlook for Economic Activity and Prices (October 2026)",
+      "url": "http://www.boj.or.jp/en/mopo/outlook/highlight/ten202610.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "cac"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a41061666fa393a5",
+      "published_at": "2026-11-16T08:27:00+00:00",
+      "snippet": "European stock indexes were mixed to kick off a crucial week for markets that features Nvidia earnings and Anthropic\u2019s public listing.",
+      "source": "The Wall Street Journal",
+      "title": "European Stock Indexes Mixed at Start of Crucial Week",
+      "url": "https://www.wsj.com/finance/stocks/nikkei-falls-0-1-dragged-by-electronics-metals-stocks-258e75e8?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-920f8520a8ffaabf",
+      "published_at": "2026-11-16T08:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Boris Vuj\u010di\u0107: Risks and resilience in the euro area financial system",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261116~db374b56ab.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-1e120927d0694db0",
+      "published_at": "2026-11-16T13:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Frank Elderson: Smart supervision for small banks",
+      "url": "https://www.ecb.europa.eu//press/inter/date/2026/html/ecb.in261116_1~11dd7f62af.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-65e67489e76a934e",
+      "published_at": "2026-11-16T17:47:00+00:00",
+      "snippet": "Take-Two\u2019s first new Grand Theft Auto in 13 years arrives this week. Console makers, chipmakers, and retailers all have a piece of it.",
+      "source": "TheStreet",
+      "title": "Take-Two isn\u2019t the only stock with a stake in GTA 6",
+      "url": "https://www.thestreet.com/investing/take-two-gta-6-who-else-gets-paid"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4ee9d79c4d8d5b8a",
+      "published_at": "2026-11-16T18:17:42+00:00",
+      "snippet": "Soybeans are trading with losses of 6 to 8 \u00bd cents across most contracts on Monday. The cmdtyView national average Cash Bean price is down 7 1/2 cents at $11.66 1/2. Soymeal futures are trading with $3.50 to $4 gains at midday. Soy Oil futures are 150 to 155 lower...",
+      "source": "Barchart",
+      "title": "Soybeans Posting Midday Losses, Despite Record NOPA Crush",
+      "url": "https://www.barchart.com/story/news/8859588/soybeans-posting-midday-losses-despite-record-nopa-crush"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c39df4339a75cdc6",
+      "published_at": "2026-11-16T23:50:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Release of Latest \"Loans and Bills Discounted by Sector\" and \"Loans to Households\" Data",
+      "url": "http://www.boj.or.jp/en/statistics/outline/notice_2026/not261117a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a21c4ec59f762b81",
+      "published_at": "2026-11-17T02:56:01+00:00",
+      "snippet": "Investing.com -- Baidu Inc (HK:9888) shares fell to their lowest level in more than five years on Tuesday as investors weighed the Chinese search giant's third-quarter results, with a sharp contraction in its online advertising business offsetting rapid growth in AI-related services.",
+      "source": "Investing.com",
+      "title": "Baidu shares hit over five-year low as ad slump overshadows AI growth",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/baidu-shares-hit-over-five-025601329.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "cac"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e22ad9196c09720c",
+      "published_at": "2026-11-17T08:39:00+00:00",
+      "snippet": "European stock indexes fell across the continent as all sectors opened lower amid a broader downturn in global equities.",
+      "source": "The Wall Street Journal",
+      "title": "European Stock Indexes Lower Amid Market-Wide Falls",
+      "url": "https://www.wsj.com/finance/stocks/nikkei-falls-0-9-dragged-by-chip-financial-stocks-0445db62?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-68256701ad8523ee",
+      "published_at": "2026-11-17T13:23:00+00:00",
+      "snippet": "Kalshi has gone on a rapid-paced, celebrity-stuffed TV advertising spending spree to compete for customers in the prediction-market wars.",
+      "source": "The Wall Street Journal",
+      "title": "The Four-Person Agency Cooking Up Kalshi Ads With Martha Stewart and Shane Gillis",
+      "url": "https://www.wsj.com/cmo-today/the-four-person-agency-cooking-up-kalshi-ads-with-martha-stewart-and-shane-gillis-4bd5af66?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-00e6cb28359e668b",
+      "published_at": "2026-11-17T14:00:00+00:00",
+      "snippet": "EIA uses over 60 surveys to collect data on the U.S. energy sector's supply and demand. In theory, supply and demand should balance. In practice, we often have small differences between our total supply and total demand figures.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "How does EIA account for small differences between energy supply and demand data?",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68464"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-697947299ff34d2e",
+      "published_at": "2026-11-17T15:00:24+00:00",
+      "snippet": "NEW YORK (AP) \u2014 Prices as of 4:30:00 PM Tuesday, November 17.Corn (CBOT)5,000 bu minimum- cents per bushelContract Open High Low Last Change Today's Volume Monday's Volume Dec 26 448.",
+      "source": "Associated Press",
+      "title": "BC-Corn Futures",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/bc-corn-futures-150024936.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ee64d26350cafe34",
+      "published_at": "2026-11-17T15:00:29+00:00",
+      "snippet": "CHICAGO (AP) \u2014 Futures trading on the Chicago Board of Trade Tue. WHEAT 5,000 bu minimum; cents per bushel Dec 26 619.",
+      "source": "Associated Press",
+      "title": "BC-BOT-Table",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/bc-bot-table-150029410.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-04c8351573109f2a",
+      "published_at": "2026-11-17T16:36:47+00:00",
+      "snippet": "(Corrects last paragraph to say Google trial started in October, not due to start) LONDON, Nov 17 () - Sony fought off a London lawsuit worth almost \u00a32 billion ($2.6 billion) that alleged \u200cthe PlayStation maker's \"monopoly position\" inflated prices for digital games, after a tribunal dismissed the claim \u200cin its entirety.",
+      "source": "Reuters",
+      "title": "Sony defeats \u00a32 billion UK claim over PlayStation Store pricing",
+      "url": "https://uk.news.yahoo.com/sony-defeats-2-billion-uk-125646144.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-73e9f19fe2d16d31",
+      "published_at": "2026-11-17T16:54:11+00:00",
+      "snippet": "Toyota, the Japanese industrial giant that evolved from making textile looms to building cars, is exploring another potentially transformative business opportunity: space.",
+      "source": "Axios",
+      "title": "Toyota's next frontier could be outer space",
+      "url": "https://www.axios.com/2026/11/17/toyota-space-satellites-manufacturing#utm_source=yahoo_finance&utm_medium=partner&utm_campaign=subs-partner-yahoo-finance-AI"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ffcfa173e5639331",
+      "published_at": "2026-11-17T17:00:36+00:00",
+      "snippet": "The European stock markets tumbled in Tuesday's trading session amid mounting investor concern over",
+      "source": "MT Newswires",
+      "title": "European Stocks Close Sharply Lower in Tuesday Trading Amid Tech Selloff",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/european-stocks-close-sharply-lower-170036807.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8327fdfe70df2d31",
+      "published_at": "2026-11-17T17:33:35+00:00",
+      "snippet": "By Anjana Jayakrishnan Nair and Avinash P Nov 17 (Reuters) - European shares dropped more than 1% on Tuesday, led by technology stocks, as investors cut risk ahead of Nvidia's results following a",
+      "source": "Reuters",
+      "title": "European stocks mark worst day in eight months on AI jitters, Deutsche Bank slides",
+      "url": "https://finance.yahoo.com/technology/ai/articles/european-shares-ease-tech-stocks-081814187.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-808739947e306fd7",
+      "published_at": "2026-11-17T18:13:53+00:00",
+      "snippet": "Soybeans are trading with midday gains of fractionally to 6 cents at midday. The cmdtyView national average Cash Bean price is down 6 cents at $11.71 3/4. Soymeal futures are trading with $2 to $2.50. Soy Oil futures are 7 to 10 points higher on the day. NASS Crop Progress...",
+      "source": "Barchart",
+      "title": "Soybeans Holding Higher on Tuesday",
+      "url": "https://www.barchart.com/story/news/8881694/soybeans-holding-higher-on-tuesday"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-5ff67e6381530d72",
+      "published_at": "2026-11-17T18:30:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Philip R. Lane: The practice and science of monetary policy communication: the ECB experience",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261117~7f5d3b1a0e.en.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6bb4676966c35db5",
+      "published_at": "2026-11-17T19:44:00+00:00",
+      "snippet": "Mary Barra has led General Motors for about 11 years. Her biggest success might be her track record of controlling costs.",
+      "source": "Barrons.com",
+      "title": "GM CEO Mary Barra Might Be Leaving. Who Could Replace Her.",
+      "url": "https://www.barrons.com/articles/gm-ceo-mary-barra-successor-5f2d1efa?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-500bfb59750b3f52",
+      "published_at": "2026-11-17T23:30:14+00:00",
+      "snippet": "NEW YORK (AP) \u2014 Prices as of 7:30:00 PM Tuesday, November 17.Nikkei 225 (Yen) (CME)500 yen x Nikkei 225 YEN futures price.",
+      "source": "Associated Press",
+      "title": "BC-Nikkei 225 Futures",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/bc-nikkei-225-futures-233014644.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a33cfb83a722e3a7",
+      "published_at": "2026-11-18T02:33:13+00:00",
+      "snippet": "Investing.com -- JD.com (HK:9618) shares fell to near a four-week low on Wednesday after the Chinese e-commerce group reported third-quarter revenue and adjusted profit below analyst expectations, despite a return to operating profitability and stronger earnings growth.",
+      "source": "Investing.com",
+      "title": "JD.com shares tumble 6.8% to near four-week low after Q3 results",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/jd-com-shares-tumble-6-023313851.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8ed1139dd5639a46",
+      "published_at": "2026-11-18T08:42:27+00:00",
+      "snippet": "Investing.com - European equities struggled to find their footing on Wednesday, ultimately closing lower as investors digested a barrage of sticky inflation data and braced for the market debut of AI startup Anthropic, which effectively blunted a tech-led relief rally sparked by Nvidia\u2019s strong earnings.",
+      "source": "Investing.com",
+      "title": "European shares fall on hot inflation and Anthropic IPO jitters",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/europe-shares-steady-nvidia-results-084227390.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax",
+        "ftse",
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0571eeee2bf2c9ed",
+      "published_at": "2026-11-18T08:51:31+00:00",
+      "snippet": "Investing.com -- British stocks continued their decline on Wednesday, as falling metals prices weighed on mining shares, while October inflation of 3.6% kept the prospect of a Bank of England rate rise in focus.",
+      "source": "Investing.com",
+      "title": "FTSE 100 today: Stocks extend drop as metals slump; UK CPI rises to 3.6%",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/ftse-100-today-stocks-extend-085131270.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-4e4d94b3bb10595d",
+      "published_at": "2026-11-18T09:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Boris Vuj\u010di\u0107: Financial Stability Review - November 2026",
+      "url": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp261118~86f1e8147e.en.pdf"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-c5568905e1b34c4a",
+      "published_at": "2026-11-18T09:00:00+00:00",
+      "snippet": "",
+      "source": "European Central Bank press releases",
+      "title": "Risks from AI valuations, fiscal imbalances and geoeconomic tensions weigh on financial stability outlook",
+      "url": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr261118~83c5c60158.en.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9d8a40a948e722e0",
+      "published_at": "2026-11-18T09:10:32+00:00",
+      "snippet": "MUFG EMEA Capital Markets Co-Head Fabianna del Canto says the percentage of reverse yankees, or debt issued by US companies in foreign currencies, has ballooned to around 20% of the European corporate market, with clients now looking to issue further afield markets like Australia's. She joins Bloomberg's Anna Edwards and Guy Johnson on \"The Opening Trade\" ahead of Bloomberg's annual Global Credit Forum today in London.",
+      "source": "Bloomberg",
+      "title": "MUFG: Reverse Yankees Are About 20% of Europe Corporates",
+      "url": "https://finance.yahoo.com/video/mufg-reverse-yankees-20-europe-091032886.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c27946aa804a9c34",
+      "published_at": "2026-11-18T10:53:31+00:00",
+      "snippet": "Asian stock markets churned on Wednesday after bellwether chipmaker Nvidia (NVDA) overnight reported",
+      "source": "MT Newswires",
+      "title": "Nvidia Results, AI-Sector Outlook Roil Asian Stock Markets",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/nvidia-results-ai-sector-outlook-105331864.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d5b94ffc08a1af53",
+      "published_at": "2026-11-18T11:45:07+00:00",
+      "snippet": "Investing.com -- UBS Global Research forecasts the FTSE 100 will reach 11,500 by December 2027, up from 10,863, under a base case of resilient growth, solid earnings and easing inflation that it rates 50% likely.",
+      "source": "Investing.com",
+      "title": "UBS sees FTSE 100 at 11,500 by end-2027 as earnings and growth hold firm",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/ubs-sees-ftse-100-11-114507705.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "stoxx50"
+      ],
+      "category": "instrument_news",
+      "id": "ev-96d82aaf2433479e",
+      "published_at": "2026-11-18T12:00:48+00:00",
+      "snippet": "Investing.com -- UBS moved global equities to neutral in its 2027 outlook and named the Eurozone its preferred regional equity market.",
+      "source": "Investing.com",
+      "title": "UBS turns neutral on global equities, names this its preferred market",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/ubs-turns-neutral-global-equities-120048569.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-fcabd3e873b69861",
+      "published_at": "2026-11-18T14:00:00+00:00",
+      "snippet": "Working natural gas in storage in the Lower 48 states ended the natural gas injection season at 3,810 billion cubic feet (Bcf), exceeding the five-year average by almost 2%, according to estimates based on data from our Weekly Natural Gas Storage Report released on November 12. Injection season runs April 1\u2013October 31, the months of typically lower natural gas demand.",
+      "source": "U.S. EIA Today in Energy",
+      "title": "U.S. natural gas inventories end injection season above normal levels",
+      "url": "https://www.eia.gov/todayinenergy/detail.php?id=68484"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d9ed801054e15df0",
+      "published_at": "2026-11-18T15:00:39+00:00",
+      "snippet": "NEW YORK (AP) \u2014 Prices as of 4:30:00 PM Wednesday, November 18.Wheat (SRW)5,000 bu minimum- cents per bushelContract Open High Low Last Change Today's Volume Tuesday's Volume Dec 26 595.",
+      "source": "Associated Press",
+      "title": "BC-Wheat Futures",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/bc-wheat-futures-150039729.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-efc7937700619591",
+      "published_at": "2026-11-18T15:00:40+00:00",
+      "snippet": "NEW YORK (AP) \u2014 Prices as of 4:30:00 PM Wednesday, November 18.Corn (CBOT)5,000 bu minimum- cents per bushelContract Open High Low Last Change Today's Volume Tuesday's Volume Dec 26 446.",
+      "source": "Associated Press",
+      "title": "BC-Corn Futures",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/bc-corn-futures-150040062.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "corn",
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-805c09ef79d566f1",
+      "published_at": "2026-11-18T15:00:47+00:00",
+      "snippet": "CHICAGO (AP) \u2014 Futures trading on the Chicago Board of Trade Wed. WHEAT 5,000 bu minimum; cents per bushel Dec 26 633.",
+      "source": "Associated Press",
+      "title": "BC-BOT-Table",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/bc-bot-table-150047844.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c6e8ce0cfebffb35",
+      "published_at": "2026-11-18T15:30:00+00:00",
+      "snippet": "AstraZeneca PLC (LSE:AZN, NYSE:AZN), the FTSE 100 pharmaceuticals group, has received fresh backing from Jefferies, which believes its ambition to reach $80 billion in annual revenue by 2030 is increasingly achievable through its existing drug development pipeline. The broker reiterated its...",
+      "source": "Proactive",
+      "title": "AstraZeneca gets Jefferies backing as broker sees $80bn sales target within reach",
+      "url": "https://www.proactiveinvestors.com/companies/news/1102009/astrazeneca-gets-jefferies-backing-as-broker-sees-80bn-sales-target-within-reach-1102009.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f8f541a2a3cc2a38",
+      "published_at": "2026-11-18T16:23:55+00:00",
+      "snippet": "The S&P 500 Index ($SPX ) (SPY ) is down -0.32% today, the Dow Jones Industrial Average ($DOWI ) (DIA ) is down -1.13%, and the Nasdaq 100 Index ($IUXX ) (QQQ ) is down -0.35%. December E-mini S&P futures (ESZ26 ) are down -0.35%, and December E-mini Nasdaq futures...",
+      "source": "Barchart",
+      "title": "Stocks Pressured by Renewed Weakness in Chipmakers",
+      "url": "https://www.barchart.com/story/news/8900098/stocks-pressured-by-renewed-weakness-in-chipmakers"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "mufg"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a6e6de5afa187006",
+      "published_at": "2026-11-18T16:45:00+00:00",
+      "snippet": "IBN hits a 52-week high as digital expansion, domestic loan growth and rising fee income aid its earnings growth, despite asset quality and valuation concerns.",
+      "source": "Zacks",
+      "title": "ICICI Bank Hits a 52-Week High: Can Growth Drivers Sustain the Rally?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/icici-bank-hits-52-week-164500260.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dax",
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8ad294c5ed21ca3c",
+      "published_at": "2026-11-18T16:46:28+00:00",
+      "snippet": "European stock markets closed lower in Wednesday trading as rising energy prices continued to drive",
+      "source": "MT Newswires",
+      "title": "European Stocks Close Lower in Wednesday Trading; Rising Energy Prices Spur Hot Inflation in EU, Euro Area",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/european-stocks-close-lower-wednesday-164628202.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1949abfaad5f89a4",
+      "published_at": "2026-11-18T17:21:47+00:00",
+      "snippet": "Today's big story: Anthropic IPO: Priced For 2031, Or 2036.",
+      "source": "Trefis",
+      "title": "Why You Should Think About Occidental Petroleum Differently Now",
+      "url": "https://www.trefis.com/stock/oxy/articles/626237/why-you-should-think-about-occidental-petroleum-differently-now/2026-11-18"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "stoxx50"
+      ],
+      "category": "instrument_news",
+      "id": "ev-64cfd579c2f22fa3",
+      "published_at": "2026-11-18T17:38:58+00:00",
+      "snippet": "Investing.com -- Equity derivatives desks see an opening to buy European volatility and sell American volatility. The S&P 500\u2019s three-month implied volatility has jumped relative to the Euro Stoxx 50, and the gap is now the widest in about a year.",
+      "source": "Investing.com",
+      "title": "Hedge funds eye Europe-over-US volatility trade as S&P 500 options reprice",
+      "url": "https://finance.yahoo.com/markets/options/articles/hedge-funds-eye-europe-over-173858750.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d048b7f74fba2403",
+      "published_at": "2026-11-18T17:40:33+00:00",
+      "snippet": "Silver price crashed 62% to a new 2026 low below its 1980 high. See 6 reasons behind the drop and key support levels.",
+      "source": "BeInCrypto",
+      "title": "Silver Price Erased 45 Years of Gains. Will It Crash Further?",
+      "url": "https://beincrypto.com/silver-price-crash-below-1980-high/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-daeae336d0507fdc",
+      "published_at": "2026-11-18T18:02:55+00:00",
+      "snippet": "FuelCell Energy surrendered most of its AI-fueled gains in weeks, and dilution is only part of the story. Two milestones, one Texas data center deal, and a pending earnings report may decide whether the rebound ever arrives.",
+      "source": "24/7 Wall St.",
+      "title": "FuelCell Energy Is Down 38% in a Month. What Will It Take to Get FCEL Stock Back to $10?",
+      "url": "https://247wallst.com/investing/2026/11/18/fuelcell-energy-is-down-38-in-a-month-what-will-it-take-to-get-fcel-stock-back-to-10/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-04b9c506e402c61e",
+      "published_at": "2026-11-18T18:03:53+00:00",
+      "snippet": "Today's big story: Anthropic IPO: Priced For 2031, Or 2036.",
+      "source": "Trefis",
+      "title": "Is Chevron Stock Increasing Your Market Risk?",
+      "url": "https://www.trefis.com/stock/cvx/articles/626214/is-chevron-stock-increasing-your-market-risk/2026-11-18"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4081277c209be27d",
+      "published_at": "2026-11-18T18:11:27+00:00",
+      "snippet": "Soybeans are falling 12 to 14 cents across the front months on Wednesday. The cmdtyView national average Cash Bean price is down 12 3/4 cents at $11.55 1/2. Soymeal futures are 60 toi 80 cents higher on the day, with Soy Oil futures 220 to 230 points lower. Crude Oil...",
+      "source": "Barchart",
+      "title": "Soybeans Falling Lower at Midday",
+      "url": "https://www.barchart.com/story/news/8901938/soybeans-falling-lower-at-midday"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-330e07b9e9da756c",
+      "published_at": "2026-11-18T18:11:28+00:00",
+      "snippet": "The wheat complex is under pressure from the outside markets, with losses across the three exchanges. Chicago SRW futures are collapsing 22 to 23 cents in the nearbys on Wednesday. KC HRW futures are falling 20 to 21 cents across the front months on the midweek session. MPLS spring wheat...",
+      "source": "Barchart",
+      "title": "Wheat Falling with Outside Pressure on Wednesday",
+      "url": "https://www.barchart.com/story/news/8901948/wheat-falling-with-outside-pressure-on-wednesday"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d9737282373766c4",
+      "published_at": "2026-11-18T18:29:55+00:00",
+      "snippet": "Today's big story: Anthropic IPO: Priced For 2031, Or 2036.",
+      "source": "Trefis",
+      "title": "What Drove Venture Global's 69% EBITDA Jump?",
+      "url": "https://www.trefis.com/stock/vg/articles/626202/what-drove-venture-globals-69-ebitda-jump/2026-11-18"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-22cb09cf30b5954f",
+      "published_at": "2026-11-18T18:30:33+00:00",
+      "snippet": "Economist Justin Wolfers states that artificial intelligence (AI) services may become crucial to the economy but fail to generate high profits due to market competition, functioning much like the agricultural sector. The \u2018Wheat\u2019 Comparison Wolfers says that while AI may...",
+      "source": "Benzinga",
+      "title": "AI \u2018Like Wheat\u2019 Could Become the \u2018Lifeblood of Our Economy\u2019 \u2014 Essential but Not Very Profitable, Says Economist Justin Wolfers",
+      "url": "https://finance.yahoo.com/technology/ai/articles/ai-wheat-could-become-lifeblood-183033521.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-2118aa10264694da",
+      "published_at": "2026-11-18T20:15:21+00:00",
+      "snippet": "December Nymex natural gas (NGZ26 ) closed up +0.164 (+5.11%) on Wednesday. Dec nat-gas prices settled sharply higher on Wednesday as the outlook for colder US weather sparked short covering in nat-gas futures. The Commodity Weather Group said it expects below-normal temperatures in the central and eastern US toward the...",
+      "source": "Barchart",
+      "title": "Nat-Gas Prices Surge on Expectations of Colder US Weather",
+      "url": "https://www.barchart.com/story/news/8903652/nat-gas-prices-surge-on-expectations-of-colder-us-weather"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a3f101d61b8dddcc",
+      "published_at": "2026-11-18T20:17:58+00:00",
+      "snippet": "Ford, Toyota, and Honda all mail shareholders checks while EV bills and tariffs pile up. Only one of those payouts rests on solid cash flow, and the biggest check may not be the one that should worry you most.",
+      "source": "24/7 Wall St.",
+      "title": "Ford Yields 5.27%, but These 3 Auto Dividends Come With Different Risks",
+      "url": "https://247wallst.com/investing/2026/11/18/ford-yields-5-27-but-these-3-auto-dividends-come-with-different-risks/"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5fad116bd0371b5d",
+      "published_at": "2026-11-18T20:40:30+00:00",
+      "snippet": "Its pending charter for a fourth floating vessel could lift earnings above $1.2 billion, a path the company says depends on securing one contract.",
+      "source": "Motley Fool",
+      "title": "Golar LNG: 3 Key Takeaways for Long-Term Investors",
+      "url": "https://www.fool.com/earnings/takeaways/2026/11/18/golar-lng-3-key-takeaways-for-long-term-investors/"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ad7288b56e243bf0",
+      "published_at": "2026-11-18T20:57:20+00:00",
+      "snippet": "Energy stocks declined late Wednesday afternoon, with the NYSE Energy Sector Index falling 2.8% and",
+      "source": "MT Newswires",
+      "title": "Sector Update: Energy Stocks Lower in Late Afternoon Trading",
+      "url": "https://finance.yahoo.com/news/sector-energy-stocks-lower-afternoon-205720085.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-11b6739e2183744b",
+      "published_at": "2026-11-18T21:03:21+00:00",
+      "snippet": "The Dow Jones Industrial Average is getting dangerously close to a correction\u2013territory the Nasdaq Composite has already entered.",
+      "source": "Barrons.com",
+      "title": "Worst Stretch Since 2025 Puts Dow at Risk of Correction",
+      "url": "https://www.barrons.com/livecoverage/stock-market-news-today-111826/card/worst-stretch-since-2025-puts-dow-at-risk-of-correction-hUjlZS1aJG6tYWLLlnMq?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f524fc583d8ae1b9",
+      "published_at": "2026-11-18T21:11:19+00:00",
+      "snippet": "Investors, traders and speculators continue to assess and reassess AI's potential against a backdrop of higher interest rates.",
+      "source": "Kiplinger",
+      "title": "Nasdaq Finds a Path Higher Ahead of Anthropic IPO: Stock Market Today",
+      "url": "https://www.kiplinger.com/investing/stocks/nasdaq-finds-a-path-higher-ahead-of-anthropic-ipo-stock-market-today"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-83c46474cdd714a1",
+      "published_at": "2026-11-18T21:12:29+00:00",
+      "snippet": "Santacruz Silver Mining (NASDAQ:SCZM) reported a sharp increase in third-quarter revenue and earnings, helped by higher metal prices, improved operations and the shipment of concentrate delayed by earlier road blockades in Bolivia. Revenue rose 92% from a year earlier to $153.3 million, while adjus",
+      "source": "MarketBeat",
+      "title": "Santacruz Silver Mining Q3 Earnings Call Highlights",
+      "url": "https://www.marketbeat.com/instant-alerts/transcript-santacruz-silver-mining-q3-earnings-call-highlights-2026-11-18/?utm_source=yahoofinance&utm_medium=yahoofinance"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-743e1a9e78596d8f",
+      "published_at": "2026-11-18T21:20:09+00:00",
+      "snippet": "Wall Street zigzagged as Nvidia and other AI stocks kept swinging on uncertainty about how much strength is left in the AI boom.2% Wednesday after flipping between gains and losses.",
+      "source": "Associated Press",
+      "title": "How major US stock indexes fared Wednesday 11/18/2026",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/major-us-stock-indexes-fared-212009825.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "xom"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e345bccabdd43b76",
+      "published_at": "2026-11-18T21:25:00+00:00",
+      "snippet": "ExxonMobil's relatively small dividend increase was actually a big achievement.",
+      "source": "Motley Fool",
+      "title": "ExxonMobil (XOM) Just Achieved Something 95% of S&P 500 (GSPC) Members Haven't Done",
+      "url": "https://www.fool.com/investing/2026/11/18/exxonmobil-xom-achieved-something-95-of-sp-50-gspc/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1d4b3fb9e151fd61",
+      "published_at": "2026-11-18T21:36:21+00:00",
+      "snippet": "The S&P 500 Index ($SPX ) (SPY ) closed down -0.23% on Wednesday, the Dow Jones Industrial Average ($DOWI ) (DIA ) closed down -1.11%, and the Nasdaq 100 Index ($IUXX ) (QQQ ) closed up +0.42%. December E-mini S&P futures (ESZ26 ) fell -0.21%, and December E-mini Nasdaq futures...",
+      "source": "Barchart",
+      "title": "Stocks Settle Mostly Lower as Nvidia Weakness Pressures Chipmakers",
+      "url": "https://www.barchart.com/story/news/8904976/stocks-settle-mostly-lower-as-nvidia-weakness-pressures-chipmakers"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9cf01382c005aaf5",
+      "published_at": "2026-11-18T21:48:05+00:00",
+      "snippet": "Wall Street ended mixed Wednesday, with the Dow losing 561 points and Nvidia reversing its post-earnings rally as investors weighed inflation risks and the Federal Reserve's interest rate outlook.",
+      "source": "International Business Times",
+      "title": "Dow Drops 561 Points. Nvidia Reverses Rally As Fed Signals More Rate Hikes.",
+      "url": "https://www.ibtimes.com/us-stocks-dow-falls-nvidia-earnings-fed-rate-hikes-3809938"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "rut"
+      ],
+      "category": "instrument_news",
+      "id": "ev-372ab894b9e4ad2c",
+      "published_at": "2026-11-18T21:48:30+00:00",
+      "snippet": "The Dow Jones index falls Wednesday as a Fed official calls for a \"shock\" in rate hikes to cool inflation. Nvidia ends lower.",
+      "source": "Investor's Business Daily",
+      "title": "Stock Market Today: Dow Ends In Red On Rate Shock Fears; Nvidia Sinks As Anthropic IPO Looms",
+      "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-sp500-nasdaq-fed-minutes-nvidia-earnings-nvda-stock-lowes-target/?src=A00220&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum",
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-eca8380ffc1ca16a",
+      "published_at": "2026-11-18T21:50:30+00:00",
+      "snippet": "A dramatic sell-off for precious and industrial metals ripped through the equity markets. Newmont and other gold stocks sank.",
+      "source": "Investor's Business Daily",
+      "title": "Gold Stocks, Silver, Copper, Platinum Pounded After This 'Shock'",
+      "url": "https://www.investors.com/news/gold-stocks-silver-platinum-sink-year-plus-lows-interest-rates/?src=A00220&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-2d97017590aab6a5",
+      "published_at": "2026-11-18T21:51:00+00:00",
+      "snippet": "U.S. natural gas futures settled higher in contrarian fashion as commodities from oil to metals and grains retreated.",
+      "source": "The Wall Street Journal",
+      "title": "U.S. Natural Gas Futures Post Strong Gains",
+      "url": "https://www.wsj.com/finance/commodities-futures/u-s-natural-gas-futures-gain-on-more-supportive-weather-245b9223?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0f4b257690a3b37a",
+      "published_at": "2026-11-18T21:58:00+00:00",
+      "snippet": "Find insight on metals futures, palm oil prices, BHP and more in the latest Market Talks covering Basic Materials.",
+      "source": "The Wall Street Journal",
+      "title": "Basic Materials Roundup: Market Talk",
+      "url": "https://www.wsj.com/business/basic-materials-roundup-market-talk-db96511d?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "soybean"
+      ],
+      "category": "instrument_news",
+      "id": "ev-cf21fab65ac328aa",
+      "published_at": "2026-11-18T22:09:38+00:00",
+      "snippet": "Soybeans were under pressure on Wednesday, with outside factors in play. Contracts closed 8 3/4 to 13 1/2 cents lower across the front months on Wednesday. The cmdtyView national average Cash Bean price was down 9 1/4 cents at $11.58 3/4. Soymeal futures were 60 cents to $3.10 higher on...",
+      "source": "Barchart",
+      "title": "Soybeans Fall on Wednesday",
+      "url": "https://www.barchart.com/story/news/8905666/soybeans-fall-on-wednesday"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wheat"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1be3903d2b3fbbc3",
+      "published_at": "2026-11-18T22:09:39+00:00",
+      "snippet": "The wheat complex gave back all of the Tuesday gains and some, facing pressure from the outside markets, with losses across the three exchanges. Chicago SRW futures collapsed 11 to 25 1/2 cents across the board. KC HRW futures fell 14 1/4 to 23 3/4 cents across board on the...",
+      "source": "Barchart",
+      "title": "Wheat Falls with Outside Pressure on Wednesday",
+      "url": "https://www.barchart.com/story/news/8905676/wheat-falls-with-outside-pressure-on-wednesday"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9369fc938589a50c",
+      "published_at": "2026-11-18T22:21:25+00:00",
+      "snippet": "Kinexys by JPMorgan facilitates a proof-of-concept involving AI agents testing a payment without direct human intervention.",
+      "source": "TheStreet",
+      "title": "Popular carmaker taps JPMorgan for agent payments",
+      "url": "https://www.thestreet.com/crypto/innovation/popular-carmaker-taps-jpmorgan-for-agent-payments"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-54d417d6b1d37947",
+      "published_at": "2026-11-18T22:30:05+00:00",
+      "snippet": "Ken Griffin\u2019s Citadel reshaped its $900 billion portfolio in the third quarter. It added 2,490 positions and fully exited 2,219 across 13,843 holdings, according to its latest 13F filing. The firm cut Space Exploration Technologies Corp. by 94%, Amazon.com Inc....",
+      "source": "Benzinga",
+      "title": "Ken Griffin Dumps SpaceX, Amazon; Buys ARKK and Bets Big on Marvell",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/ken-griffin-dumps-spacex-amazon-223005217.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4275ab9774927643",
+      "published_at": "2026-11-18T22:37:00+00:00",
+      "snippet": "A federal proposal could let regulators recover Medicare Advantage overpayments dating back to 2018. Sen. Bernie Sanders also outlined a renewed push for Medicare for All.",
+      "source": "Barrons.com",
+      "title": "Why UnitedHealth and Other Medicare Advantage Insurers Are Falling",
+      "url": "https://www.barrons.com/articles/unitedhealth-humana-cvs-stock-medicare-advantage-audits-1a7e683d?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-006c240d1a61e6b1",
+      "published_at": "2026-11-18T22:58:01+00:00",
+      "snippet": "Deirdre Bosa discusses Anthropic's (ANTH.PVT) expected IPO to launch amid multiple security worries, SpaceX (SPCX) financing GPU rentals, and getting around the AI bottleneck. Deirdre Bosa then sits down with Micron (MU) president and CTO Scott J. DeBoer to discuss the chip stock sell-off, Washington putting the screws to China in the AI trade, and TSMC's (TSM) potential move into memory. 'Deirdre Bosa Live' airs every day at 4 p.m. Tune in daily to hear how the latest developments in AI and tec",
+      "source": "Yahoo Finance Video",
+      "title": "Anthropic to debut amid security worries and SpaceX to finance GPU rentals",
+      "url": "https://finance.yahoo.com/video/anthropic-to-debut-amid-security-worries-and-spacex-to-finance-gpu-rentals-225801261.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c9ed532ff8e101b7",
+      "published_at": "2026-11-18T23:00:02+00:00",
+      "snippet": "Wall Street's troubles are mounting as expectations for further interest rate hikes overshadow strong corporate earnings and threaten to undermine the market's long-term upward trend.",
+      "source": "Motley Fool",
+      "title": "Stock Market Today, Nov. 18: S&P 500 Breaks Key Support as Fed Minutes Signal More Rate Hikes Ahead",
+      "url": "https://www.fool.com/coverage/stock-market-today/2026/11/18/stock-market-today-nov-18-s-and-p-500-breaks-key-support-as-fed-minutes-signal-more-rate-hikes-ahead/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-184d933c0a793d00",
+      "published_at": "2026-11-18T23:24:53+00:00",
+      "snippet": "Toyota Motor (TSE:7203) and Pony.ai have launched fully driverless commercial robotaxi services in Guangzhou using the Gen 7 bZ4X Robotaxi. The service uses Level 4 autonomous vehicles and marks a shift from testing to commercial operations in a major Chinese city. The partners plan to scale the Gen 7 bZ4X Robotaxi fleet toward 1,000 units across China as production ramps. The move into fully driverless Gen 7 bZ4X Robotaxi services is only one part of the broader Toyota story. Take a look at...",
+      "source": "Simply Wall St.",
+      "title": "What Does Toyota Motor (TSE:7203) Going Driverless In Guangzhou Change?",
+      "url": "https://finance.yahoo.com/technology/articles/does-toyota-motor-tse-7203-232453162.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-3c51f803421e4c53",
+      "published_at": "2026-11-18T23:29:10+00:00",
+      "snippet": "She\u2019ll succeed Jeremy Barnum who has spent six years in the role.",
+      "source": "Fortune",
+      "title": "JPMorgan taps 20-year company veteran Bregje de Best as its next CFO",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-taps-20-company-veteran-232910777.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0b446fb6b2fb6109",
+      "published_at": "2026-11-18T23:30:13+00:00",
+      "snippet": "NEW YORK (AP) \u2014 Prices as of 7:30:00 PM Wednesday, November 18.Nikkei 225 (Yen) (CME)500 yen x Nikkei 225 YEN futures price.",
+      "source": "Associated Press",
+      "title": "BC-Nikkei 225 Futures",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/bc-nikkei-225-futures-233013175.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0314035b1eb5f95b",
+      "published_at": "2026-11-18T23:35:02+00:00",
+      "snippet": "ASML\u2019s impeccable fundamentals allow investors to rest easy amid AI stock volatility.",
+      "source": "Motley Fool",
+      "title": "Thinking About Buying Anthropic\u2019s IPO on Nov. 19? Here\u2019s an AI Stock I\u2019d Consider First (Hint: It\u2019s Not Nvidia or Broadcom).",
+      "url": "https://www.fool.com/investing/2026/11/18/thinking-about-buying-anthropic-s-ipo-on-nov-19-here-s-an-ai-stock-i-d-consider-first-hint-it-s-not-nvidia-or-broadcom/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-463bf6889f053948",
+      "published_at": "2026-11-18T23:45:02+00:00",
+      "snippet": "Both are major positions in the Berkshire Hathaway portfolio.",
+      "source": "Motley Fool",
+      "title": "Alphabet vs. Apple: Which Warren Buffett Stock Is the Better Buy?",
+      "url": "https://www.fool.com/investing/2026/11/18/alphabet-vs-apple-which-warren-buffett-stock-is-the-better-buy/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a7bbfecb86c4d9b7",
+      "published_at": "2026-11-18T23:46:45+00:00",
+      "snippet": "We recently published our list of Morgan Stanley Says These 8 Companies Will Spend $1.6 Trillion on AI Infrastructure in 2027, and Meta Platforms, Inc. (NASDAQ:META) ranked fifth. Morgan Stanley still expects eight major companies to spend approximately $1.6 trillion on AI infrastructure in 2027. In its November 8 report, Buy the Drop: AI Investment [\u2026]",
+      "source": "Insider Monkey",
+      "title": "Meta\u2019s $225 Billion AI Spending Forecast Comes With a Cash-Flow Question",
+      "url": "https://finance.yahoo.com/technology/ai/articles/meta-225-billion-ai-spending-234645050.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e030401bef2288ba",
+      "published_at": "2026-11-19T00:00:00+00:00",
+      "snippet": "Google has signed a landmark 50-MW geothermal power deal with Quaise Energy, targeting electricity from superhot rocks in Oregon for its data centers starting in the early 2030s.",
+      "source": "Oilprice.com",
+      "title": "Google Signs Landmark Superhot Geothermal Deal",
+      "url": "https://finance.yahoo.com/energy/articles/google-signs-landmark-superhot-geothermal-000000944.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ef7128704ba3097e",
+      "published_at": "2026-11-19T00:08:37+00:00",
+      "snippet": "AI frontier labs finally have a price tag. Anthropic priced its highly anticipated IPO at $83 a share, above its initial range of $70 to $78, evidence of strong demand. The IPO raised $81.3 billion for Anthropic and its cofounders, valuing the Claude maker at around $1.5 trillion on a fully diluted basis. The debut will be the biggest test yet of whether public-market investors will underwrite AI\u2019s huge valuations and costly infrastructure. Shares are set to start trading on Thursday on the Nasd",
+      "source": "Pitchbook",
+      "title": "Anthropic's $81.3B haul makes it the largest tech IPO ever",
+      "url": "https://pitchbook.com/news/articles/anthropics-81-3b-haul-makes-it-the-second-largest-tech-ipo-ever"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "toyota"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5daa0aa970cbad63",
+      "published_at": "2026-11-19T00:21:07+00:00",
+      "snippet": "Toyota Motor has seen its share price grind higher over recent years, helped by strong interest in hybrids and fresh product news. The immediate question for investors is whether that move is fully backed by the carmaker's earnings profile. With the stock last closing at \u00a53,391, the issue is how much of the recent story around automation, software and new models is already reflected in the current earnings multiple. Over the past 5 years the stock has returned 84.8%, which puts real pressure...",
+      "source": "Simply Wall St.",
+      "title": "Toyota (TSE:7203) Stock May Be Below Fair Value As Robotaxi News Builds",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/toyota-tse-7203-stock-may-002107329.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-17068dcd1775d33b",
+      "published_at": "2026-11-19T00:34:00+00:00",
+      "snippet": "Japan\u2019s Nikkei Stock Average was 0.2% higher at 59159.40, as gains in chip and retail shares offset losses in metals, energy and bank stocks.",
+      "source": "The Wall Street Journal",
+      "title": "Nikkei Rises 0.2%, Led by Chip, Retail Stocks",
+      "url": "https://www.wsj.com/finance/stocks/nikkei-rises-0-2-led-by-chip-retail-stocks-fd10cf06?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-a0ad57483e468552",
+      "published_at": "2026-11-19T00:42:56+00:00",
+      "snippet": "Microsoft CEO Satya Nadella explained why he offered buyouts to 60,000 of his employees in October, essentially urging them to voluntarily quit, rather than reducing the workforce via another massive layoff. The short answer is AI, but not in the way you might expect.",
+      "source": "TechCrunch",
+      "title": "Microsoft CEO Satya Nadella explains why he asked 60K employees to quit",
+      "url": "https://finance.yahoo.com/technology/ai/articles/microsoft-ceo-satya-nadella-explains-004256847.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-be4fb659322dcdfc",
+      "published_at": "2026-11-19T01:00:13+00:00",
+      "snippet": "\u201cSteve has a unique combination of being challenging but still convincing you you can do a thing.\u201d At the F500 Innovation Forum, Corning CEO Wendell Weeks reflected on working with Apple cofounder Steve Jobs.",
+      "source": "Fortune",
+      "title": "Corning CEO on working with Steve Jobs to make screens for the first iPhone",
+      "url": "https://finance.yahoo.com/video/corning-ceo-working-steve-jobs-010013740.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-611fc88eba547b26",
+      "published_at": "2026-11-19T01:13:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Statement by Governor UEDA concerning the Bank's Semiannual Report on Currency and Monetary Control (Committee on Financial Affairs, Senate)",
+      "url": "http://www.boj.or.jp/en/mopo/diet/d_state/dst261119a.htm"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-23ae12909fed75d7",
+      "published_at": "2026-11-19T01:42:13+00:00",
+      "snippet": "Elon Musk compared former Nvidia Corp. (NASDAQ:NVDA) CEO Jensen Huang to legendary NBA player Michael Jordan and said the company made a mistake parting ways with him. Musk Says Huang Isn\u2019t \u2018Disloyal\u2019 Speaking with Andrew Ross Sorkin at The New York Times DealBook Summit on Wednesday, the CEO of Tesla Inc. (NASDAQ:TSLA) and Space Exploration Technologies Corp. (NASDAQ:SPCX) called Huang \u201can old friend of mine,\u201d and added that he was like \u201cMichael Jordan perhaps at his peak level\u201d to a team. Musk",
+      "source": "Benzinga",
+      "title": "Elon Musk Says Nvidia Made a \u2018Mistake\u2019 by Parting Ways With Jensen Huang: Calls Ex-CEO \u2018Michael Jordan Perhaps at His Peak Level\u2019",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/elon-musk-says-nvidia-made-014213735.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-26b4a3562e5a9587",
+      "published_at": "2026-11-19T01:56:19+00:00",
+      "snippet": "If a merger triggered a change in control, Tesla\u2019s valuation alone would determine whether Musk earned additional shares.",
+      "source": "Stocktwits",
+      "title": "Tesla And SpaceX \u2018Better Together\u2019? Musk Leans Yes \u2014 But Says Performance Must Drive His TSLA Pay",
+      "url": "https://stocktwits.com/news-articles/markets/equity/tesla-spacex-better-together-musk-performance-tsla-pay/cNbLsa5R9iJ"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum",
+        "silver"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c77f9a4694a87825",
+      "published_at": "2026-11-19T02:00:48+00:00",
+      "snippet": "Investing.com -- Gold prices rebounded on Thursday after falling to an over one-year low, as bargain hunters stepped in despite growing expectations of further Federal Reserve interest-rate increases to contain persistent inflation.",
+      "source": "Investing.com",
+      "title": "Gold rebounds from 14-month low as bargain hunters emerge despite Fed hike risks",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/gold-rebounds-14-month-low-020048872.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ndx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0bbd3af9e9c09786",
+      "published_at": "2026-11-19T02:07:29+00:00",
+      "snippet": "Investing.com-- U.S. stock futures rose sharply early-Thursday as the bigger-than-expected pricing of Anthropic\u2019s blockbuster initial public offering helped restore some optimism towards the artificial intelligence trade.",
+      "source": "Investing.com",
+      "title": "Wall Street futures climb, Nasdaq jumps 2% on Anthropic\u2019s $1.5 trln mega IPO",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/wall-street-futures-climb-ahead-020729605.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "aapl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4aa5a46fcaf0d305",
+      "published_at": "2026-11-19T02:09:50+00:00",
+      "snippet": "Anyone following Anthropic's plans to sell shares to the public starting Thursday is likely to come across terms that describe steps and components of an initial public offering. Initial public offering, or IPOA company's first offering of stock to the public.",
+      "source": "Associated Press",
+      "title": "A glossary to help understand what happens in an initial public offering",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/glossary-help-understand-happens-initial-020950912.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-03b8121a37275d9e",
+      "published_at": "2026-11-19T02:19:48+00:00",
+      "snippet": "In November 2026, NiCE announced a deeper collaboration with Microsoft, bringing NiCE Cognigy AI Agents into Microsoft Teams Phone, Azure, and Dynamics 365 Customer Service so AI and human staff can manage customer interactions as a single blended workforce. The new NiCE Cognigy release focuses on reusable AI skills, integrated speech and language models, and full decision tracing, which together target real operational pain points such as call routing accuracy, handling time, and governance...",
+      "source": "Simply Wall St.",
+      "title": "What NICE (TASE:NICE)'s Microsoft AI Tie Up Means For Shareholders",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/nice-tase-nice-microsoft-ai-021948606.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c6c258982d0ce1ae",
+      "published_at": "2026-11-19T02:22:25+00:00",
+      "snippet": "Warby Parker has launched its Intelligent Eyewear collection, featuring three nylon frame styles with integrated camera, audio hardware, and up to nine hours of battery life, priced from US$395 and available in multiple prescriptions and lens options. The partnership with Google and Samsung places Warby Parker directly in AI-enabled wearable eyewear, connecting its core prescription and sun-lens offering to a higher priced, technology-rich product line. We will examine how Warby Parker's...",
+      "source": "Simply Wall St.",
+      "title": "Smart Glasses Launch Could Change The Case For Warby Parker Stock",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/smart-glasses-launch-could-change-022225929.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d22905d3b81418d8",
+      "published_at": "2026-11-19T02:24:01+00:00",
+      "snippet": "One of these brands is growing sales at roughly 40% while the other is trading at a discount to the market.",
+      "source": "Motley Fool",
+      "title": "e.l.f. Beauty vs. On: Which Stock Is the Better Buy for 2027?",
+      "url": "https://www.fool.com/coverage/better-buy/2026/11/18/e-l-f-beauty-vs-on-which-stock-is-the-better-buy-for-2027/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "meta",
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1357af327ffa739e",
+      "published_at": "2026-11-19T02:47:06+00:00",
+      "snippet": "Coatue's 13F shows a new 8,032,477-share Salesforce stake worth $1.84 billion on September 30, the largest new position in its $54.50 billion portfolio. The stock has fallen 17% since, including a 9.5% drop on November 17, its worst day since May 2024, as software stocks sold off before Anthropic's IPO.",
+      "source": "24/7 Wall St.",
+      "title": "Coatue Builds $1.8 Billion Salesforce Stake, Its Biggest New Bet, as the Stock Sinks 17%",
+      "url": "https://247wallst.com/investing/2026/11/18/coatue-builds-1-8-billion-salesforce-stake-its-biggest-new-bet-as-the-stock-sinks-17/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn",
+        "googl",
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-139288ca29eee0e6",
+      "published_at": "2026-11-19T03:03:00+00:00",
+      "snippet": "A proposed equipment ban could complicate the technology behind everyday services.",
+      "source": "TheStreet",
+      "title": "Amazon and Google face a 10-year AI supply chain problem",
+      "url": "https://www.thestreet.com/technology/amazon-and-google-face-a-10-year-ai-supply-chain-problem"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-93222cd12dbb4d0f",
+      "published_at": "2026-11-19T03:25:04+00:00",
+      "snippet": "Anthropic\u2019s record sized AI IPO has put cash generation back in the spotlight, as investors compare sky high growth stories with steadier businesses that quietly turn profits into real money. For United Kingdom shares, that creates an opening. Some companies produce solid cash flows yet trade as if that strength barely exists. This article highlights three such undervalued cash flow stocks from our screener for you to review. The three stocks below are only a sample, and the full cash flow...",
+      "source": "Simply Wall St.",
+      "title": "3 British Undervalued Stocks With Earnings Growth Over 12%",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/3-british-undervalued-stocks-earnings-032504263.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "googl"
+      ],
+      "category": "instrument_news",
+      "id": "ev-0c533ce3e934ecaa",
+      "published_at": "2026-11-19T03:27:22+00:00",
+      "snippet": "Alphabet has given investors a choppy ride lately, with a sharp pullback following AI spending concerns and a broader tech sell off. This puts fresh focus on a simple question for you as a shareholder or potential buyer: Are the cash flows that Google can generate over time enough to support where the stock trades today? Over the past 3 years, Alphabet has delivered a total return of 105.9%, which raises the stakes on whether that share price climb is still grounded in the cash the business...",
+      "source": "Simply Wall St.",
+      "title": "Alphabet (GOOGL) Stock Could Be 47% Undervalued As AI Spending Fears Bite",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/alphabet-googl-stock-could-47-032722505.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-bb885293c6e15b1e",
+      "published_at": "2026-11-19T03:30:04+00:00",
+      "snippet": "The artificial intelligence trade is expanding beyond Nvidia Corp., with memory stocks emerging as another major focus for leveraged ETF traders. Micron Technology\u2019s strong performance and growing interest in its leveraged products underscore how investors are targeting different layers of...",
+      "source": "Benzinga",
+      "title": "EXCLUSIVE: Tesla Still Rules Leveraged ETFs, but Anthropic IPO and Micron\u2019s Rise Signal What\u2019s Next",
+      "url": "https://finance.yahoo.com/technology/ai/articles/exclusive-tesla-still-rules-leveraged-033004009.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-99d300f5d19deb8e",
+      "published_at": "2026-11-19T03:35:02+00:00",
+      "snippet": "Federal Reserve Chairman Kevin Warsh is focusing on process, but that may not matter if he ignores this part of his job.",
+      "source": "Motley Fool",
+      "title": "Fed Chair Kevin Warsh Vowed to Hit the Fed's 2% Inflation Target After October's Rate Hold, Even as JPMorgan Warns Democratic Control of the Senate Could Make Him a One-Term Chair. Here's Why That Political Risk Matters for Markets.",
+      "url": "https://www.fool.com/investing/2026/11/18/fed-chair-kevin-warsh-vowed-no-ifs-ands-or-buts-about-hitting-the-2-inflation-target-after-octobers-rate-hold-even-as-jpmorgan-warns-democratic-control-of-the-senate-could-make-him-a-one-term-chair-heres-why-that-political-risk-matters-for-markets/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft"
+      ],
+      "category": "instrument_news",
+      "id": "ev-6f9ad99c4477336b",
+      "published_at": "2026-11-19T03:49:51+00:00",
+      "snippet": "Costco shoppers are stocking up on emergency items following a string of tech snafus, according to a Wall Street analyst.",
+      "source": "CBS News",
+      "title": "Costco sees surge in panic buying after tech outages, report says",
+      "url": "https://www.cbsnews.com/news/costco-panic-buying-tech-outages-generators/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8b69c00e177efa42",
+      "published_at": "2026-11-19T04:02:55+00:00",
+      "snippet": "The stock market was mixed as UnitedHealth dived and Nvidia fell. The Anthropic IPO priced high. Palo Alto, Everpure leaped.",
+      "source": "Investor's Business Daily",
+      "title": "Dow Jones Futures Rise: Anthropic IPO To Debut After Pricing High; Palo Alto And Everpure Rally On Earnings",
+      "url": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-anthropic-ipo-prices-palo-alto-everpure-nvidia-target-unitedhealth-fed-waller-shock/?src=A00220&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "gold",
+        "silver",
+        "unh"
+      ],
+      "category": "instrument_news",
+      "id": "ev-763725c4f86624ca",
+      "published_at": "2026-11-19T04:15:26+00:00",
+      "snippet": "Anthropic priced its initial public offering at $83 a share, above the expected range.",
+      "source": "Stocktwits",
+      "title": "Nasdaq, Dow, S&P 500 Futures Climb Ahead Of Anthropic\u2019s Record Debut: SLS, GLD, TTWO, UNH In Focus",
+      "url": "https://stocktwits.com/news-articles/markets/equity/nasdaq-dow-s-and-p-500-futures-climb-ahead-of-anthropic-s-record-debut-sls-gld-ttwo-unh-in-focus/cNbLDbCR9iW"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-8f5a969aeb70778d",
+      "published_at": "2026-11-19T04:17:09+00:00",
+      "snippet": "Gold fell to its lowest in more than a year on Wednesday. Costco has sold one-ounce gold bars to members since 2023, non-refundable and with no buyback, and a member who bought at every wave is up $6,002.16 on eight bars overall and down $1,469.46 on the two bought in September. Here is each lot at today's price, the premium, the rebate, the 28% collectibles tax, and what a member should know when gold drops.",
+      "source": "24/7 Wall St.",
+      "title": "Gold Just Sank to a One-Year Low. Costco Members Who Bought Bars in September Are Down About $700 Each, and Launch Buyers Are Still Up 88%",
+      "url": "https://247wallst.com/investing/2026/11/18/gold-just-sank-to-a-one-year-low-costco-members-who-bought-bars-in-september-are-down-about-700-each-and-launch-buyers-are-still-up-88/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-c2bf7af0ea81e100",
+      "published_at": "2026-11-19T04:24:02+00:00",
+      "snippet": "The index just ended a 155-session run above that line. What came after the 34 earlier runs of 150-plus sessions?",
+      "source": "Motley Fool",
+      "title": "The S&P 500 Just Ended a Run of 155 Trading Days Above Its 200-Day Average. Here's What Followed 34 Similar Runs Since 1950.",
+      "url": "https://www.fool.com/investing/2026/11/18/the-s-and-p-500-just-ended-a-run-of-155-trading-days-above-its-200-day-average-here-s-what-followed-34-similar-runs-since-1950/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5af8582d09057d41",
+      "published_at": "2026-11-19T04:33:37+00:00",
+      "snippet": "iQIYI is back in focus after JPMorgan cut its price target from US$2.20 to US$1.20 and Goldman Sachs shifted from US$1.60 to US$1.40. With both firms now clustered in the US$1.20 to US$1.40 range and maintaining Neutral views, the tone around iQIYI has turned more measured, with risk and reward seen as more finely balanced at current levels. As you read on, you will see how these target moves fit into the wider story and what to watch as the iQIYI narrative evolves. Analyst Price Targets...",
+      "source": "Simply Wall St.",
+      "title": "iQIYI (IQ) Stock Sees Fair Value Cut After Analysts Lower Targets",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/iqiyi-iq-stock-sees-fair-043337461.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-13637580fcb98ce4",
+      "published_at": "2026-11-19T04:35:03+00:00",
+      "snippet": "Australia may have one foot in recession as unemployment rises to a five year high, which puts steady cash returns front and center for many portfolios. Reliable dividend payers can feel like a paycheck in your brokerage account. In this article you will see three Canadian companies that currently offer yields above 3% with dividends that the screener flags as covered, growing and relatively stable. The three stocks highlighted here offer a compelling starting point if you want exposure to...",
+      "source": "Simply Wall St.",
+      "title": "3 Canadian Dividend Stocks With At Least 3% Yield",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/3-canadian-dividend-stocks-least-043503757.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-174f4819c80f7523",
+      "published_at": "2026-11-19T04:35:03+00:00",
+      "snippet": "Rio Tinto Group (LSE:RIO) is back in the headlines after agreeing a three and a half year, 50MW electricity deal that will restart Line 4 at New Zealand\u2019s Tiwai Point aluminium smelter, restoring full capacity. Set against this expansion news, Rio Tinto Group\u2019s share price has come under pressure, with the stock down 23.1% on a 90 day share price return and 14.1% over 30 days, even though the 1 year total shareholder return is 14.1%. This suggests that recent weakness contrasts with stronger...",
+      "source": "Simply Wall St.",
+      "title": "Rio Tinto Group (LSE:RIO) Restarts Tiwai Point Capacity, Is The Valuation Gap Too Wide?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/rio-tinto-group-lse-rio-043503695.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "ndx",
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-b35cb065597a9bb1",
+      "published_at": "2026-11-19T05:05:53+00:00",
+      "snippet": "Investing.com -- Asian stocks fell on Thursday as steep losses in Taiwan and chipmakers showed that Anthropic\u2019s record IPO had done little to ease doubts over the artificial-intelligence trade.",
+      "source": "Investing.com",
+      "title": "Asia stocks slide as Taiwan drops 4%, AI jitters blunt Anthropic IPO optimism",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/asia-stocks-slide-taiwan-drops-050553675.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f62e6523335f0f7b",
+      "published_at": "2026-11-19T05:12:23+00:00",
+      "snippet": "Lyft (NASDAQ:LYFT) has seen a strong start to the quarter after investing in rider incentives, CEO David Risher said, while cautioning investors against changing their forecasts based on the early results. Risher said the start was \u201cpossibly even slightly stronger than we expected,\u201d but added that",
+      "source": "MarketBeat",
+      "title": "Lyft Sees Strong Start to Quarter as Rider Incentives Pay Off, but CEO Urges Caution",
+      "url": "https://www.marketbeat.com/instant-alerts/event-lyft-sees-strong-start-to-quarter-as-rider-incentives-pay-off-but-ceo-urges-caution-2026-11-18/?utm_source=yahoofinance&utm_medium=yahoofinance"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-59baa030785e210d",
+      "published_at": "2026-11-19T05:14:17+00:00",
+      "snippet": "Rio Tinto Group has delivered a powerful 72.6% share price gain over the past five years, yet recent pressure on iron ore and copper markets has sharpened the question of what its current cash flows really justify. With fresh headlines around Chinese iron ore buying power, new copper and lithium projects, and asset sales, investors are increasingly asking whether today\u2019s valuation is still anchored to the company\u2019s underlying cash generation. Over 5 years, Rio Tinto Group shares are up...",
+      "source": "Simply Wall St.",
+      "title": "Rio Tinto (LSE:RIO) Stock Looks Fairly Priced After Iron Ore Pricing Warning",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/rio-tinto-lse-rio-stock-051417780.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "nkx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-274f14559ed8331b",
+      "published_at": "2026-11-19T05:17:47+00:00",
+      "snippet": "Investing.com-- UBS downgraded its rating on Japanese equities to Neutral from Attractive, flagging a more balanced view on risk and reward amid swirling concerns over medium-term artificial intelligence spending.",
+      "source": "Investing.com",
+      "title": "Japan equities: UBS downgrades to Neutral amid AI spending uncertainty",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/japan-equities-ubs-downgrades-neutral-051747301.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "jpm"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1ac91b1a6a25c139",
+      "published_at": "2026-11-19T05:37:00+00:00",
+      "snippet": "A single software bug exposed a vulnerability in the banking system.",
+      "source": "TheStreet",
+      "title": "JPMorgan Chase faces fresh scrutiny after banking disruption",
+      "url": "https://www.thestreet.com/technology/jpmorgan-chase-outage-zelle-payment-delays"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4d4b7c704ccde470",
+      "published_at": "2026-11-19T05:39:05+00:00",
+      "snippet": "Tesla Inc. (NASDAQ:TSLA) CEO Elon Musk doubled down on his vision for autonomous vehicles on Wednesday, saying the automaker will release the Model Y without a steering wheel and pedals in the future. Model Y Without Traditional Vehicle Controls? During his appearance at the Dealbook Summit, Musk was asked about whether Tesla\u2019s business model will focus solely on autonomy going forward. \u201cIt\u2019s going to make sense for us to make cars that can seat different amounts of people,\u201d he said, adding that",
+      "source": "Benzinga",
+      "title": "Elon Musk Doubles Down On Autonomy: Tesla Plans Wheel-Less, Pedal-Less Model Y To Sit Alongside Two-Seat Cybercab",
+      "url": "https://finance.yahoo.com/technology/articles/elon-musk-doubles-down-autonomy-053905404.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "hsi"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e0e667fc97062e0e",
+      "published_at": "2026-11-19T05:44:21+00:00",
+      "snippet": "Investing.com-- CK Hutchison Holdings (HK:0001) shares fell on Thursday after Panama filed a criminal complaint over suspected irregularities in the audit of a state contract with a unit of the Hong Kong-based conglomerate.",
+      "source": "Investing.com",
+      "title": "CK Hutchison shares fall as Panama files criminal complaint amid ports dispute",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/ck-hutchison-shares-fall-panama-054421244.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn",
+        "meta"
+      ],
+      "category": "instrument_news",
+      "id": "ev-854122d3a175fb12",
+      "published_at": "2026-11-19T05:47:57+00:00",
+      "snippet": "Anthropic\u2019s IPO was roughly 7 times oversubscribed, according to Bloomberg.",
+      "source": "Stocktwits",
+      "title": "Anthropic\u2019s Cash Pile Tops Amazon And Nvidia Combined After Record IPO \u2013 Meet The New ETF Tracking ANT-Linked Companies",
+      "url": "https://stocktwits.com/news-articles/markets/equity/anthropic-s-cash-pile-tops-amazon-and-nvidia-combined-after-record-ipo-meet-the-new-etf-tracking-ant-linked-companies/cNbLyKgR9i1"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-d119f2600025fb1c",
+      "published_at": "2026-11-19T05:51:29+00:00",
+      "snippet": "Japan ran a trade deficit of JPY476. 5bn ($3bn) in October, its sixth consecutive monthly shortfall, Jiji Press reported on November 18, citing preliminary customs figures from the Finance Ministry.",
+      "source": "IntelliNews",
+      "title": "Japan posts sixth straight monthly trade deficit",
+      "url": "http://www.intellinews.com/japan-posts-sixth-straight-monthly-trade-deficit-486539/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-f29de91fe6cdb1b3",
+      "published_at": "2026-11-19T05:56:58+00:00",
+      "snippet": "Pending home sales hit a record low in October. See what the peak-rates signal could mean for US stocks and Bitcoin.",
+      "source": "BeInCrypto",
+      "title": "US Pending Home Sales Hit a Record Low. Why That Could Help Bitcoin and Stocks",
+      "url": "https://beincrypto.com/pending-home-sales-record-low-bitcoin/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "amzn"
+      ],
+      "category": "instrument_news",
+      "id": "ev-df7884cc2200a966",
+      "published_at": "2026-11-19T05:57:36+00:00",
+      "snippet": "Bulls welcomed early findings from ULA because Blue Origin\u2019s New Glenn, slated to carry three AST BlueBirds in early 2027, uses the same BE-4 engines.",
+      "source": "Stocktwits",
+      "title": "ASTS Stock Jumps Overnight Despite New Shares For Engines And Spectrum \u2014 Bulls Cheer ULA\u2019s Amazon Launch Clue",
+      "url": "https://stocktwits.com/news-articles/markets/equity/asts-new-shares-engines-spectrum-bulls-ula-amazon-launch-clue/cNbLyqER9iS"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-bf872d8d6b1f33af",
+      "published_at": "2026-11-19T06:00:00+00:00",
+      "snippet": "Oil prices stabilized as rising global supply and expectations of higher U.S. interest rates offset continued shipping threats in the Strait of Hormuz.",
+      "source": "Oilprice.com",
+      "title": "Oil Prices Steady as Hormuz Tanker Threats Offset Supply Glut Fears",
+      "url": "https://finance.yahoo.com/energy/articles/oil-prices-steady-hormuz-tanker-060000012.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "ndx",
+        "rut",
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5371e9db2b5db743",
+      "published_at": "2026-11-19T06:10:52+00:00",
+      "snippet": "U.S. stock futures are trending modestly higher early Thursday as Wall Street awaits Anthropic\u2019s listing and a fresh slate of economic data and retail earnings. The Polymarket traders, a Polygon (CRYPTO: POL) based prediction platform, are heavily bullish for the...",
+      "source": "Benzinga Prediction Markets",
+      "title": "Stock Market: Will S&P 500 Open Up or Down Today?",
+      "url": "https://www.benzinga.com/markets/prediction-markets/26/11/63418031/stock-market-will-sp-500-open-up-or-down-today-81?utm_source=yahooFinance&utm_campaign=partner_feed&utm_medium=referral"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper",
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-1400cfef8caf5e47",
+      "published_at": "2026-11-19T06:11:13+00:00",
+      "snippet": "Stanley Druckenmiller\u2019s Duquesne Family Office disclosed a new position in Agnico Eagle Mines (NYSE:AEM), building a sizable gold miner stake. The family office reduced exposure to areas such as copper, steel, and semiconductor stocks while reallocating capital toward gold producers. This repositioning directs fresh institutional attention to Agnico Eagle Mines at a time when prior coverage focused on cash flow and ETF flows. Druckenmiller\u2019s move into Agnico Eagle Mines sits within a wider...",
+      "source": "Simply Wall St.",
+      "title": "Agnico Eagle Mines (AEM) Draws Fresh Interest After Druckenmiller Takes A Stake",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/agnico-eagle-mines-aem-draws-061113843.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "msft",
+        "sony"
+      ],
+      "category": "instrument_news",
+      "id": "ev-b984131b7284b90c",
+      "published_at": "2026-11-19T06:37:34+00:00",
+      "snippet": "Investing.com-- Sony Corp (TYO:6758) shares rose on Thursday as data showed Playstation covered roughly three quarters of Grand Theft Auto VI sales, the long-awaited open-world crime videogame from Take-Two Interactive (NASDAQ:TTWO).",
+      "source": "Investing.com",
+      "title": "Sony shares rise as Playstation dominates GTA VI sales",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/sony-shares-rise-playstation-dominates-063734369.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index",
+        "equity"
+      ],
+      "canonical_ids": [],
+      "category": "macro",
+      "id": "ev-3980e941d1842f8d",
+      "published_at": "2026-11-19T07:00:00+00:00",
+      "snippet": "",
+      "source": "Bank of Japan releases",
+      "title": "Developments in Real Exports and Real Imports",
+      "url": "http://www.boj.or.jp/en/research/research_data/reri/index.htm"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ed342988d6e0c265",
+      "published_at": "2026-11-19T07:06:00+00:00",
+      "snippet": "The world\u2019s most valuable miner is hosting an investor tour of its Australian copper operations next week, a year after it reassured investors that it had plenty of options to produce more copper as global demand for the metal swells.",
+      "source": "The Wall Street Journal",
+      "title": "Time for Copper-Focused BHP to Show How It Can Grow",
+      "url": "https://www.wsj.com/business/time-for-copper-focused-bhp-to-show-how-it-can-grow-a713515a?siteid=yhoof2&yptr=yahoo"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "natural_gas"
+      ],
+      "category": "instrument_news",
+      "id": "ev-e45b1b627739b7a5",
+      "published_at": "2026-11-19T07:10:42+00:00",
+      "snippet": "Williams Companies (WMB) sits at the center of the U.S. midstream conversation again, as investors weigh its extensive natural gas pipeline network against sector headwinds and shifting expectations for clean power infrastructure. Recent trading has cooled, with the share price slipping over the past week and month. Even so, Williams Companies still carries a year to date share price gain of 10.48%, backed by a 1 year total shareholder return of 17.64% and very strong 3 and 5 year total...",
+      "source": "Simply Wall St.",
+      "title": "Williams Companies (WMB) Leans On Power Growth, Is The Upside Already Priced In?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/williams-companies-wmb-leans-power-071042283.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-506ef071126744af",
+      "published_at": "2026-11-19T07:13:09+00:00",
+      "snippet": "By Colleen Howe and Siyi Liu BEIJING/SINGAPORE, Nov 19 (Reuters) - Oil prices steadied on Thursday after losses in the prior session as expectations for a market surplus outweighed lingering worries",
+      "source": "Reuters",
+      "title": "Oil prices steady as Middle East shipping attacks counter supply surplus outlook",
+      "url": "https://finance.yahoo.com/energy/articles/oil-prices-steady-supply-surplus-024608326.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-39beb3d4667d3d54",
+      "published_at": "2026-11-19T07:25:02+00:00",
+      "snippet": "These energy companies are positioned for long-term expansion.",
+      "source": "Motley Fool",
+      "title": "3 Energy Stocks to Buy Before 2026 Ends That Could Help You Make a Fortune",
+      "url": "https://www.fool.com/investing/2026/11/19/3-energy-stocks-to-buy-before-2026-ends-that-could-help-you-make-a-fortune/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-4477ef61f9123932",
+      "published_at": "2026-11-19T07:38:02+00:00",
+      "snippet": "Investor Gary Black dismissed speculation on Wednesday that the NVIDIA Corp. (NASDAQ: NVDA) board would reinstate ousted CEO Jensen Huang and cryptocurrency punters seem to agree. \u2018The Board Would Look Like Clowns\u2019 Black responded to X user Farzad, who finds...",
+      "source": "Benzinga Prediction Markets",
+      "title": "\u2018Near Zero Chance\u2019: Gary Black Explains Why Nvidia Board Won\u2019t Reconsider Jensen Huang, Crypto Bettors See This Outcome",
+      "url": "https://www.benzinga.com/markets/prediction-markets/26/11/63418572/gary-black-nvidia-jensen-huang-ceo-polymarket?utm_source=yahooFinance&utm_campaign=partner_feed&utm_medium=referral"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "tsla"
+      ],
+      "category": "instrument_news",
+      "id": "ev-5fbf645660321684",
+      "published_at": "2026-11-19T07:44:13+00:00",
+      "snippet": "Investing.com-- Tesla plans to continue increasing production in China, CCTV-affiliated Yuyuan Tantian reported on Thursday, citing CEO Elon Musk\u2019s meeting with officials in Shenzhen.",
+      "source": "Investing.com",
+      "title": "Tesla to continue increasing China production, state media reports",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/tesla-continue-increasing-china-production-074413868.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "copper"
+      ],
+      "category": "instrument_news",
+      "id": "ev-dd7437f5ddb8d0d5",
+      "published_at": "2026-11-19T07:46:00+00:00",
+      "snippet": "Anglo Asian Mining Plc (LSE:AAZ, OTC:AGXKF) will return two mining areas to Azerbaijan\u2019s government as it concentrates spending on bringing its Xarxar and Garadag copper projects into production. The company\u2019s mining rights at Gosha have expired and those at Ordubad are nearing...",
+      "source": "Proactive",
+      "title": "Anglo Asian Mining prioritises copper projects as it relinquishes Gosha and Ordubad",
+      "url": "https://www.proactiveinvestors.com/companies/news/1102078/anglo-asian-mining-prioritises-copper-projects-as-it-relinquishes-gosha-and-ordubad-1102078.html"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "dji",
+        "nvda",
+        "spx"
+      ],
+      "category": "instrument_news",
+      "id": "ev-31e2adf27e61e171",
+      "published_at": "2026-11-19T07:50:02+00:00",
+      "snippet": "The market is sounding the alarm, but history has good news for investors.",
+      "source": "Motley Fool",
+      "title": "If a Stock Market Crash Is Coming, History Says This 1 Investing Move Has Never Once Failed",
+      "url": "https://www.fool.com/investing/2026/11/19/if-a-stock-market-crash-is-coming-history-says-this-1-investing-move-has-never-once-failed/"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "platinum"
+      ],
+      "category": "instrument_news",
+      "id": "ev-221410cfc2111a8b",
+      "published_at": "2026-11-19T08:05:23+00:00",
+      "snippet": "Investing.com -- Johnson Matthey (LON:JMAT) raised its full-year profit forecast on Thursday on stronger demand for emissions-control catalysts and a lower expected tax rate, but reported a much larger-than-expected first-half cash outflow and delayed the start-up of its new platinum group metals refinery to early 2028.",
+      "source": "Investing.com",
+      "title": "Johnson Matthey lifts FY27 profit forecast, delays refinery start-up to 2028",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/johnson-matthey-lifts-fy27-profit-080523777.html"
+    },
+    {
+      "asset_classes": [
+        "commodity"
+      ],
+      "canonical_ids": [
+        "gold"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9bb6e49339bfc5a7",
+      "published_at": "2026-11-19T08:07:12+00:00",
+      "snippet": "S&P Global Ratings kept Tether\u2019s USDT at 5, its weakest stablecoin stability score, even as the token traded close to $1 over the past year.\u2026",
+      "source": "CCN",
+      "title": "S&P Keeps Tether at Weakest Stability Score as Riskier Reserves Grow",
+      "url": "https://www.ccn.com/news/crypto/sp-tether-usdt-stability-score-reserve-risk/"
+    },
+    {
+      "asset_classes": [
+        "equity_index"
+      ],
+      "canonical_ids": [
+        "ftse"
+      ],
+      "category": "instrument_news",
+      "id": "ev-9f6ca42b0bb441cd",
+      "published_at": "2026-11-19T08:08:00+00:00",
+      "snippet": "JD Sports Fashion PLC (LSE:JD., OTC:JDSPY), the FTSE 100 sportswear retailer, narrowed its full-year profit guidance after another quarter of falling sales, with footwear weakness continuing to weigh on trading. The group now expects profit before tax and adjusting items of \u00a3700 million to...",
+      "source": "Proactive",
+      "title": "JD Sports narrows profit guidance as footwear weakness persists",
+      "url": "https://www.proactiveinvestors.com/companies/news/1102083/jd-sports-narrows-profit-guidance-as-footwear-weakness-persists-1102083.html"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda"
+      ],
+      "category": "instrument_news",
+      "id": "ev-49a95fee11aa8cfe",
+      "published_at": "2026-11-19T08:20:00+00:00",
+      "snippet": "SpaceX is growing at a staggering pace, but does the stock price already reflect it?",
+      "source": "Motley Fool",
+      "title": "Prediction: This Will Be SpaceX's Stock Price by the End of 2030",
+      "url": "https://www.fool.com/investing/2026/11/19/prediction-this-will-be-spacexs-stock-price-by-the/"
+    },
+    {
+      "asset_classes": [
+        "equity"
+      ],
+      "canonical_ids": [
+        "nvda",
+        "wti_crude"
+      ],
+      "category": "instrument_news",
+      "id": "ev-ee056dd16b04c8d3",
+      "published_at": "2026-11-19T08:21:19+00:00",
+      "snippet": "Tech firms mostly rose Thursday following a record IPO from Claude-creator Anthropic, but trading was cautious as investors deal with the fallout from the crisis engulfing AI titan Nvidia.\"Anthropic's IPO is a big near-term win for the tech sector and should help restore some investor confidence that the AI Revolution growth thesis is not waning,\" Dan Ives of Yorkville Ives & Co said in a note, adding that Nvidia's troubles had cast a shadow over the sector.",
+      "source": "AFP",
+      "title": "Tech firms rise after record Anthropic IPO but Nvidia casts shadow",
+      "url": "https://finance.yahoo.com/markets/world-indices/articles/asian-stocks-drop-anthropics-record-025108034.html"
+    }
+  ],
+  "metadata": {
+    "analysis_date": "2026-11-19",
+    "coverage": {
+      "asset_classes": {
+        "commodity": {
+          "instruments": 10,
+          "with_direct_news": 9
+        },
+        "equity": {
+          "instruments": 13,
+          "with_direct_news": 13
+        },
+        "equity_index": {
+          "instruments": 10,
+          "with_direct_news": 10
+        }
+      },
+      "instrument_count": 33,
+      "instruments_with_direct_news": [
+        "aapl",
+        "amzn",
+        "cac",
+        "copper",
+        "corn",
+        "dax",
+        "dji",
+        "ftse",
+        "gold",
+        "googl",
+        "hsi",
+        "jpm",
+        "meta",
+        "msft",
+        "mufg",
+        "natural_gas",
+        "ndx",
+        "nkx",
+        "nvda",
+        "platinum",
+        "rut",
+        "silver",
+        "sony",
+        "soybean",
+        "spx",
+        "stoxx50",
+        "toyota",
+        "tsla",
+        "unh",
+        "wheat",
+        "wti_crude",
+        "xom"
+      ],
+      "sources": {
+        "feed:boj_news": {
+          "item_count": 10,
+          "status": "success"
+        },
+        "feed:ecb_press": {
+          "item_count": 6,
+          "status": "success"
+        },
+        "feed:eia_today": {
+          "item_count": 4,
+          "status": "success"
+        },
+        "feed:fed_press": {
+          "error": "not well-formed (invalid token): line 1, column 1",
+          "status": "failed"
+        },
+        "yfinance:6758.T": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:7203.T": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:8306.T": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:AAPL": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:AMZN": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:BZ=F": {
+          "item_count": 0,
+          "status": "success"
+        },
+        "yfinance:CL=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:GC=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:GOOGL": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:HG=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:JPM": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:META": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:MSFT": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:NG=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:NVDA": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:PL=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:SI=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:TSLA": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:UNH": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:XOM": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:ZC=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:ZS=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:ZW=F": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^DJI": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^FCHI": {
+          "item_count": 3,
+          "status": "success"
+        },
+        "yfinance:^FTSE": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^GDAXI": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^GSPC": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^HSI": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^N225": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^NDX": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^RUT": {
+          "item_count": 5,
+          "status": "success"
+        },
+        "yfinance:^STOXX50E": {
+          "item_count": 2,
+          "status": "success"
+        }
+      }
+    },
+    "generated_at": "2026-11-19T00:00:00+00:00",
+    "git_commit": "d150595",
+    "interval": "d",
+    "lookback_days": 7,
+    "retrieved_at": "2026-11-19T08:33:08.419368+00:00"
+  },
+  "version": "1.0.0"
+}

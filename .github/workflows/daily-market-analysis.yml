@@ -29,15 +29,6 @@ on:
         required: false
         default: "false"
         type: boolean
-      ai_commentary:
-        description: "Render AI commentary (default: AI_COMMENTARY_ENABLED repo variable)"
-        required: false
-        default: default
-        type: choice
-        options:
-          - default
-          - "on"
-          - "off"
       min_success_ratio:
         description: "Minimum symbol fetch success ratio (default 0.8)"
         required: false
@@ -81,10 +72,6 @@ jobs:
       # byte-for-byte today's behavior.
       QUALITATIVE_ENABLED: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
       SKIP_QUALITATIVE: ${{ inputs.skip_qualitative || 'false' }}
-      # Rendering switch (shadow-mode exit, roadmap #98): the per-run input
-      # overrides the default-off AI_COMMENTARY_ENABLED repository variable.
-      AI_COMMENTARY_INPUT: ${{ inputs.ai_commentary || 'default' }}
-      AI_COMMENTARY_VAR: ${{ vars.AI_COMMENTARY_ENABLED || 'false' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
         with:
@@ -330,12 +317,7 @@ jobs:
               .agents/skills/qualitative-analysis/scripts/validate_calendar.py \
               --input "$CAL"
           done
-      # Shadow mode (#95): evidence and qualitative artifacts are generated,
-      # validated, gated, and committed in the analysis PR, but rendering
-      # stays off until AI_COMMENTARY_ENABLED flips after the shadow-mode
-      # exit criteria on #98 are met. Any failure here is non-fatal
-      # (fail-open): the quantitative report publishes unchanged and the
-      # Slack success message carries a warning.
+      # Retain structured qualitative artifacts without generating articles.
       - name: Prepare qualitative analysis (shadow mode)
         id: qualitative_prepare
         if: steps.symbols.outputs.symbols != '' && env.QUALITATIVE_ENABLED == 'true' && env.SKIP_QUALITATIVE != 'true'
@@ -447,20 +429,7 @@ jobs:
               || [ "$FINALIZE_2_OUTCOME" != "success" ]; }; then
             exit 1
           fi
-      # Deterministic stance evaluation (#97): derives forward returns from
-      # committed analysis artifacts only, joins them with any accumulated
-      # qualitative stances (safe empty state before those exist), and
-      # refreshes the public evaluation page. Daily interval only — the
-      # forward-return chain is defined over daily bars. Runs after the
-      # qualitative-analysis step so that today's own qualitative artifact
-      # (if generated) is already on disk and can be included in this run's
-      # evaluation inputs instead of appearing only on the next scheduled
-      # run. Same trust boundary as report rendering and Slack notification:
-      # the same-run qualitative artifact is only trusted once the
-      # qualitative step's own outcome confirms generation and validation
-      # both succeeded; otherwise it is explicitly excluded by date even if
-      # a file is present on disk (that step is continue-on-error). Historical
-      # committed qualitative artifacts are never affected by this exclusion.
+      # Evaluate structured qualitative stances without generating a Hugo page.
       - name: Evaluate qualitative stances
         if: steps.symbols.outputs.symbols != '' && env.INTERVAL == 'd'
         env:
@@ -473,7 +442,6 @@ jobs:
             --analysis-dir data/analysis
             --qualitative-dir data/qualitative
             --output data/performance
-            --page-output content/evaluation/_index.md
           )
           if [ "$QUALITATIVE_OUTCOME" != "success" ]; then
             ARGS+=(--exclude-qualitative-date "${DATE}")
@@ -494,8 +462,7 @@ jobs:
           uv run python \
             .agents/skills/market-analysis/scripts/track_signal_performance.py \
             --analysis-dir data/analysis \
-            --output data/performance/signals.json \
-            --page-output content/performance/_index.md
+            --output data/performance/signals.json
           uv run python \
             .agents/skills/market-analysis/scripts/validate_signal_performance.py \
             --input data/performance/signals.json
@@ -510,49 +477,6 @@ jobs:
           uv run python \
             .agents/skills/qualitative-analysis/scripts/check_citation_links.py \
             --evidence-dir data/evidence
-      - name: Generate Hugo report
-        if: steps.symbols.outputs.symbols != ''
-        env:
-          STEM: ${{ steps.date.outputs.stem }}
-          QUALITATIVE_OUTCOME: ${{ steps.qualitative.outcome }}
-        run: |
-          ARGS=(
-            --input "data/analysis/${STEM}.json"
-            --history "data/history/${STEM}.json"
-            --calendar data/calendars/macro_events.json
-            --calendar data/calendars/earnings.json
-            --output content/results/
-          )
-          case "$AI_COMMENTARY_INPUT" in
-            on) AI_COMMENTARY=true ;;
-            off) AI_COMMENTARY=false ;;
-            *) AI_COMMENTARY="$AI_COMMENTARY_VAR" ;;
-          esac
-          # The qualitative step is continue-on-error, so a file can exist on
-          # disk even after its own validate_qualitative.py call failed
-          # (e.g. generation succeeded but validation didn't). Rendering
-          # must fail open in that case, so require the step's own outcome
-          # to be "success" in addition to file existence.
-          if [ "$AI_COMMENTARY" = "true" ] \
-            && [ "$QUALITATIVE_OUTCOME" = "success" ] \
-            && [ -f "data/qualitative/${STEM}.json" ]; then
-            ARGS+=(
-              --qualitative "data/qualitative/${STEM}.json"
-              --evidence "data/evidence/${STEM}.json"
-            )
-          fi
-          uv run python .agents/skills/market-analysis/scripts/generate_report.py \
-            "${ARGS[@]}"
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: stable
-      - name: Install Hugo
-        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3.2.1
-        with:
-          hugo-version: latest
-          extended: true
-      - name: Build Hugo site (validation)
-        run: hugo --gc --minify
       - name: Create pull request
         id: pr
         if: steps.symbols.outputs.symbols != '' && env.DRY_RUN != 'true'
@@ -567,8 +491,7 @@ jobs:
           gh auth setup-git
           git fetch origin "$BRANCH" 2>/dev/null || true
           git checkout -B "$BRANCH"
-          git add data/analysis/ data/history/ data/performance/ \
-            content/results/ content/evaluation/ content/performance/
+          git add data/analysis/ data/history/ data/performance/
           # Evidence and qualitative artifacts (shadow mode) travel in the
           # same analysis PR; the directories exist only when the
           # qualitative steps ran.
@@ -607,7 +530,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
         run: |
-          # All validation (artifact/history schema checks, Hugo build) has
+          # All artifact and history validations have
           # already run earlier in this job, so merge immediately instead of
           # requesting `--auto`: main has no branch protection or required
           # status checks, and GitHub only allows auto-merge to be enabled on
@@ -630,7 +553,7 @@ jobs:
             --calendar data/calendars/macro_events.json
             --calendar data/calendars/earnings.json
           )
-          # As in the report-render step, only trust the file once its own
+          # Only trust the qualitative file once its own
           # step outcome confirms generation and validation both succeeded.
           if [ "$QUALITATIVE_OUTCOME" = "success" ] \
             && [ -f "data/qualitative/${STEM}.json" ]; then

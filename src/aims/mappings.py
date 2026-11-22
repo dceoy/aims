@@ -48,7 +48,6 @@ _PROVIDER_INTERVALS: Final[dict[str, frozenset[str]]] = {
 }
 
 
-
 @dataclass(frozen=True)
 class InstrumentMappingRow:
     """One canonical instrument mapping row."""

@@ -22,13 +22,13 @@ jobs:
       - name: Run CFD instrument updater
         run: |
           uv run python \
-            .agents/skills/update-cfd-instruments/scripts/update_cfd_instruments.py \
+            -m aims.update_cfd_instruments \
             --output data/cfd_instruments.csv \
             --mappings data/mappings/cfd_ticker_mappings.csv
       - name: Validate CSV
         run: |
           uv run python \
-            .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
+            -m aims.validate_cfd_instruments \
             --input data/cfd_instruments.csv \
             --schema data/schema/cfd_instruments.schema.json
       - name: Compute instrument diff

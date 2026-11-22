@@ -54,38 +54,17 @@ jobs:
       - name: Validate CFD instruments
         run: |
           uv run python \
-            .agents/skills/update-cfd-instruments/scripts/validate_cfd_instruments.py \
+            -m aims.validate_cfd_instruments \
             --input data/cfd_instruments.csv \
             --schema data/schema/cfd_instruments.schema.json
       - name: Validate instrument mappings
         run: |
           uv run python \
-            .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
+            -m aims.mappings \
             --input data/mappings/canonical_instrument_mappings.csv \
             --cfd-instruments data/cfd_instruments.csv
-      - name: Validate backtest artifacts
+      - name: Validate calendars
         run: |
-          shopt -s nullglob
-          for f in data/backtests/*.json; do
-            uv run python \
-              .agents/skills/market-analysis/scripts/validate_backtest.py \
-              --input "$f"
+          for CAL in data/calendars/*.json; do
+            uv run python -m aims.validate_calendar --input "$CAL"
           done
-  dependabot-auto-merge:
-    if: >
-      github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
-    needs:
-      - github-actions-lint-and-scan
-      - markdown-lint
-      - python-lint-and-scan
-      - python-test
-      - validate-market-data-config
-    uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
-    permissions:
-      contents: write
-      pull-requests: write
-      actions: read
-      checks: read
-      statuses: read
-    with:
-      unconditional: true

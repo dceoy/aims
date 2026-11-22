@@ -6,7 +6,7 @@ import json
 from typing import TYPE_CHECKING, Any
 
 from aims import calendars as cal
-from aims.market_analysis import InstrumentMappingRow
+from aims.mappings import InstrumentMappingRow, load_instrument_mappings
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -302,3 +302,13 @@ def test_main_all_symbols_failed_exits_nonzero_without_writing(
     assert rc == 1
     assert "ERROR: all 2 earnings fetches failed" in out
     assert not (tmp_path / "out.json").exists()
+
+
+def test_load_instrument_mappings_keeps_canonical_fields(tmp_path: Path) -> None:
+    """Calendar input should not depend on the deleted scoring engine."""
+    path = _write_mapping(tmp_path, "AAPL")
+    rows = load_instrument_mappings(path)
+    assert len(rows) == 1
+    assert rows[0].canonical_id == "aapl"
+    assert rows[0].provider_symbol == "AAPL"
+    assert rows[0].notes == ""

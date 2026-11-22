@@ -1,6 +1,7 @@
 # aims
 
-Maintains three financial reference datasets without a static website.
+Maintains three financial reference datasets. Static website sources and deployment
+workflows have been removed; the existing Pages site must be disabled separately.
 
 ## Datasets
 
@@ -11,6 +12,18 @@ Maintains three financial reference datasets without a static website.
 
 The scheduled workflows create PRs for changed data. Automatic PR merging is
 disabled. The dataset schemas, validation, and CI remain in place.
+
+
+## Retire the published GitHub Pages site
+
+Removing site source files and deployment workflows does not unpublish an
+existing GitHub Pages deployment. An administrator must visit the
+[repository Pages settings](https://github.com/dceoy/aims/settings/pages),
+choose `Deploy from a branch` as the Source, set the publishing branch to
+`None`, and save. Confirm the site is no longer published. Also remove the
+old `https://dceoy.github.io/aims/` repository homepage URL if present.
+
+This administrative task cannot be completed by this code-only pull request.
 
 ## Manual updates
 

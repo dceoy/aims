@@ -1,4 +1,4 @@
-r"""Earnings and macro-event calendars for AIMS reports and notifications.
+r"""Earnings and macro-event calendars for standalone reference datasets.
 
 Calendars are versioned, schema-validated JSON files under ``data/calendars/``:
 ``macro_events.json`` is refreshed from official Fed, ECB, and BOJ pages by

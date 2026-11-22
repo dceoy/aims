@@ -1,7 +1,7 @@
 """Validate data/mappings/canonical_instrument_mappings.csv.
 
 Usage:
-    uv run .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
+    uv run python -m aims.mappings \
         --input data/mappings/canonical_instrument_mappings.csv \
         --cfd-instruments data/cfd_instruments.csv
 """

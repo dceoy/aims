@@ -1,7 +1,7 @@
 r"""Validate an AIMS calendar JSON file against the expected schema.
 
 Usage:
-    uv run .agents/skills/qualitative-analysis/scripts/validate_calendar.py \
+    uv run python -m aims.validate_calendar \
         --input data/calendars/macro_events.json
 """
 

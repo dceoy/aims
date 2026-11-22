@@ -4,34 +4,17 @@ AI Market Strategist
 
 [![CI](https://github.com/dceoy/aims/actions/workflows/ci.yml/badge.svg)](https://github.com/dceoy/aims/actions/workflows/ci.yml)
 
-## Static analysis site
+## Automated data maintenance
 
-Analysis results are saved as Hugo content under `content/results/` and rendered to the ignored `site/` directory.
-The site uses the Congo Hugo theme via Hugo Modules, so local Hugo builds require a Go toolchain in addition to Hugo Extended.
+AIMS maintains structured research data through independent GitHub Actions workflows:
 
-Create a new result:
+- **Daily market analysis:** `.github/workflows/daily-market-analysis.yml` runs on weekdays, creates and validates machine-readable analysis, history, and performance JSON artifacts, and merges a data-only pull request. It does not generate articles or Hugo pages.
+- **Event calendars:** `.github/workflows/update-calendars.yml` refreshes the earnings and central-bank event calendars every Monday (05:30 UTC).
+- **CFD instruments:** `.github/workflows/update-cfd-instruments.yml` refreshes `data/cfd_instruments.csv` every Monday (05:00 UTC).
 
-```bash
-hugo new results/YYYY-MM-DD-market-analysis.md
-```
+Scheduled Markdown report generation and GitHub Pages deployment have been retired. Existing reports under `content/results/` are historical snapshots, not new scheduled publications. The Hugo source and OKF adapter remain available for local/manual use; there is no automated website deployment.
 
-Set `draft = false` in the generated front matter when the result is ready to publish, then build the static site:
-
-```bash
-hugo --gc --minify
-```
-
-Preview drafts locally with:
-
-```bash
-hugo server --buildDrafts
-```
-
-## Automated analysis pipeline
-
-Daily market analysis runs automatically via `.github/workflows/daily-market-analysis.yml`. It fetches market data, scores instruments, generates JSON artifacts and Hugo Markdown reports, builds the site, and creates a pull request with the results for review and merging.
-
-See [OPERATIONS.md](OPERATIONS.md) for data sources, scoring methodology, required secrets, and operational runbooks.
+See [OPERATIONS.md](OPERATIONS.md) for data sources, scoring methodology, and manual recovery procedures.
 
 ## OKF knowledge layer
 
@@ -39,11 +22,11 @@ AIMS uses an OKF-first knowledge layer for durable repository knowledge. AIMS ta
 
 - `okf/` is the canonical source for stable concepts about architecture, data sources, scoring methodology, operations, and Agent Skills.
 - `data/analysis/*.json` remains authoritative for numeric market facts, scores, ranks, dates, risk gates, and data availability.
-- `content/results/` remains the public daily market-analysis report output.
+- `content/results/` preserves historical report output; automated publication is disabled.
 - `content/knowledge/` is generated Hugo shadow content derived from `okf/` and must not be hand-edited.
 - Repository-local Agent Skills under `.agents/skills/` guide OKF authoring, curation, Hugo generation, and PR review.
 
-After editing `okf/`, regenerate and validate the Hugo shadow content, then build the site:
+For optional local preview after editing `okf/`, regenerate and validate the Hugo shadow content, then build the site locally:
 
 ```bash
 uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --clean

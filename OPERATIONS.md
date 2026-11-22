@@ -1,6 +1,8 @@
 # AIMS — Operations Guide
 
-This document covers data sources, scoring methodology, report generation, the publication workflow, required secrets, troubleshooting, and manual recovery.
+This document covers data sources, scoring methodology, historical report generation, required secrets, troubleshooting, and manual recovery.
+
+> **Current automation (November 2026):** The daily workflow still updates structured analysis, history, qualitative, and performance data, but no longer generates Markdown articles or Hugo pages. GitHub Pages builds and deployments are disabled in CI. Independent weekly event-calendar and CFD-instrument refresh workflows remain enabled. The report-publication and Pages-recovery instructions below are retained as historical/manual reference, not as descriptions of active scheduled publishing.
 
 > **Disclaimer:** All analysis produced by AIMS is for informational purposes only and does not constitute investment advice, a solicitation, or a recommendation to buy or sell any financial instrument. Past performance is not indicative of future results. Always consult a qualified financial adviser before making investment decisions.
 

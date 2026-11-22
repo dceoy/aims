@@ -1,5 +1,5 @@
 ---
-name: CI/CD
+name: CI
 on:
   push:
     branches:
@@ -11,34 +11,11 @@ on:
       - opened
       - synchronize
       - reopened
-  # Daily analysis PRs are merged with GITHUB_TOKEN, which creates no push
-  # event (and therefore no deploy). Re-run CI/CD against main whenever the
-  # daily workflow finishes instead; deploys are idempotent snapshots of
-  # main, so an occasional redundant run (e.g. after a dry run) is harmless.
-  # Safe despite the zizmor audit: the triggering workflow runs only from
-  # this repository (schedule/dispatch, never forks), and no event-supplied
-  # data or head SHA is used — jobs always run against the head of main.
-  workflow_run:   # zizmor: ignore[dangerous-triggers]
-    workflows:
-      - Daily market analysis
-    types:
-      - completed
-  # Manual full CI + deploy of current main (e.g. to recover from a failed
-  # Pages deploy).
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('hugo-pr-{0}', github.run_id) || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success') && format('hugo-workflow-run-skip-{0}', github.run_id) || 'github-pages-build' }}
-  cancel-in-progress: ${{ github.event_name != 'pull_request' }}
 jobs:
   github-actions-lint-and-scan:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
     permissions:
       actions: read
       contents: read
@@ -49,82 +26,22 @@ jobs:
       go-version: stable
       python-version: 3.x
   markdown-lint:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
     uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       search-path: .
   python-lint-and-scan:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     uses: dceoy/gha-for-devops/.github/workflows/python-package-lint-and-scan.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       package-path: .
   python-test:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     uses: dceoy/gha-for-devops/.github/workflows/python-package-test.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     with:
       package-path: .
-  okf-hugo-build:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2   # v10.3.3
-      - run: uv sync --all-groups
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: stable
-      - name: Install Hugo
-        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3.2.1
-        with:
-          hugo-version: latest
-          extended: true
-      - run: uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
-      - run: hugo --gc --minify
-      - name: Upload GitHub Pages artifact
-        if: >
-          github.event_name == 'push'
-          || github.event_name == 'workflow_dispatch'
-          || (github.event_name == 'workflow_run'
-          && github.event.workflow_run.conclusion == 'success')
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          name: github-pages
-          path: site
   validate-market-data-config:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'pull_request'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -154,75 +71,6 @@ jobs:
               .agents/skills/market-analysis/scripts/validate_backtest.py \
               --input "$f"
           done
-  hugo-deploy-to-gh-pages:
-    if: >
-      github.event_name == 'push'
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'workflow_run'
-      && github.event.workflow_run.conclusion == 'success')
-    needs:
-      - github-actions-lint-and-scan
-      - markdown-lint
-      - python-lint-and-scan
-      - python-test
-      - okf-hugo-build
-      - validate-market-data-config
-    permissions:
-      id-token: write
-      pages: write
-    uses: dceoy/gha-for-devops/.github/workflows/github-pages-deploy.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
-    with:
-      artifact-name: github-pages
-      deployment-attempts: 2
-      environment: github-pages
-      runs-on: ubuntu-latest
-
-  notify-pages-deploy-failure:
-    if: always()
-    needs:
-      - hugo-deploy-to-gh-pages
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    env:
-      PAGES_URL: ${{ needs.hugo-deploy-to-gh-pages.outputs['page-url'] }}
-      SLACK_NOTIFICATIONS_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: >
-          always()
-          && needs.hugo-deploy-to-gh-pages.result == 'failure'
-          && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2   # v10.3.3
-        if: >
-          always()
-          && needs.hugo-deploy-to-gh-pages.result == 'failure'
-          && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
-      - name: Sync dependencies
-        if: >
-          always()
-          && needs.hugo-deploy-to-gh-pages.result == 'failure'
-          && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
-        run: uv sync
-      - name: Notify Slack (deploy failure)
-        if: >
-          always()
-          && needs.hugo-deploy-to-gh-pages.result == 'failure'
-          && env.SLACK_NOTIFICATIONS_ENABLED == 'true'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          message="Hugo Pages deploy failed"
-          if [[ -n "${PAGES_URL}" ]]; then
-            message+=" (Pages URL: ${PAGES_URL})"
-          fi
-          uv run python .agents/skills/market-analysis/scripts/notify_slack.py \
-            --failure \
-            --run-url \
-            "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --message "${message}"
   dependabot-auto-merge:
     if: >
       github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
@@ -231,7 +79,6 @@ jobs:
       - markdown-lint
       - python-lint-and-scan
       - python-test
-      - okf-hugo-build
       - validate-market-data-config
     uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@9e394d7c18b3a00fb853cd3c693cc4eeb5f0c825  # v2.3.0
     permissions:

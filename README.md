@@ -13,7 +13,6 @@ workflows have been removed; the existing Pages site must be disabled separately
 The scheduled workflows create PRs for changed data. Automatic PR merging is
 disabled. The dataset schemas, validation, and CI remain in place.
 
-
 ## Retire the published GitHub Pages site
 
 Removing site source files and deployment workflows does not unpublish an

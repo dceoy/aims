@@ -37,7 +37,6 @@ _SCRIPTS = [
     ".agents/skills/qualitative-analysis/scripts/prompt_regression.py",
     ".agents/skills/qualitative-analysis/scripts/validate_prompt_regression.py",
     ".agents/skills/qualitative-analysis/scripts/check_citation_links.py",
-    ".agents/skills/aims-okf-curator/scripts/curate_themes.py",
 ]
 
 _SCRIPT_SYMBOLS = [
@@ -104,10 +103,6 @@ _SCRIPT_SYMBOLS = [
     (
         ".agents/skills/qualitative-analysis/scripts/check_citation_links.py",
         ["check_url", "sample_items"],
-    ),
-    (
-        ".agents/skills/aims-okf-curator/scripts/curate_themes.py",
-        ["cluster_themes", "promotion_candidates"],
     ),
 ]
 

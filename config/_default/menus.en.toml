@@ -4,11 +4,6 @@
   weight = 10
 
 [[main]]
-  name = "Knowledge"
-  pageRef = "knowledge"
-  weight = 20
-
-[[main]]
   name = "Evaluation"
   pageRef = "evaluation"
-  weight = 30
+  weight = 20

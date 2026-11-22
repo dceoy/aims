@@ -21,7 +21,7 @@ This document covers data sources, scoring methodology, historical report genera
 9. [Manual recovery](#manual-recovery)
 10. [AI qualitative analysis layer (design)](#ai-qualitative-analysis-layer-design)
 11. [AI qualitative analysis layer (operations)](#11-ai-qualitative-analysis-layer-operations)
-12. [Stance evaluation, accountability, and OKF theme curation](#12-stance-evaluation-accountability-and-okf-theme-curation)
+12. [Stance evaluation and accountability](#12-stance-evaluation-and-accountability)
 
 ---
 
@@ -268,7 +268,7 @@ The composite score averages 10 feature percentile ranks, and 8 of the 10 are co
 1. Measure ICs and feature correlations over the expanded universe (#76) and the deepest available history (#78) — short or narrow samples produce noisy ICs.
 2. Propose a v2 feature set/weighting from the evidence — e.g. dropping features with persistently near-zero IC (`ret_1d` is a common candidate per the measured example above), adding volatility-adjusted or longer-horizon momentum, or treating risk features (`vol_20d`, `mdd_60d`) as gates/penalties rather than averaged ranks.
 3. Run v1 and v2 side by side over the same walk-forward window (`run_backtest` with each feature set) and compare out-of-sample bucket monotonicity and net-of-cost top-k excess return (#80) — adopt v2 only if both improve.
-4. Only then bump `SCORING_VERSION`, update this document and the OKF scoring-methodology concept, and refresh golden tests.
+4. Only then bump `SCORING_VERSION`, update this document, and refresh golden tests.
 
 No ML-fitted or optimizer-fitted weights — hand-set weights justified by measured ICs, keeping the engine deterministic and dependency-light.
 
@@ -346,7 +346,7 @@ rank/score, deltas (positive rank delta means improvement), new and dropped top-
 signals, consecutive reliable and top-5 available-report counts, and added/removed
 risk gates. Missing calendar dates are intentionally ignored. The format reference
 is `data/schema/history.schema.json`; candidates with a different configured bar
-interval are excluded, and numeric history remains separate from OKF.
+interval are excluded, and numeric history remains authoritative in structured artifacts.
 
 ### Output format
 
@@ -427,7 +427,7 @@ GitHub Pages deployment is handled by `ci.yml` (`hugo-deploy-to-gh-pages` job), 
 - `workflow_run` on "Daily market analysis" completion: bot merges performed with `GITHUB_TOKEN` create no push event, so the daily workflow finishing (successfully) re-runs CI/CD against the head of `main` and deploys it. Deploys are idempotent snapshots of `main`, so a redundant run after a dry run is harmless.
 - `workflow_dispatch` (`gh workflow run ci.yml`): manual full CI + deploy of current `main` — the recovery path when a deploy failed or the site is stale.
 
-The AIMS-specific prerequisite job validates the OKF shadow content and builds the site with Hugo, then uploads the generated `site/` directory as a Pages artifact. Deployment is delegated to the pinned `dceoy/gha-for-devops` `github-pages-deploy.yml` reusable workflow, which performs the deployment and one bounded in-run retry. If the deployment still fails, the local AIMS follow-up job sends a Slack failure notification when `SLACK_WEBHOOK_URL` is configured — otherwise check the run under the Actions tab and the deployment status via `gh api repos/<owner>/<repo>/deployments?environment=github-pages`.
+Historically, the CI build job generated the Hugo site and uploaded a Pages artifact; that job has been retired. Deployment is delegated to the pinned `dceoy/gha-for-devops` `github-pages-deploy.yml` reusable workflow, which performs the deployment and one bounded in-run retry. If the deployment still fails, the local AIMS follow-up job sends a Slack failure notification when `SLACK_WEBHOOK_URL` is configured — otherwise check the run under the Actions tab and the deployment status via `gh api repos/<owner>/<repo>/deployments?environment=github-pages`.
 
 ### Rollback
 
@@ -646,7 +646,7 @@ Commit the artifacts through a reviewed PR.
 
 ### Regenerate the stance-evaluation artifact and page
 
-Deterministic; needs only committed analysis and qualitative artifacts (no API key, no price fetch). See [§12](#12-stance-evaluation-accountability-and-okf-theme-curation).
+Deterministic; needs only committed analysis and qualitative artifacts (no API key, no price fetch). See [§12](#12-stance-evaluation-and-accountability).
 
 ```sh
 uv run .agents/skills/qualitative-analysis/scripts/evaluate_stances.py \
@@ -672,15 +672,6 @@ uv run .agents/skills/market-analysis/scripts/validate_signal_performance.py \
     --input data/performance/signals.json
 ```
 
-### Run the OKF theme curation pass
-
-```sh
-uv run .agents/skills/aims-okf-curator/scripts/curate_themes.py \
-    --qualitative-dir data/qualitative --concepts-dir okf/concepts
-```
-
-Review the printed proposal, then promote or retire through a reviewed OKF PR (never auto-merged). See [§12](#12-stance-evaluation-accountability-and-okf-theme-curation).
-
 ### Refresh event calendars manually
 
 Trigger **Actions → Update event calendars → Run workflow** to refresh earnings and official Fed, ECB, and BOJ schedules, or run `update_calendars.py` and `update_macro_calendar.py` locally. The macro updater parses official institution pages, compares event counts with the prior future schedule, and leaves the existing file untouched if retrieval or sanity checks fail. A macro refresh failure is reported as a warning and does not block an earnings calendar PR.
@@ -701,7 +692,7 @@ This section is the design contract for the AI qualitative analysis roadmap (#98
 
 The quantitative pipeline cannot see _why_ — news, earnings, disclosures, and macro events that explain or contradict the rankings. The qualitative layer adds grounded AI interpretation around the quantitative signal while leaving every existing guarantee intact:
 
-- **The quantitative artifact stays authoritative for all numbers.** The qualitative artifact may reference scores, ranks, features, risk gates, and the market regime; it never restates them authoritatively and never modifies them. This mirrors the OKF guardrail that LLM prose is never the source of truth for numeric facts.
+- **The quantitative artifact stays authoritative for all numbers.** The qualitative artifact may reference scores, ranks, features, risk gates, and the market regime; it never restates them authoritatively and never modifies them. LLM prose must never be the source of truth for numeric facts.
 - **The LLM call is the single non-deterministic step.** It produces a committed, schema-validated JSON artifact (`data/qualitative/<stem>.json`). Everything downstream — validation, gating, report rendering, Hugo build — stays deterministic. Report generation without a qualitative artifact remains byte-identical to today's output.
 - **Fail-open.** Any qualitative failure (missing OAuth token, action/model/quota error, timeout, gate withholding) publishes the quantitative report unchanged. Quantitative coverage gates are never weakened. Qualitative-step failures are non-fatal warnings; quantitative failures remain fatal exactly as now.
 
@@ -796,9 +787,9 @@ Quota controls: one Claude Code Action invocation per run, plus at most one rege
 
 ---
 
-## 12. Stance evaluation, accountability, and OKF theme curation
+## 12. Stance evaluation and accountability
 
-Phase 4 of the roadmap (#98): measure whether AI commentary adds information, guard prompt/model changes, and promote durable themes into the knowledge layer. Everything here is deterministic, dependency-light, and reuses the existing schema-validator and skill-wrapper patterns. **None of it asserts an investable or executable track record** — outputs frame informational association only, with disclaimers kept prominent.
+Phase 4 of the roadmap (#98): measure whether AI commentary adds information and guard prompt/model changes. Everything here is deterministic, dependency-light, and reuses the existing schema-validator and skill-wrapper patterns. **None of it asserts an investable or executable track record** — outputs frame informational association only, with disclaimers kept prominent.
 
 > **Disclaimer:** Stance-evaluation figures measure whether published AI stances lined up with subsequent price moves in committed data. They are not an investable or executable track record, exclude fees/slippage/financing/order timing, rest on small overlapping samples, and are not investment advice.
 
@@ -821,14 +812,6 @@ A prompt edit or model swap can silently change output quality with no code diff
 ### Citation link-rot sampling (#97)
 
 `check_citation_links.py` (in `src/aims/link_check.py`) probes a bounded, deterministic sample of recent evidence citation URLs over HTTP (HEAD, falling back to GET) so dead sources surface in the workflow log. It is **a warning, not a gate**: it always exits 0, writes no artifact (network results are non-deterministic and stay out of committed data), and runs `continue-on-error` in the daily workflow. Persistent rot on a source means editing or removing its row in `data/mappings/evidence_sources.csv` per [§11](#11-ai-qualitative-analysis-layer-operations).
-
-### OKF theme curation (#96)
-
-Durable themes surfaced by the daily qualitative artifacts belong in the OKF knowledge layer, not the point-in-time reports. `curate_themes.py` (in `src/aims/okf_curation.py`, behind the `aims-okf-curator` skill) runs a **monthly** deterministic pass over `data/qualitative/*.json`: it clusters recurring theme titles by token overlap, prints promotion candidates that recur on **≥3 distinct dates spanning ≥14 days** (with dated artifact and evidence citations plus a ready-to-edit concept skeleton), lists supporting per-instrument stance streaks, and flags retirement candidates among existing `qualitative-theme`-tagged concepts (unseen for **>60 days**).
-
-Its output is a **proposal for human review only** — it never writes to `okf/`. Promotion and retirement follow the standard OKF flow: edit a draft into `okf/concepts/theme-<slug>.md` (carry the `qualitative-theme` tag and a `theme_tokens` front-matter list so future passes assess recurrence; cite dated artifacts; numeric facts stay pointers into `data/analysis/` and are never asserted as truth in prose), record the pass — including "no promotions" — in `okf/logs/log.md`, regenerate shadow content (`tools/okf_hugo_adapter.py --clean` then `--check`), build with `hugo --gc --minify`, and open a reviewed PR. **OKF changes are never auto-merged.** Cadence and criteria are documented in `.agents/skills/aims-okf-curator/SKILL.md`.
-
-**Current state (accumulation limitation):** shadow mode has not yet committed qualitative artifacts to `main`, so both the stance-evaluation artifact and the first curation pass are recorded empty states. The machinery, schemas, fixtures, and tests are complete; the "at least one promoted theme" and populated evaluation-summary milestones fill in once artifacts accumulate. This limitation is recorded rather than worked around.
 
 ### Go/no-go checkpoint (#98)
 

@@ -32,9 +32,6 @@ else
   )
 fi
 
-# OKF knowledge shadow content
-uv run python tools/okf_hugo_adapter.py --src okf --dst content/knowledge --check
-
 # Hugo
 hugo --gc --minify
 

@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">= 3.13, < 3.14"
 dependencies = [
     "lxml>=6.1.1",
-    "pyyaml>=6.0.0",
     "requests>=2.34.2",
     "yfinance>=0.2.0",
 ]
@@ -186,7 +185,6 @@ max-public-methods = 40
 include = [
   "src/aims",
   "tools",
-  ".agents/skills/aims-okf-curator/scripts",
   ".agents/skills/market-analysis/scripts",
   ".agents/skills/qualitative-analysis/scripts",
   ".agents/skills/update-cfd-instruments/scripts",

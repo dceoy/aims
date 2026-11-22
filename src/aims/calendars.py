@@ -1,4 +1,4 @@
-r"""Earnings and macro-event calendars for AIMS reports and notifications.
+r"""Earnings and macro-event calendars for standalone reference datasets.
 
 Calendars are versioned, schema-validated JSON files under ``data/calendars/``:
 ``macro_events.json`` is refreshed from official Fed, ECB, and BOJ pages by
@@ -6,7 +6,7 @@ Calendars are versioned, schema-validated JSON files under ``data/calendars/``:
 dates by the updater CLI in this module.
 
 Usage:
-    uv run .agents/skills/qualitative-analysis/scripts/update_calendars.py \
+    uv run python -m aims.calendars \
         --mapping data/mappings/canonical_instrument_mappings.csv \
         --output data/calendars/earnings.json
 """
@@ -21,10 +21,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from operator import itemgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import Any, Final
 
-if TYPE_CHECKING:
-    from aims.market_analysis import InstrumentMappingRow
+from aims.mappings import InstrumentMappingRow, load_instrument_mappings
 
 CALENDAR_VERSION: Final[str] = "1.0.0"
 DEFAULT_WINDOW_DAYS: Final[int] = 7
@@ -106,8 +105,7 @@ def events_for_instrument(
 
 def fetch_earnings_dates(symbol: str) -> list[str]:
     """Fetch upcoming/recent earnings dates via yfinance (network boundary)."""
-    # Imported lazily so report generation, which imports this module for
-    # calendar rendering, does not pay the yfinance import.
+    # Import lazily so offline validation does not need the provider client.
     import yfinance as yf  # noqa: PLC0415
 
     frame = yf.Ticker(symbol).get_earnings_dates(limit=_EARNINGS_FETCH_LIMIT)
@@ -221,8 +219,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    from aims.market_analysis import load_instrument_mappings  # noqa: PLC0415
-
     try:
         rows = load_instrument_mappings(args.mapping)
     except (FileNotFoundError, csv.Error) as exc:

@@ -23,14 +23,3 @@ updates:
       dependencies:
         patterns:
           - '*'
-  - package-ecosystem: gomod
-    directory: /
-    schedule:
-      interval: daily
-    cooldown:
-      default-days: 7
-    open-pull-requests-limit: 10
-    groups:
-      dependencies:
-        patterns:
-          - '*'

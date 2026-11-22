@@ -1,7 +1,7 @@
 """Validate data/mappings/canonical_instrument_mappings.csv.
 
 Usage:
-    uv run .agents/skills/market-analysis/scripts/validate_instrument_mappings.py \
+    uv run python -m aims.mappings \
         --input data/mappings/canonical_instrument_mappings.csv \
         --cfd-instruments data/cfd_instruments.csv
 """
@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
@@ -45,6 +46,44 @@ _PROVIDER_INTERVALS: Final[dict[str, frozenset[str]]] = {
     "csv": frozenset({"d", "w", "m"}),
     "yfinance": frozenset({"d", "w", "m"}),
 }
+
+
+@dataclass(frozen=True)
+class InstrumentMappingRow:
+    """One canonical instrument mapping row."""
+
+    canonical_id: str
+    display_name: str
+    asset_class: str
+    broker: str
+    broker_instrument_name: str
+    broker_ticker_symbol: str
+    provider: str
+    provider_symbol: str
+    provider_interval: str
+    tradable: str
+    notes: str = ""
+
+
+def load_instrument_mappings(mapping_path: Path) -> list[InstrumentMappingRow]:
+    """Read the instrument mappings independently of market analysis."""
+    with mapping_path.open(encoding="utf-8", newline="") as fh:
+        return [
+            InstrumentMappingRow(
+                canonical_id=row.get("canonical_id", ""),
+                display_name=row.get("display_name", ""),
+                asset_class=row.get("asset_class", ""),
+                broker=row.get("broker", ""),
+                broker_instrument_name=row.get("broker_instrument_name", ""),
+                broker_ticker_symbol=row.get("broker_ticker_symbol", ""),
+                provider=row.get("provider", ""),
+                provider_symbol=row.get("provider_symbol", ""),
+                provider_interval=row.get("provider_interval", ""),
+                tradable=row.get("tradable", ""),
+                notes=row.get("notes", ""),
+            )
+            for row in csv.DictReader(fh)
+        ]
 
 
 def _load_cfd_instruments(path: Path) -> set[tuple[str, str]]:

@@ -20,25 +20,25 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    uses: dceoy/gha-for-devops/.github/workflows/github-actions-lint-and-scan.yml@607489fde554da8b89bacf055479d3723e529e2a  # v2.3.2
+    uses: dceoy/gha-for-devops/.github/workflows/github-actions-lint-and-scan.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     with:
       search-path: .github/workflows
       go-version: stable
       python-version: 3.x
   markdown-lint:
-    uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@607489fde554da8b89bacf055479d3723e529e2a  # v2.3.2
+    uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     with:
       search-path: .
   python-lint-and-scan:
     permissions:
       contents: read
-    uses: dceoy/gha-for-devops/.github/workflows/python-package-lint-and-scan.yml@607489fde554da8b89bacf055479d3723e529e2a  # v2.3.2
+    uses: dceoy/gha-for-devops/.github/workflows/python-package-lint-and-scan.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     with:
       package-path: .
   python-test:
     permissions:
       contents: read
-    uses: dceoy/gha-for-devops/.github/workflows/python-package-test.yml@607489fde554da8b89bacf055479d3723e529e2a  # v2.3.2
+    uses: dceoy/gha-for-devops/.github/workflows/python-package-test.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     with:
       package-path: .
   validate-market-data-config:
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2   # v10.3.3
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d   # v10.4.0
       - run: uv sync
       - name: Validate CFD instruments
         run: |
